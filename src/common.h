@@ -95,7 +95,7 @@ struct options
 
 
 /* variables */
-extern const struct exitcode exitcodes[];
+extern struct exitcode exitcodes[];
 
 
 /* functions */

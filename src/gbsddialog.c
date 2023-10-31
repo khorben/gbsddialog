@@ -160,9 +160,7 @@ static struct option longopts[] = {
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
 #endif
 	{"help-button",       no_argument,       NULL, HELP_BUTTON},
-#if 0
 	{"help-exit-code",    required_argument, NULL, HELP_EXIT_CODE},
-#endif
 	{"help-label",        required_argument, NULL, HELP_LABEL},
 #if 0
 	{"help-print-items",  no_argument,       NULL, HELP_PRINT_ITEMS},
@@ -201,8 +199,8 @@ static struct option longopts[] = {
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
-	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 #endif
+	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 	{"ok-label",          required_argument, NULL, OK_LABEL},
 #if 0
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
@@ -306,7 +304,7 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
 	GBSDDialog * gbd = data;
-	int parsed, argc;
+	int parsed, argc, res;
 	struct bsddialog_conf conf;
 	struct options opt;
 	char * text = NULL;
@@ -371,8 +369,17 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf.button.help_label != NULL)
 				? conf.button.help_label : "Help", GTK_RESPONSE_HELP);
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	switch(res)
+	{
+		case GTK_RESPONSE_OK:
+			*gbd->ret = exitcodes[BSDDIALOG_OK + 1].value;
+			break;
+		case GTK_RESPONSE_HELP:
+			*gbd->ret = exitcodes[BSDDIALOG_HELP + 1].value;
+			break;
+	}
 
 	gbd->argc -= argc - 1;
 	gbd->argv += argc - 1;
@@ -443,11 +450,17 @@ static int _parseargs(int argc, char const ** argv,
 			case HELP_BUTTON:
 				conf->button.with_help = true;
 				break;
+			case HELP_EXIT_CODE:
+				exitcodes[BSDDIALOG_HELP + 1].value = strtol(optarg, NULL, 10);
+				break;
 			case HELP_LABEL:
 				conf->button.help_label = optarg;
 				break;
 			case NO_OK:
 				conf->button.without_ok = true;
+				break;
+			case OK_EXIT_CODE:
+				exitcodes[BSDDIALOG_OK + 1].value = strtol(optarg, NULL, 10);
 				break;
 			case OK_LABEL:
 				conf->button.ok_label = optarg;

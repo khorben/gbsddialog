@@ -9,7 +9,7 @@
 
 
 /* variables */
-const struct exitcode exitcodes[] =
+struct exitcode exitcodes[] =
 {
 	{ "BSDDIALOG_ERROR",    255 },
 	{ "BSDDIALOG_OK",         0 },
