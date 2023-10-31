@@ -267,7 +267,9 @@ static struct option longopts[] = {
 #if 0
 	{"passwordbox",  no_argument, NULL, PASSWORDBOX},
 	{"passwordform", no_argument, NULL, PASSWORDFORM},
+#endif
 	{"pause",        no_argument, NULL, PAUSE},
+#if 0
 	{"radiolist",    no_argument, NULL, RADIOLIST},
 	{"rangebox",     no_argument, NULL, RANGEBOX},
 	{"textbox",      no_argument, NULL, TEXTBOX},
@@ -347,7 +349,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	}
 	if(opt.dialogbuilder != NULL)
 	{
-		if(argc != 3)
+		if(argc < 3)
 		{
 			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected <text> <rows> <cols>"));
 			return _gbsddialog_on_idle_quit(gbd);
@@ -503,6 +505,13 @@ static int _parseargs(int argc, char const ** argv,
 							"--and-dialog", opt->name);
 				opt->name = "--msgbox";
 				opt->dialogbuilder = builder_msgbox;
+				break;
+			case PAUSE:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --pause without "
+							"--and-dialog", opt->name);
+				opt->name = "--pause";
+				opt->dialogbuilder = builder_pause;
 				break;
 			case YESNO:
 				if(opt->dialogbuilder != NULL)
