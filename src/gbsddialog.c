@@ -190,8 +190,10 @@ static struct option longopts[] = {
 	{"no-label",          required_argument, NULL, CANCEL_LABEL},
 	{"no-lines",          no_argument,       NULL, NO_LINES},
 	{"no-names",          no_argument,       NULL, NO_NAMES},
+#endif
 	{"no-ok",             no_argument,       NULL, NO_OK},
 	{"nook",              no_argument,       NULL, NO_OK},
+#if 0
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
@@ -305,7 +307,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	struct options opt;
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
-	GtkWidget * container, * widget = NULL, * window;
+	GtkWidget * container, * dialog, * widget = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(gbd->argc=%d gbd->argv=\"%s\")\n",
@@ -352,13 +354,17 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		/* FIXME report error */
 		return _gbsddialog_on_idle_quit(gbd);
 
-	window = gtk_dialog_new();
+	dialog = gtk_dialog_new();
 	if(conf.title != NULL)
-		gtk_window_set_title(GTK_WINDOW(widget), conf.title);
-	container = gtk_dialog_get_content_area(GTK_DIALOG(window));
+		gtk_window_set_title(GTK_WINDOW(dialog), conf.title);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	gtk_container_add(GTK_CONTAINER(container), widget);
-	gtk_dialog_run(GTK_DIALOG(window));
-	gtk_widget_destroy(window);
+	if(conf.button.without_ok != true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf.button.ok_label != NULL)
+				? conf.button.ok_label : "OK", GTK_RESPONSE_OK);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 
 	gbd->argc -= argc - 1;
 	gbd->argv += argc - 1;
@@ -426,16 +432,17 @@ static int _parseargs(int argc, char const ** argv,
 		switch(arg)
 		{
 			/* Options */
+			case NO_OK:
+				conf->button.without_ok = true;
+				break;
 			case TITLE:
 				conf->title = optarg;
 				break;
 			/* Dialogs */
 			case MSGBOX:
 				if(opt->dialogbuilder != NULL)
-				{
 					return -error(BSDDIALOG_ERROR, "%s and --msgbox without "
 							"--and-dialog", opt->name);
-				}
 				opt->name = "--";
 				opt->dialogbuilder = builder_msgbox;
 				break;
