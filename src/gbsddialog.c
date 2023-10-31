@@ -180,8 +180,8 @@ static struct option longopts[] = {
 	{"hmsg",              required_argument, NULL, HMSG},
 #endif
 	{"ignore",            no_argument,       NULL, IGNORE},
-#if 0
 	{"insecure",          no_argument,       NULL, INSECURE},
+#if 0
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
 	{"item-depth",        no_argument,       NULL, ITEM_DEPTH},
 	{"item-help",         no_argument,       NULL, ITEM_BOTTOM_DESC},
@@ -516,6 +516,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case IGNORE:
 				opt->ignore = true;
+				break;
+			case INSECURE:
+				conf->form.securech = '*';
 				break;
 			case NO_CANCEL:
 				conf->button.without_cancel = true;
