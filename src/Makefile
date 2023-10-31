@@ -2,9 +2,34 @@ TARGETS	= gbsddialog
 CPPFLAGS= -D_FORTIFY_SOURCE=2
 CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-3.0`
 LDFLAGS	= `pkg-config --libs gtk+-3.0`
+RM	= rm -f
+OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
+TARGET	= gbsddialog
 
-gbsddialog: main.o
-	$(CC) $(LDFLAGS) -o gbsddialog main.o
+all: $(TARGET)
 
-main.o: main.c
+gbsddialog: $(OBJS)
+	$(CC) $(LDFLAGS) -o gbsddialog $(OBJS)
+
+builders.o: builders.c builders.h callbacks.h common.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o builders.o -c builders.c
+
+callbacks.o: callbacks.c callbacks.h common.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o callbacks.o -c callbacks.c
+
+common.o: common.c common.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o common.o -c common.c
+
+gbsddialog.o: gbsddialog.c builders.h common.h gbsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o gbsddialog.o -c gbsddialog.c
+
+main.o: main.c common.h gbsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o main.o -c main.c
+
+clean:
+	$(RM) $(OBJS)
+
+distclean: clean
+	$(RM) $(TARGET)
+
+.PHONY: all clean distclean
