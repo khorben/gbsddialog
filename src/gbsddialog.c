@@ -157,10 +157,10 @@ static struct option longopts[] = {
 	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
 	{"exit-label",        required_argument, NULL, EXIT_LABEL},
+#endif
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
 	{"extra-exit-code",   required_argument, NULL, EXTRA_EXIT_CODE},
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
-#endif
 	{"help-button",       no_argument,       NULL, HELP_BUTTON},
 	{"help-exit-code",    required_argument, NULL, HELP_EXIT_CODE},
 	{"help-label",        required_argument, NULL, HELP_LABEL},
@@ -372,6 +372,11 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 				(conf.button.cancel_label != NULL)
 				? conf.button.cancel_label : "Cancel",
 				GTK_RESPONSE_CANCEL);
+	if(conf.button.with_extra == true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf.button.extra_label != NULL)
+				? conf.button.extra_label : "Extra",
+				BSDDIALOG_EXTRA);
 	if(conf.button.without_ok != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf.button.ok_label != NULL)
@@ -385,6 +390,9 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	gtk_widget_destroy(dialog);
 	switch(res)
 	{
+		case BSDDIALOG_EXTRA:
+			*gbd->ret = exitcodes[res + 1].value;
+			break;
 		case GTK_RESPONSE_CANCEL:
 			*gbd->ret = exitcodes[BSDDIALOG_CANCEL + 1].value;
 			break;
@@ -467,6 +475,15 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case CANCEL_LABEL:
 				conf->button.cancel_label = optarg;
+				break;
+			case EXTRA_BUTTON:
+				conf->button.with_extra = true;
+				break;
+			case EXTRA_EXIT_CODE:
+				exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(optarg, NULL, 10);
+				break;
+			case EXTRA_LABEL:
+				conf->button.extra_label = optarg;
 				break;
 			case HELP_BUTTON:
 				conf->button.with_help = true;
