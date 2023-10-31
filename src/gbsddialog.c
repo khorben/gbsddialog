@@ -149,10 +149,14 @@ static struct option longopts[] = {
 	{"cr-wrap",           no_argument,       NULL, CR_WRAP},
 	{"datebox-format",    required_argument, NULL, DATEBOX_FORMAT},
 	{"date-format",       required_argument, NULL, DATE_FORMAT},
+#endif
 	{"defaultno",         no_argument,       NULL, DEFAULT_NO},
+#if 0
 	{"default-button",    required_argument, NULL, DEFAULT_BUTTON},
 	{"default-item",      required_argument, NULL, DEFAULT_ITEM},
+#endif
 	{"default-no",        no_argument,       NULL, DEFAULT_NO},
+#if 0
 	{"disable-esc",       no_argument,       NULL, DISABLE_ESC},
 	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
@@ -386,6 +390,9 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 				(conf.button.help_label != NULL)
 				? conf.button.help_label : "Help",
 				GTK_RESPONSE_HELP);
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
+			conf.button.default_cancel
+			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	switch(res)
@@ -475,6 +482,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case CANCEL_LABEL:
 				conf->button.cancel_label = optarg;
+				break;
+			case DEFAULT_NO:
+				conf->button.default_cancel = true;
 				break;
 			case EXTRA_BUTTON:
 				conf->button.with_extra = true;
