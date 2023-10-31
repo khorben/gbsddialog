@@ -137,8 +137,10 @@ static struct option longopts[] = {
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
+#endif
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
+#if 0
 	{"clear",             no_argument,       NULL, CLEAR_SCREEN},
 	{"clear-dialog",      no_argument,       NULL, CLEAR_DIALOG},
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
@@ -185,11 +187,15 @@ static struct option longopts[] = {
 	{"left3-exit-code",   required_argument, NULL, LEFT3_EXIT_CODE},
 	{"load-theme",        required_argument, NULL, LOAD_THEME},
 	{"max-input",         required_argument, NULL, MAX_INPUT},
+#endif
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
+#if 0
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
+#endif
 	{"no-label",          required_argument, NULL, CANCEL_LABEL},
+#if 0
 	{"no-lines",          no_argument,       NULL, NO_LINES},
 	{"no-names",          no_argument,       NULL, NO_NAMES},
 #endif
@@ -361,6 +367,11 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		gtk_window_set_title(GTK_WINDOW(dialog), conf.title);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	gtk_container_add(GTK_CONTAINER(container), widget);
+	if(conf.button.without_cancel != true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf.button.cancel_label != NULL)
+				? conf.button.cancel_label : "Cancel",
+				GTK_RESPONSE_CANCEL);
 	if(conf.button.without_ok != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf.button.ok_label != NULL)
@@ -368,16 +379,20 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	if(conf.button.with_help == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf.button.help_label != NULL)
-				? conf.button.help_label : "Help", GTK_RESPONSE_HELP);
+				? conf.button.help_label : "Help",
+				GTK_RESPONSE_HELP);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	switch(res)
 	{
-		case GTK_RESPONSE_OK:
-			*gbd->ret = exitcodes[BSDDIALOG_OK + 1].value;
+		case GTK_RESPONSE_CANCEL:
+			*gbd->ret = exitcodes[BSDDIALOG_CANCEL + 1].value;
 			break;
 		case GTK_RESPONSE_HELP:
 			*gbd->ret = exitcodes[BSDDIALOG_HELP + 1].value;
+			break;
+		case GTK_RESPONSE_OK:
+			*gbd->ret = exitcodes[BSDDIALOG_OK + 1].value;
 			break;
 	}
 
@@ -447,6 +462,12 @@ static int _parseargs(int argc, char const ** argv,
 		switch(arg)
 		{
 			/* Options */
+			case CANCEL_EXIT_CODE:
+				exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg, NULL, 10);
+				break;
+			case CANCEL_LABEL:
+				conf->button.cancel_label = optarg;
+				break;
 			case HELP_BUTTON:
 				conf->button.with_help = true;
 				break;
@@ -455,6 +476,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case HELP_LABEL:
 				conf->button.help_label = optarg;
+				break;
+			case NO_CANCEL:
+				conf->button.without_cancel = true;
 				break;
 			case NO_OK:
 				conf->button.without_ok = true;
