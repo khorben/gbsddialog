@@ -130,8 +130,10 @@ static struct option longopts[] = {
 	/* Options */
 #if 0
 	{"alternate-screen",  no_argument,       NULL, ALTERNATE_SCREEN},
+#endif
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
+#if 0
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
 	{"backtitle",         required_argument, NULL, BACKTITLE},
 	{"begin-x",           required_argument, NULL, BEGIN_X},
@@ -176,7 +178,9 @@ static struct option longopts[] = {
 	{"hfile",             required_argument, NULL, HFILE},
 	{"hline",             required_argument, NULL, HLINE},
 	{"hmsg",              required_argument, NULL, HMSG},
+#endif
 	{"ignore",            no_argument,       NULL, IGNORE},
+#if 0
 	{"insecure",          no_argument,       NULL, INSECURE},
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
 	{"item-depth",        no_argument,       NULL, ITEM_DEPTH},
@@ -477,6 +481,12 @@ static int _parseargs(int argc, char const ** argv,
 		switch(arg)
 		{
 			/* Options */
+			case AND_DIALOG:
+				if(opt->dialogbuilder == NULL)
+					return -error(BSDDIALOG_ERROR,
+							"--and-dialog without"
+							" previous --<dialog>");
+				break;
 			case CANCEL_EXIT_CODE:
 				exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg, NULL, 10);
 				break;
@@ -503,6 +513,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case HELP_LABEL:
 				conf->button.help_label = optarg;
+				break;
+			case IGNORE:
+				opt->ignore = true;
 				break;
 			case NO_CANCEL:
 				conf->button.without_cancel = true;
