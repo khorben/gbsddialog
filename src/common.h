@@ -8,7 +8,6 @@
 
 # include <stdbool.h>
 # include <bsddialog.h>
-# include <gtk/gtk.h>
 
 
 /* common */
@@ -88,7 +87,7 @@ struct options
 	/* Dialog */
 	bool mandatory_dialog;
 	const char *name;
-	GtkWidget * (*dialogbuilder)(struct bsddialog_conf const * conf,
+	int (*dialogbuilder)(struct bsddialog_conf const * conf,
 	    char const * text, int rows, int cols,
 	    int argc, char const ** argv, struct options const * opt);
 };

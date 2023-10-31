@@ -255,7 +255,9 @@ static struct option longopts[] = {
 	{"datebox",      no_argument, NULL, DATEBOX},
 	{"form",         no_argument, NULL, FORM},
 	{"gauge",        no_argument, NULL, GAUGE},
+#endif
 	{"infobox",      no_argument, NULL, INFOBOX},
+#if 0
 	{"inputbox",     no_argument, NULL, INPUTBOX},
 	{"menu",         no_argument, NULL, MENU},
 	{"mixedform",    no_argument, NULL, MIXEDFORM},
@@ -271,8 +273,8 @@ static struct option longopts[] = {
 	{"textbox",      no_argument, NULL, TEXTBOX},
 	{"timebox",      no_argument, NULL, TIMEBOX},
 	{"treeview",     no_argument, NULL, TREEVIEW},
-	{"yesno",        no_argument, NULL, YESNO},
 #endif
+	{"yesno",        no_argument, NULL, YESNO},
 	/* END */
 	{ NULL, 0, NULL, 0}
 };
@@ -318,12 +320,11 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
 	GBSDDialog * gbd = data;
-	int parsed, argc, res;
+	int parsed, argc;
 	struct bsddialog_conf conf;
 	struct options opt;
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
-	GtkWidget * container, * dialog, * widget = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(gbd->argc=%d gbd->argv=\"%s\")\n",
@@ -359,61 +360,15 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
-		widget = opt.dialogbuilder(&conf, text, rows, cols,
+		*gbd->ret = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, gbd->argv + 3, &opt);
 		free(text);
 
 		argc += 3;
 	}
-
-	if(widget == NULL)
+	else
 		/* FIXME report error */
 		return _gbsddialog_on_idle_quit(gbd);
-
-	dialog = gtk_dialog_new();
-	if(conf.title != NULL)
-		gtk_window_set_title(GTK_WINDOW(dialog), conf.title);
-	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	gtk_container_add(GTK_CONTAINER(container), widget);
-	if(conf.button.without_cancel != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf.button.cancel_label != NULL)
-				? conf.button.cancel_label : "Cancel",
-				GTK_RESPONSE_CANCEL);
-	if(conf.button.with_extra == true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf.button.extra_label != NULL)
-				? conf.button.extra_label : "Extra",
-				BSDDIALOG_EXTRA);
-	if(conf.button.without_ok != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf.button.ok_label != NULL)
-				? conf.button.ok_label : "OK", GTK_RESPONSE_OK);
-	if(conf.button.with_help == true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf.button.help_label != NULL)
-				? conf.button.help_label : "Help",
-				GTK_RESPONSE_HELP);
-	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
-			conf.button.default_cancel
-			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	switch(res)
-	{
-		case BSDDIALOG_EXTRA:
-			*gbd->ret = exitcodes[res + 1].value;
-			break;
-		case GTK_RESPONSE_CANCEL:
-			*gbd->ret = exitcodes[BSDDIALOG_CANCEL + 1].value;
-			break;
-		case GTK_RESPONSE_HELP:
-			*gbd->ret = exitcodes[BSDDIALOG_HELP + 1].value;
-			break;
-		case GTK_RESPONSE_OK:
-			*gbd->ret = exitcodes[BSDDIALOG_OK + 1].value;
-			break;
-	}
 
 	gbd->argc -= argc - 1;
 	gbd->argv += argc - 1;
@@ -446,7 +401,7 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 static int _parseargs(int argc, char const ** argv,
 	       	struct bsddialog_conf * conf, struct options * opt)
 {                       
-	int arg, parsed, i;
+	int arg, i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
@@ -475,7 +430,6 @@ static int _parseargs(int argc, char const ** argv,
 			break;
 		}               
 	}                           
-	parsed = argc;  
 	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
        	{
 		switch(arg)
@@ -536,12 +490,26 @@ static int _parseargs(int argc, char const ** argv,
 				conf->title = optarg;
 				break;
 			/* Dialogs */
+			case INFOBOX:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --infobox without "
+							"--and-dialog", opt->name);
+				opt->name = "--infobox";
+				opt->dialogbuilder = builder_infobox;
+				break;
 			case MSGBOX:
 				if(opt->dialogbuilder != NULL)
 					return -error(BSDDIALOG_ERROR, "%s and --msgbox without "
 							"--and-dialog", opt->name);
-				opt->name = "--";
+				opt->name = "--msgbox";
 				opt->dialogbuilder = builder_msgbox;
+				break;
+			case YESNO:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --yesno without "
+							"--and-dialog", opt->name);
+				opt->name = "--yesno";
+				opt->dialogbuilder = builder_yesno;
 				break;
 			default: /* Error */
 				if(opt->ignore == true)
