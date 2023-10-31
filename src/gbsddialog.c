@@ -275,10 +275,11 @@ static int _parseargs(int argc, char const ** argv,
 
 /* gbsddialog */
 static gboolean _gbsddialog_on_idle(gpointer data);
+static gboolean _gbsddialog_on_idle_quit(gpointer data);
 
 int gbsddialog(int * ret, int argc, char const ** argv)
 {
-	static GBSDDialog * gbd;
+	GBSDDialog * gbd;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, \"%s\")\n", __func__, argc, argv[0]);
@@ -312,11 +313,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		       	(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
 	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
-	{
-		gtk_main_quit();
-		free(gbd);
-		return FALSE;
-	}
+		return _gbsddialog_on_idle_quit(gbd);
 	argc = parsed - optind;
 	gbd->argv += optind;
 #ifdef DEBUG
@@ -324,12 +321,23 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		       	__func__, argc, optind);
 #endif
 
+	if(opt.mandatory_dialog && opt.dialogbuilder == NULL)
+	{
+		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected a --<dialog>"));
+		return _gbsddialog_on_idle_quit(gbd);
+	}
 	if(opt.dialogbuilder != NULL)
 	{
 		if(argc != 3)
-			return EXITCODE(error(BSDDIALOG_ERROR, "expected <text> <rows> <cols>"));
+		{
+			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected <text> <rows> <cols>"));
+			return _gbsddialog_on_idle_quit(gbd);
+		}
 		if ((text = strdup(gbd->argv[0])) == NULL)
-			return EXITCODE(error(BSDDIALOG_ERROR, "cannot allocate <text>"));
+		{
+			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "cannot allocate <text>"));
+			return _gbsddialog_on_idle_quit(gbd);
+		}
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
@@ -341,12 +349,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	}
 
 	if(widget == NULL)
-	{
 		/* FIXME report error */
-		gtk_main_quit();
-		free(gbd);
-		return FALSE;
-	}
+		return _gbsddialog_on_idle_quit(gbd);
 
 	window = gtk_dialog_new();
 	if(conf.title != NULL)
@@ -365,16 +369,21 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 #endif
 
 	if(gbd->argc <= 0)
-	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() => quit\n", __func__);
-#endif
-		gtk_main_quit();
-		free(gbd);
-		return FALSE;
-	}
+		return _gbsddialog_on_idle_quit(gbd);
 
 	return TRUE;
+}
+
+static gboolean _gbsddialog_on_idle_quit(gpointer data)
+{
+	GBSDDialog * gbd = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	gtk_main_quit();
+	free(gbd);
+	return FALSE;
 }
 
 
