@@ -158,9 +158,13 @@ static struct option longopts[] = {
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
 	{"extra-exit-code",   required_argument, NULL, EXTRA_EXIT_CODE},
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
+#endif
 	{"help-button",       no_argument,       NULL, HELP_BUTTON},
+#if 0
 	{"help-exit-code",    required_argument, NULL, HELP_EXIT_CODE},
+#endif
 	{"help-label",        required_argument, NULL, HELP_LABEL},
+#if 0
 	{"help-print-items",  no_argument,       NULL, HELP_PRINT_ITEMS},
 	{"help-print-name",   no_argument,       NULL, HELP_PRINT_NAME},
 	{"help-status",       no_argument,       NULL, HELP_PRINT_ITEMS},
@@ -198,7 +202,9 @@ static struct option longopts[] = {
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
+#endif
 	{"ok-label",          required_argument, NULL, OK_LABEL},
+#if 0
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
@@ -229,9 +235,7 @@ static struct option longopts[] = {
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
 #endif
 	{"title",             required_argument, NULL, TITLE},
-#if 0
 	{"yes-label",         required_argument, NULL, OK_LABEL},
-#endif
 	/* Dialogs */
 #if 0
 	{"calendar",     no_argument, NULL, CALENDAR},
@@ -363,6 +367,10 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf.button.ok_label != NULL)
 				? conf.button.ok_label : "OK", GTK_RESPONSE_OK);
+	if(conf.button.with_help == true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf.button.help_label != NULL)
+				? conf.button.help_label : "Help", GTK_RESPONSE_HELP);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 
@@ -432,8 +440,17 @@ static int _parseargs(int argc, char const ** argv,
 		switch(arg)
 		{
 			/* Options */
+			case HELP_BUTTON:
+				conf->button.with_help = true;
+				break;
+			case HELP_LABEL:
+				conf->button.help_label = optarg;
+				break;
 			case NO_OK:
 				conf->button.without_ok = true;
+				break;
+			case OK_LABEL:
+				conf->button.ok_label = optarg;
 				break;
 			case TITLE:
 				conf->title = optarg;
