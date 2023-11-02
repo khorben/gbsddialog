@@ -266,8 +266,8 @@ static struct option longopts[] = {
 	{"mixedgauge",   no_argument, NULL, MIXEDGAUGE},
 #endif
 	{"msgbox",       no_argument, NULL, MSGBOX},
-#if 0
 	{"passwordbox",  no_argument, NULL, PASSWORDBOX},
+#if 0
 	{"passwordform", no_argument, NULL, PASSWORDFORM},
 #endif
 	{"pause",        no_argument, NULL, PAUSE},
@@ -515,6 +515,13 @@ static int _parseargs(int argc, char const ** argv,
 							"--and-dialog", opt->name);
 				opt->name = "--msgbox";
 				opt->dialogbuilder = builder_msgbox;
+				break;
+			case PASSWORDBOX:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --passwordbox without "
+							"--and-dialog", opt->name);
+				opt->name = "--passwordbox";
+				opt->dialogbuilder = builder_passwordbox;
 				break;
 			case PAUSE:
 				if(opt->dialogbuilder != NULL)

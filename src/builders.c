@@ -26,6 +26,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
+static int _builder_dialog_output(struct bsddialog_conf const * conf, int res);
 static int _builder_dialog_run(GtkWidget * dialog);
 
 
@@ -60,7 +61,62 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 	dialog = _builder_dialog(conf, text);
 	_builder_dialog_buttons(dialog, conf);
-	return _builder_dialog_run(dialog);
+	res = _builder_dialog_run(dialog);
+	return _builder_dialog_output(conf, res);
+}
+
+
+/* builder_passwordbox */
+static void _passwordbox_on_activate(GtkWidget * widget);
+static void _passwordbox_on_activate_cancel(GtkWidget * widget);
+
+int builder_passwordbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	GtkEntryBuffer * buffer;
+
+	if(argc > 0)
+		error_args(opt->name, argc, argv);
+	dialog = _builder_dialog(conf, text);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	buffer = gtk_entry_buffer_new(NULL, -1);
+	widget = gtk_entry_new_with_buffer(buffer);
+	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
+			? G_CALLBACK(_passwordbox_on_activate_cancel)
+			: G_CALLBACK(_passwordbox_on_activate), dialog);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_OK:
+			printf("%s %s\n", conf->button.ok_label,
+					gtk_entry_buffer_get_text(buffer));
+			ret = exitcodes[BSDDIALOG_OK + 1].value;
+			break;
+		default:
+			ret = _builder_dialog_output(conf, ret);
+			break;
+	}
+	g_object_unref(buffer);
+	return ret;
+}
+
+static void _passwordbox_on_activate(GtkWidget * widget)
+{
+	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_OK);
+}
+
+static void _passwordbox_on_activate_cancel(GtkWidget * widget)
+{
+	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_CANCEL);
 }
 
 
@@ -208,6 +264,37 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 }
 
 
+/* builder_dialog_output */
+static int _builder_dialog_output(struct bsddialog_conf const * conf, int res)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, res);
+#endif
+	switch(res)
+	{
+		case BSDDIALOG_CANCEL:
+			printf("%s\n", conf->button.cancel_label
+					? conf->button.cancel_label
+					: "Cancel");
+			break;
+		case BSDDIALOG_ESC:
+			printf("%s\n", "[ESC]");
+			break;
+		case BSDDIALOG_EXTRA:
+			printf("%s\n", conf->button.extra_label
+					? conf->button.extra_label
+					: "Extra");
+			break;
+		case BSDDIALOG_OK:
+			printf("%s\n", conf->button.ok_label
+					? conf->button.ok_label
+					: "OK");
+			break;
+	}
+	return exitcodes[res + 1].value;
+}
+
+
 /* builder_dialog_run */
 static int _builder_dialog_run(GtkWidget * dialog)
 {
@@ -217,19 +304,19 @@ static int _builder_dialog_run(GtkWidget * dialog)
 	gtk_widget_destroy(dialog);
 	switch(res)
 	{
-		case BSDDIALOG_EXTRA:
-			return exitcodes[res + 1].value;
 		case GTK_RESPONSE_CANCEL:
-		case GTK_RESPONSE_DELETE_EVENT:
 		case GTK_RESPONSE_NO:
-			return exitcodes[BSDDIALOG_CANCEL + 1].value;
+			return BSDDIALOG_CANCEL;
 		case GTK_RESPONSE_CLOSE:
-			return exitcodes[BSDDIALOG_ESC + 1].value;
+		case GTK_RESPONSE_DELETE_EVENT:
+			return BSDDIALOG_ESC;
 		case GTK_RESPONSE_HELP:
-			return exitcodes[BSDDIALOG_HELP + 1].value;
+			return BSDDIALOG_HELP;
 		case GTK_RESPONSE_OK:
 		case GTK_RESPONSE_YES:
-			return exitcodes[BSDDIALOG_OK + 1].value;
+			return BSDDIALOG_OK;
+		case BSDDIALOG_EXTRA:
+			return res;
 	}
-	return 0;
+	return BSDDIALOG_ERROR;
 }
