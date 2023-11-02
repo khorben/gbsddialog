@@ -140,5 +140,5 @@ static int _usage(void)
 
         printf("See 'man 1 bsddialog' for more information.\n");
 
-	return 1;
+	return 0;
 }
