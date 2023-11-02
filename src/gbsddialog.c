@@ -161,7 +161,9 @@ static struct option longopts[] = {
 #if 0
 	{"disable-esc",       no_argument,       NULL, DISABLE_ESC},
 	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
+#endif
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
+#if 0
 	{"exit-label",        required_argument, NULL, EXIT_LABEL},
 #endif
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
@@ -444,7 +446,8 @@ static int _parseargs(int argc, char const ** argv,
 							" previous --<dialog>");
 				break;
 			case CANCEL_EXIT_CODE:
-				exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg, NULL, 10);
+				exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case CANCEL_LABEL:
 				conf->button.cancel_label = optarg;
@@ -452,11 +455,16 @@ static int _parseargs(int argc, char const ** argv,
 			case DEFAULT_NO:
 				conf->button.default_cancel = true;
 				break;
+			case ESC_EXIT_CODE:
+				exitcodes[BSDDIALOG_ESC + 1].value = strtol(
+						optarg, NULL, 10);
+				break;
 			case EXTRA_BUTTON:
 				conf->button.with_extra = true;
 				break;
 			case EXTRA_EXIT_CODE:
-				exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(optarg, NULL, 10);
+				exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case EXTRA_LABEL:
 				conf->button.extra_label = optarg;
@@ -465,7 +473,8 @@ static int _parseargs(int argc, char const ** argv,
 				conf->button.with_help = true;
 				break;
 			case HELP_EXIT_CODE:
-				exitcodes[BSDDIALOG_HELP + 1].value = strtol(optarg, NULL, 10);
+				exitcodes[BSDDIALOG_HELP + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case HELP_LABEL:
 				conf->button.help_label = optarg;
@@ -483,7 +492,8 @@ static int _parseargs(int argc, char const ** argv,
 				conf->button.without_ok = true;
 				break;
 			case OK_EXIT_CODE:
-				exitcodes[BSDDIALOG_OK + 1].value = strtol(optarg, NULL, 10);
+				exitcodes[BSDDIALOG_OK + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case OK_LABEL:
 				conf->button.ok_label = optarg;

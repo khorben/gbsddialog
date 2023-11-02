@@ -223,6 +223,8 @@ static int _builder_dialog_run(GtkWidget * dialog)
 		case GTK_RESPONSE_DELETE_EVENT:
 		case GTK_RESPONSE_NO:
 			return exitcodes[BSDDIALOG_CANCEL + 1].value;
+		case GTK_RESPONSE_CLOSE:
+			return exitcodes[BSDDIALOG_ESC + 1].value;
 		case GTK_RESPONSE_HELP:
 			return exitcodes[BSDDIALOG_HELP + 1].value;
 		case GTK_RESPONSE_OK:
