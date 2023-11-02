@@ -272,7 +272,9 @@ static struct option longopts[] = {
 	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
 	{"theme",             required_argument, NULL, THEME},
+#endif
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
+#if 0
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
 #endif
 	{"title",             required_argument, NULL, TITLE},
@@ -526,6 +528,10 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case OK_LABEL:
 				conf->button.ok_label = optarg;
+				break;
+			case TIMEOUT_EXIT_CODE:
+				exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case TITLE:
 				conf->title = optarg;
