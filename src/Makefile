@@ -1,7 +1,11 @@
 TARGETS	= gbsddialog
+PREFIX	= /usr/local
+BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
 CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-3.0`
 LDFLAGS	= `pkg-config --libs gtk+-3.0`
+INSTALL	= install
+MKDIR	= mkdir -p
 RM	= rm -f
 OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
 TARGET	= gbsddialog
@@ -32,4 +36,11 @@ clean:
 distclean: clean
 	$(RM) $(TARGET)
 
-.PHONY: all clean distclean
+install: $(TARGETS)
+	$(MKDIR) $(BINDIR)
+	$(INSTALL) -m 0755 gbsddialog $(BINDIR)/gbsddialog
+
+uninstall:
+	$(RM) $(BINDIR)/gbsddialog
+
+.PHONY: all clean distclean install uninstall
