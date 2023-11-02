@@ -356,6 +356,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	struct options opt;
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
+	int res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(gbd->argc=%d gbd->argv=\"%s\")\n",
@@ -391,8 +392,9 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
-		*gbd->ret = opt.dialogbuilder(&conf, text, rows, cols,
+		res = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, gbd->argv + 3, &opt);
+		*gbd->ret = EXITCODE(res);
 		free(text);
 
 		argc += 3;

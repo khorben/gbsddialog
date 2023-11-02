@@ -31,7 +31,6 @@
 
 #include <gtk/gtk.h>
 #include "callbacks.h"
-#include "common.h"
 #include "builders.h"
 
 
@@ -125,7 +124,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 		case BSDDIALOG_OK:
 			printf("%s %s\n", conf->button.ok_label,
 					gtk_entry_buffer_get_text(buffer));
-			ret = exitcodes[BSDDIALOG_OK + 1].value;
+			ret = BSDDIALOG_OK;
 			break;
 		default:
 			ret = _builder_dialog_output(conf, ret);
@@ -177,6 +176,8 @@ int builder_pause(struct bsddialog_conf const * conf,
 	ret = _builder_dialog_run(pd.dialog);
 	if(pd.id != 0)
 		g_source_remove(pd.id);
+	else
+		ret = BSDDIALOG_TIMEOUT;
 	return ret;
 }
 
@@ -300,24 +301,21 @@ static int _builder_dialog_output(struct bsddialog_conf const * conf, int res)
 	{
 		case BSDDIALOG_CANCEL:
 			printf("%s\n", conf->button.cancel_label
-					? conf->button.cancel_label
-					: "Cancel");
+					? conf->button.cancel_label : "Cancel");
 			break;
 		case BSDDIALOG_ESC:
 			printf("%s\n", "[ESC]");
 			break;
 		case BSDDIALOG_EXTRA:
 			printf("%s\n", conf->button.extra_label
-					? conf->button.extra_label
-					: "Extra");
+					? conf->button.extra_label : "Extra");
 			break;
 		case BSDDIALOG_OK:
 			printf("%s\n", conf->button.ok_label
-					? conf->button.ok_label
-					: "OK");
+					? conf->button.ok_label : "OK");
 			break;
 	}
-	return exitcodes[res + 1].value;
+	return res;
 }
 
 
