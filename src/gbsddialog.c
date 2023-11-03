@@ -365,8 +365,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(gbd->argc=%d gbd->argv=\"%s\")\n",
-		       	__func__, gbd->argc,
-		       	(gbd->argc > 0) ? gbd->argv[0] : "(null)");
+			__func__, gbd->argc,
+			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
 	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
 	{
@@ -442,7 +442,7 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 /* parseargs */
 static int _parseargs(int argc, char const ** argv,
 	       	struct bsddialog_conf * conf, struct options * opt)
-{                       
+{
 	int arg, i;
 
 #ifdef DEBUG
@@ -470,8 +470,8 @@ static int _parseargs(int argc, char const ** argv,
 	       	{
 			argc = i + 1;
 			break;
-		}               
-	}                           
+		}
+	}
 	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
        	{
 		switch(arg)
