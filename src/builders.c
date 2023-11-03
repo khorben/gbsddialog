@@ -86,8 +86,9 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkListStore * store;
 	GtkTreeIter iter;
 	GtkTreeViewColumn * column;
-	size_t i, n;
-	int res;
+	GtkTreeSelection * treesel;
+	int i, n, res;
+	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, rows, cols, argc);
@@ -106,16 +107,18 @@ int builder_menu(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, text);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	for(i = 0; i < n; i+=2)
+	for(i = 1; i < n; i+=2)
 	{
 		gtk_list_store_insert(store, &iter, -1);
-		gtk_list_store_set(GTK_TREE_MODEL(store), &iter,
-			       	0, argv[i], 1, argv[i + 1], -1);
+		gtk_list_store_set(store, &iter,
+				0, argv[i], 1, argv[i + 1], -1);
 	}
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	widget = gtk_tree_view_new();
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	column = gtk_tree_view_column_new_with_attributes(NULL,
@@ -131,6 +134,18 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
+	if((res == BSDDIALOG_OK || res == BSDDIALOG_EXTRA)
+			&& gtk_tree_selection_get_selected(treesel, NULL,
+				&iter) == TRUE)
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &p, -1);
+		printf("%s %s\n", conf->button.ok_label
+				? conf->button.ok_label : "OK", p);
+		free(p);
+		gtk_widget_destroy(dialog);
+		return res;
+	}
+	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, res);
 }
 
@@ -148,6 +163,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, text);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, res);
 }
 
@@ -180,6 +196,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), widget);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
 		case BSDDIALOG_OK:
@@ -235,6 +252,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 	pd.id = g_timeout_add(1000, _pause_on_timeout, &pd);
 	_builder_dialog_buttons(pd.dialog, conf);
 	ret = _builder_dialog_run(pd.dialog);
+	gtk_widget_destroy(pd.dialog);
 	if(pd.id != 0)
 		g_source_remove(pd.id);
 	else
@@ -269,7 +287,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	GtkWidget * dialog;
-	int res;
+	int ret;
 
 	if(argc > 0)
 		error_args(opt->name, argc, argv);
@@ -297,7 +315,9 @@ int builder_yesno(struct bsddialog_conf const * conf,
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			conf->button.default_cancel
 			? GTK_RESPONSE_NO : GTK_RESPONSE_YES);
-	return _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
@@ -386,7 +406,7 @@ static int _builder_dialog_run(GtkWidget * dialog)
 	int res;
 
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
+	gtk_widget_hide(dialog);
 	switch(res)
 	{
 		case GTK_RESPONSE_CANCEL:
