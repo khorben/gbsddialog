@@ -75,6 +75,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 
 
 /* builder_menu */
+static void _menu_on_row_activated(gpointer data);
+
 int builder_menu(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -129,6 +131,8 @@ int builder_menu(struct bsddialog_conf const * conf,
 			gtk_cell_renderer_text_new(), "text", 1, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	g_signal_connect_swapped(widget, "row-activated",
+			G_CALLBACK(_menu_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_container_add(GTK_CONTAINER(container), window);
 	gtk_widget_show_all(window);
@@ -147,6 +151,14 @@ int builder_menu(struct bsddialog_conf const * conf,
 	}
 	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, res);
+}
+
+static void _menu_on_row_activated(gpointer data)
+{
+	GtkWidget * dialog = data;
+
+	/* FIXME may be a different button */
+	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 }
 
 
@@ -189,6 +201,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	/* FIXME may be a different button (or never cancel) */
 	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
 			? G_CALLBACK(_passwordbox_on_activate_cancel)
 			: G_CALLBACK(_passwordbox_on_activate), dialog);
