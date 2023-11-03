@@ -74,6 +74,67 @@ int builder_infobox(struct bsddialog_conf const * conf,
 }
 
 
+/* builder_menu */
+int builder_menu(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkWidget * widget;
+	GtkListStore * store;
+	GtkTreeIter iter;
+	GtkTreeViewColumn * column;
+	size_t i, n;
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, rows, cols, argc);
+#endif
+	if(argc < 1)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	n = strtol(argv[0], NULL, 10);
+	if(n >= argc - 1)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, text);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	for(i = 0; i < n; i+=2)
+	{
+		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_set(GTK_TREE_MODEL(store), &iter,
+			       	0, argv[i], 1, argv[i + 1], -1);
+	}
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+			gtk_cell_renderer_text_new(), "text", 0, NULL);
+	gtk_tree_view_column_set_expand(column, FALSE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+			gtk_cell_renderer_text_new(), "text", 1, NULL);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_container_add(GTK_CONTAINER(container), window);
+	gtk_widget_show_all(window);
+	_builder_dialog_buttons(dialog, conf);
+	res = _builder_dialog_run(dialog);
+	return _builder_dialog_output(conf, res);
+}
+
+
 /* builder_msgbox */
 int builder_msgbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
