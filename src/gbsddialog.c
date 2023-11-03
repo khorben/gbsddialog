@@ -355,7 +355,8 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
 	GBSDDialog * gbd = data;
-	int parsed, argc;
+	int parsed, argc, oi = optind;
+	char const ** argv;
 	struct bsddialog_conf conf;
 	struct options opt;
 	char * text = NULL;
@@ -368,12 +369,15 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		       	(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
 	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
+	{
+		*gbd->ret = EXITCODE(BSDDIALOG_ERROR);
 		return _gbsddialog_on_idle_quit(gbd);
+	}
 	argc = parsed - optind;
-	gbd->argv += optind;
+	argv = gbd->argv + optind;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() argc=%d (optind=%d)\n",
-		       	__func__, argc, optind);
+	fprintf(stderr, "DEBUG: %s() argc=%d (optind=%d, parsed=%d)\n",
+			__func__, argc, optind, parsed);
 #endif
 
 	if(opt.mandatory_dialog && opt.dialogbuilder == NULL)
@@ -388,7 +392,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected <text> <rows> <cols>"));
 			return _gbsddialog_on_idle_quit(gbd);
 		}
-		if ((text = strdup(gbd->argv[0])) == NULL)
+		if((text = strdup(argv[0])) == NULL)
 		{
 			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "cannot allocate <text>"));
 			return _gbsddialog_on_idle_quit(gbd);
@@ -397,26 +401,27 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
 		res = opt.dialogbuilder(&conf, text, rows, cols,
-				argc - 3, gbd->argv + 3, &opt);
+				argc - 3, argv + 3, &opt);
 		*gbd->ret = EXITCODE(res);
 		free(text);
-
-		argc += 3;
 	}
 	else
 		/* FIXME report error */
 		return _gbsddialog_on_idle_quit(gbd);
 
-	gbd->argc -= argc - 1;
-	gbd->argv += argc - 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() => gbd->argc=%d gbd->argv=\"%s\"\n",
-		       	__func__, gbd->argc,
+	fprintf(stderr, "DEBUG: %s() => %d gbd->argc=%d gbd->argv=\"%s\"\n",
+			__func__, *gbd->ret, gbd->argc,
 			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
 
-	if(gbd->argc <= 0)
+	if(parsed == gbd->argc)
 		return _gbsddialog_on_idle_quit(gbd);
+
+	gbd->argv[parsed - 1] = gbd->argv[0];
+	gbd->argv += parsed - 1;
+	gbd->argc -= parsed - 1;
+	optind = oi;
 
 	return TRUE;
 }
@@ -591,7 +596,7 @@ static int _parseargs(int argc, char const ** argv,
 	}
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, optind);
+	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, argc);
 #endif
 	return argc;
 }
