@@ -143,8 +143,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 				&iter) == TRUE)
 	{
 		gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &p, -1);
-		printf("%s %s\n", conf->button.ok_label
-				? conf->button.ok_label : "OK", p);
+		fprintf(stderr, "%s\n", p);
 		free(p);
 		gtk_widget_destroy(dialog);
 		return res;
@@ -212,10 +211,10 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
+		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			printf("%s %s\n", conf->button.ok_label,
+			fprintf(stderr, "%s\n",
 					gtk_entry_buffer_get_text(buffer));
-			ret = BSDDIALOG_OK;
 			break;
 		default:
 			ret = _builder_dialog_output(conf, ret);
@@ -394,18 +393,18 @@ static int _builder_dialog_output(struct bsddialog_conf const * conf, int res)
 	switch(res)
 	{
 		case BSDDIALOG_CANCEL:
-			printf("%s\n", conf->button.cancel_label
+			fprintf(stderr, "%s\n", conf->button.cancel_label
 					? conf->button.cancel_label : "Cancel");
 			break;
 		case BSDDIALOG_ESC:
-			printf("%s\n", "[ESC]");
+			fprintf(stderr, "%s\n", "[ESC]");
 			break;
 		case BSDDIALOG_EXTRA:
-			printf("%s\n", conf->button.extra_label
+			fprintf(stderr, "%s\n", conf->button.extra_label
 					? conf->button.extra_label : "Extra");
 			break;
 		case BSDDIALOG_OK:
-			printf("%s\n", conf->button.ok_label
+			fprintf(stderr, "%s\n", conf->button.ok_label
 					? conf->button.ok_label : "OK");
 			break;
 	}

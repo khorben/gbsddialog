@@ -264,8 +264,10 @@ static struct option longopts[] = {
 	{"shadow",            no_argument,       NULL, SHADOW},
 	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
 	{"sleep",             required_argument, NULL, SLEEP},
+#endif
 	{"stderr",            no_argument,       NULL, STDERR},
 	{"stdout",            no_argument,       NULL, STDOUT},
+#if 0
 	{"switch-buttons",    no_argument,       NULL, SWITCH_BUTTONS},
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
 	{"tab-len",           required_argument, NULL, TAB_LEN},
@@ -535,6 +537,12 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case OK_LABEL:
 				conf->button.ok_label = optarg;
+				break;
+			case STDERR:
+				opt->output_fd = STDERR_FILENO;
+				break;
+			case STDOUT:
+				opt->output_fd = STDOUT_FILENO;
 				break;
 			case TIMEOUT_EXIT_CODE:
 				exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(
