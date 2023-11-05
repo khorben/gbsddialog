@@ -187,8 +187,8 @@ static struct option longopts[] = {
 	{"default-no",        no_argument,       NULL, DEFAULT_NO},
 #if 0
 	{"disable-esc",       no_argument,       NULL, DISABLE_ESC},
-	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 #endif
+	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
 	{"exit-label",        required_argument, NULL, EXIT_LABEL},
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
@@ -495,6 +495,10 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case DEFAULT_NO:
 				conf->button.default_cancel = true;
+				break;
+			case ERROR_EXIT_CODE:
+				exitcodes[BSDDIALOG_ERROR + 1].value = strtol(
+						optarg, NULL, 10);
 				break;
 			case ESC_EXIT_CODE:
 				exitcodes[BSDDIALOG_ESC + 1].value = strtol(
