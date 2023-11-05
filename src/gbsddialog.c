@@ -245,8 +245,8 @@ static struct option longopts[] = {
 #endif
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 	{"ok-label",          required_argument, NULL, OK_LABEL},
-#if 0
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
+#if 0
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
@@ -537,6 +537,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case OK_LABEL:
 				conf->button.ok_label = optarg;
+				break;
+			case OUTPUT_FD:
+				opt->output_fd = strtol(optarg, NULL, 10);
 				break;
 			case STDERR:
 				opt->output_fd = STDERR_FILENO;

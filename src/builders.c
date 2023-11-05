@@ -51,7 +51,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
-static int _builder_dialog_output(struct bsddialog_conf const * conf, int res);
+static int _builder_dialog_output(struct bsddialog_conf const * conf,
+		struct options const * opt, int res);
 static int _builder_dialog_run(GtkWidget * dialog);
 
 
@@ -143,13 +144,13 @@ int builder_menu(struct bsddialog_conf const * conf,
 				&iter) == TRUE)
 	{
 		gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &p, -1);
-		fprintf(stderr, "%s\n", p);
+		dprintf(opt->output_fd, "%s\n", p);
 		free(p);
 		gtk_widget_destroy(dialog);
 		return res;
 	}
 	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, res);
+	return _builder_dialog_output(conf, opt, res);
 }
 
 static void _menu_on_row_activated(gpointer data)
@@ -175,7 +176,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, res);
+	return _builder_dialog_output(conf, opt, res);
 }
 
 
@@ -213,11 +214,11 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			fprintf(stderr, "%s\n",
+			dprintf(opt->output_fd, "%s\n",
 					gtk_entry_buffer_get_text(buffer));
 			break;
 		default:
-			ret = _builder_dialog_output(conf, ret);
+			ret = _builder_dialog_output(conf, opt, ret);
 			break;
 	}
 	g_object_unref(buffer);
@@ -385,7 +386,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 
 
 /* builder_dialog_output */
-static int _builder_dialog_output(struct bsddialog_conf const * conf, int res)
+static int _builder_dialog_output(struct bsddialog_conf const * conf,
+		struct options const * opt, int res)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, res);
@@ -393,18 +395,18 @@ static int _builder_dialog_output(struct bsddialog_conf const * conf, int res)
 	switch(res)
 	{
 		case BSDDIALOG_CANCEL:
-			fprintf(stderr, "%s\n", conf->button.cancel_label
+			dprintf(opt->output_fd, "%s\n", conf->button.cancel_label
 					? conf->button.cancel_label : "Cancel");
 			break;
 		case BSDDIALOG_ESC:
-			fprintf(stderr, "%s\n", "[ESC]");
+			dprintf(opt->output_fd, "%s\n", "[ESC]");
 			break;
 		case BSDDIALOG_EXTRA:
-			fprintf(stderr, "%s\n", conf->button.extra_label
+			dprintf(opt->output_fd, "%s\n", conf->button.extra_label
 					? conf->button.extra_label : "Extra");
 			break;
 		case BSDDIALOG_OK:
-			fprintf(stderr, "%s\n", conf->button.ok_label
+			dprintf(opt->output_fd, "%s\n", conf->button.ok_label
 					? conf->button.ok_label : "OK");
 			break;
 	}
