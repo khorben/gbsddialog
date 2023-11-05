@@ -190,9 +190,7 @@ static struct option longopts[] = {
 	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 #endif
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
-#if 0
 	{"exit-label",        required_argument, NULL, EXIT_LABEL},
-#endif
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
 	{"extra-exit-code",   required_argument, NULL, EXTRA_EXIT_CODE},
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
@@ -498,6 +496,9 @@ static int _parseargs(int argc, char const ** argv,
 			case ESC_EXIT_CODE:
 				exitcodes[BSDDIALOG_ESC + 1].value = strtol(
 						optarg, NULL, 10);
+				break;
+			case EXIT_LABEL:
+				conf->button.ok_label = optarg;
 				break;
 			case EXTRA_BUTTON:
 				conf->button.with_extra = true;
