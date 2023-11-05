@@ -110,20 +110,23 @@ int builder_menu(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, text);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	for(i = 1; i < n; i+=2)
-	{
-		gtk_list_store_insert(store, &iter, -1);
-		gtk_list_store_set(store, &iter,
-				0, argv[i], 1, argv[i + 1], -1);
-	}
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	widget = gtk_tree_view_new();
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
+	for(i = 1; i <= n + 2; i+=2)
+	{
+		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_set(store, &iter,
+				0, argv[i], 1, argv[i + 1], -1);
+		if(opt->item_default != NULL
+				&& strcmp(argv[i], opt->item_default) == 0)
+			gtk_tree_selection_select_iter(treesel, &iter);
+	}
 	column = gtk_tree_view_column_new_with_attributes(NULL,
 			gtk_cell_renderer_text_new(), "text", 0, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);

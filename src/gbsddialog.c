@@ -182,8 +182,8 @@ static struct option longopts[] = {
 	{"defaultno",         no_argument,       NULL, DEFAULT_NO},
 #if 0
 	{"default-button",    required_argument, NULL, DEFAULT_BUTTON},
-	{"default-item",      required_argument, NULL, DEFAULT_ITEM},
 #endif
+	{"default-item",      required_argument, NULL, DEFAULT_ITEM},
 	{"default-no",        no_argument,       NULL, DEFAULT_NO},
 #if 0
 	{"disable-esc",       no_argument,       NULL, DISABLE_ESC},
@@ -489,6 +489,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case CANCEL_LABEL:
 				conf->button.cancel_label = optarg;
+				break;
+			case DEFAULT_ITEM:
+				opt->item_default = optarg;
 				break;
 			case DEFAULT_NO:
 				conf->button.default_cancel = true;
