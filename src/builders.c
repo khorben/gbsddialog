@@ -575,6 +575,9 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	if(text != NULL)
 	{
 		widget = gtk_label_new(text);
+		gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
+		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
+				PANGO_WRAP_WORD_CHAR);
 		gtk_widget_show(widget);
 		gtk_container_add(GTK_CONTAINER(container), widget);
 	}
