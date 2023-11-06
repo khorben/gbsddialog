@@ -156,8 +156,7 @@ static void _checklist_on_row_activated(gpointer data)
 {
 	GtkWidget * dialog = data;
 
-	/* FIXME may be a different button */
-	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
@@ -237,9 +236,6 @@ static gboolean _infobox_on_timeout(gpointer data)
 
 
 /* builder_inputbox */
-static void _inputbox_on_activate(GtkWidget * widget);
-static void _inputbox_on_activate_cancel(GtkWidget * widget);
-
 int builder_inputbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -256,10 +252,7 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
-	/* FIXME may be a different button (or never cancel) */
-	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
-			? G_CALLBACK(_inputbox_on_activate_cancel)
-			: G_CALLBACK(_inputbox_on_activate), dialog);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
 	_builder_dialog_buttons(dialog, conf);
@@ -278,16 +271,6 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	}
 	g_object_unref(buffer);
 	return ret;
-}
-
-static void _inputbox_on_activate(GtkWidget * widget)
-{
-	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_OK);
-}
-
-static void _inputbox_on_activate_cancel(GtkWidget * widget)
-{
-	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_CANCEL);
 }
 
 
@@ -385,8 +368,7 @@ static void _menu_on_row_activated(gpointer data)
 {
 	GtkWidget * dialog = data;
 
-	/* FIXME may be a different button */
-	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
@@ -409,9 +391,6 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 
 
 /* builder_passwordbox */
-static void _passwordbox_on_activate(GtkWidget * widget);
-static void _passwordbox_on_activate_cancel(GtkWidget * widget);
-
 int builder_passwordbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -429,10 +408,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
-	/* FIXME may be a different button (or never cancel) */
-	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
-			? G_CALLBACK(_passwordbox_on_activate_cancel)
-			: G_CALLBACK(_passwordbox_on_activate), dialog);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
 	_builder_dialog_buttons(dialog, conf);
@@ -451,16 +427,6 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	}
 	g_object_unref(buffer);
 	return ret;
-}
-
-static void _passwordbox_on_activate(GtkWidget * widget)
-{
-	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_OK);
-}
-
-static void _passwordbox_on_activate_cancel(GtkWidget * widget)
-{
-	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_CANCEL);
 }
 
 
@@ -617,8 +583,7 @@ static void _radiolist_on_row_activated(gpointer data)
 {
 	GtkWidget * dialog = data;
 
-	/* FIXME may be a different button */
-	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
