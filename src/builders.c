@@ -250,11 +250,11 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	GtkEntryBuffer * buffer;
 
-	if(argc > 0)
+	if(argc > 1)
 		error_args(opt->name, argc, argv);
 	dialog = _builder_dialog(conf, text);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	buffer = gtk_entry_buffer_new(NULL, -1);
+	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	/* FIXME may be a different button (or never cancel) */
 	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
