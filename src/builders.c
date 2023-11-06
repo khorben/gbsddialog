@@ -176,19 +176,22 @@ int builder_menu(struct bsddialog_conf const * conf,
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, rows, cols, argc);
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
+			argc, (argc - 1) / 2,
+			(argv[0] != NULL) ? argv[0] : "(null)");
 #endif
 	if(argc < 1)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	n = strtol(argv[0], NULL, 10);
-	if(n >= argc - 1)
+	if((n = strtol(argv[0], NULL, 10)) > (argc - 1) / 2)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
+	else if(n == 0)
+		n = (argc - 1) / 2;
 	dialog = _builder_dialog(conf, text);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
