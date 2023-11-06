@@ -56,7 +56,7 @@ struct pause_data
 
 /* prototypes */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
-		char const * text);
+		char const * text, int rows);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
@@ -99,7 +99,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / 3;
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING);
@@ -178,7 +178,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc - 1, argv + 1);
 	else if(argc == 1)
 		fraction = (gdouble)(strtoul(argv[0], NULL, 10)) / 100.0;
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_progress_bar_new();
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
@@ -247,7 +247,7 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 
 	if(argc > 1)
 		error_args(opt->name, argc, argv);
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
@@ -310,7 +310,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / 2;
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
@@ -383,7 +383,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 
 	if(argc > 0)
 		error_args(opt->name, argc, argv);
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
@@ -404,7 +404,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 
 	if(argc > 0)
 		error_args(opt->name, argc, argv);
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
@@ -449,7 +449,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 	if(argc > 1)
 		error_args(opt->name, argc - 1, argv + 1);
 	pd.secs = strtoul(argv[0], NULL, 10);
-	pd.dialog = _builder_dialog(conf, text);
+	pd.dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
 	pd.widget = gtk_progress_bar_new();
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(pd.widget), TRUE);
@@ -526,7 +526,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / 3;
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING);
@@ -599,7 +599,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 
 	if(argc > 0)
 		error_args(opt->name, argc, argv);
-	dialog = _builder_dialog(conf, text);
+	dialog = _builder_dialog(conf, text, rows);
 	if(conf->button.without_cancel != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.cancel_label != NULL)
@@ -631,7 +631,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 
 /* builder_dialog */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
-		char const * text)
+		char const * text, int rows)
 {
 	GtkWidget * dialog;
 	GtkWidget * container;
@@ -649,6 +649,9 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
 		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
 				PANGO_WRAP_WORD_CHAR);
+		gtk_label_set_single_line_mode(GTK_LABEL(widget), FALSE);
+		if(rows > 0)
+			gtk_label_set_lines(GTK_LABEL(widget), rows);
 		gtk_widget_show(widget);
 		gtk_container_add(GTK_CONTAINER(container), widget);
 	}
