@@ -81,7 +81,6 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, n, res;
-	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
@@ -509,7 +508,6 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, n, res;
-	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
