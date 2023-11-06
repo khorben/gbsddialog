@@ -225,20 +225,20 @@ static struct option longopts[] = {
 #endif
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
-#if 0
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
-#endif
 	{"no-label",          required_argument, NULL, CANCEL_LABEL},
 #if 0
 	{"no-lines",          no_argument,       NULL, NO_LINES},
-	{"no-names",          no_argument,       NULL, NO_NAMES},
 #endif
+	{"no-names",          no_argument,       NULL, NO_NAMES},
 	{"no-ok",             no_argument,       NULL, NO_OK},
 	{"nook",              no_argument,       NULL, NO_OK},
 #if 0
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
+#endif
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
+#if 0
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
 #endif
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
@@ -535,6 +535,12 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case NO_CANCEL:
 				conf->button.without_cancel = true;
+				break;
+			case NO_DESCRIPTIONS:
+				conf->menu.no_desc = true;
+				break;
+			case NO_NAMES:
+				conf->menu.no_name = true;
 				break;
 			case NO_OK:
 				conf->button.without_ok = true;

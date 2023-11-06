@@ -126,14 +126,20 @@ int builder_checklist(struct bsddialog_conf const * conf,
 			gtk_cell_renderer_toggle_new(), "active", 0, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", 1, NULL);
-	gtk_tree_view_column_set_expand(column, FALSE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", 2, NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	if(conf->menu.no_name == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 1, NULL);
+		gtk_tree_view_column_set_expand(column, FALSE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	if(conf->menu.no_desc == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 2, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
 	g_signal_connect_swapped(widget, "row-activated",
 			G_CALLBACK(_checklist_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
@@ -338,14 +344,20 @@ int builder_menu(struct bsddialog_conf const * conf,
 				&& strcmp(argv[i * 2 + 1], opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", 0, NULL);
-	gtk_tree_view_column_set_expand(column, FALSE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", 1, NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	if(conf->menu.no_name == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 0, NULL);
+		gtk_tree_view_column_set_expand(column, FALSE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	if(conf->menu.no_desc == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 1, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
 	g_signal_connect_swapped(widget, "row-activated",
 			G_CALLBACK(_menu_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
