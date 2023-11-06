@@ -246,7 +246,9 @@ static struct option longopts[] = {
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
+#endif
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
+#if 0
 	{"quoted",            no_argument,       NULL, QUOTED},
 	{"right1-button",     required_argument, NULL, RIGHT1_BUTTON},
 	{"right1-exit-code",  required_argument, NULL, RIGHT1_EXIT_CODE},
@@ -555,6 +557,11 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case OUTPUT_FD:
 				opt->output_fd = strtol(optarg, NULL, 10);
+				break;
+			case PRINT_VERSION:
+				opt->mandatory_dialog = false;
+				dprintf(opt->output_fd, "Version: %s (libbsddialog: %s)\n",
+						VERSION, LIBBSDDIALOG_VERSION);
 				break;
 			case SLEEP:
 				conf->sleep = strtoul(optarg, NULL, 10);

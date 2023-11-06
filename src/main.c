@@ -67,13 +67,16 @@ int main(int argc, char * argv[])
 
 	gtk_init(&argc, &argv);
 
-	for (i = 0; i < argc; i++) {
-		if (strcmp(argv[i], "--version") == 0) {
+	for(i = 0; i < argc; i++)
+	{
+		if(strcmp(argv[i], "--version") == 0)
+		{
 			printf("Version: %s (libbsddialog: %s)\n",
 					VERSION, LIBBSDDIALOG_VERSION);
 			return (BSDDIALOG_OK);
 		}
-		if (strcmp(argv[i], "--help") == 0) {
+		if(strcmp(argv[i], "--help") == 0)
+		{
 			_usage();
 			return (BSDDIALOG_OK);
 		}
