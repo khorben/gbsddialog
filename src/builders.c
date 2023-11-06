@@ -252,6 +252,8 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
+	if(cols > 0)
+		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
@@ -408,6 +410,8 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	if(cols > 0)
+		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
