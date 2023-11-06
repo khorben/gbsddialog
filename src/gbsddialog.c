@@ -300,8 +300,8 @@ static struct option longopts[] = {
 	{"passwordform", no_argument, NULL, PASSWORDFORM},
 #endif
 	{"pause",        no_argument, NULL, PAUSE},
-#if 0
 	{"radiolist",    no_argument, NULL, RADIOLIST},
+#if 0
 	{"rangebox",     no_argument, NULL, RANGEBOX},
 	{"textbox",      no_argument, NULL, TEXTBOX},
 	{"timebox",      no_argument, NULL, TIMEBOX},
@@ -624,6 +624,14 @@ static int _parseargs(int argc, char const ** argv,
 							"--and-dialog", opt->name);
 				opt->name = "--passwordbox";
 				opt->dialogbuilder = builder_passwordbox;
+				conf->auto_downmargin = 1;
+				break;
+			case RADIOLIST:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --radiolist without "
+							"--and-dialog", opt->name);
+				opt->name = "--radiolist";
+				opt->dialogbuilder = builder_radiolist;
 				conf->auto_downmargin = 1;
 				break;
 			case PAUSE:

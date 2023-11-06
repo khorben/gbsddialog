@@ -522,6 +522,106 @@ static gboolean _pause_on_timeout(gpointer data)
 }
 
 
+/* builder_radiolist */
+static void _radiolist_on_row_activated(gpointer data);
+
+int builder_radiolist(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkWidget * widget;
+	GtkListStore * store;
+	GtkTreeIter iter;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+	GtkTreeSelection * treesel;
+	int i, n, res;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
+			argc, (argc - 1) / 3,
+			(argv[0] != NULL) ? argv[0] : "(null)");
+#endif
+	if(argc < 1)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	if((n = strtol(argv[0], NULL, 10)) > (argc - 1) / 3)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	else if(n == 0)
+		n = (argc - 1) / 3;
+	dialog = _builder_dialog(conf, text);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_STRING);
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
+	for(i = 0; i < n; i++)
+	{
+		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_set(store, &iter,
+				0, strcasecmp(argv[i * 3 + 3], "on") == 0,
+				1, argv[i * 3 + 1], 2, argv[i * 3 + 2], -1);
+		if(opt->item_default != NULL
+				&& strcmp(argv[i * 3 + 1], opt->item_default) == 0)
+			gtk_tree_selection_select_iter(treesel, &iter);
+	}
+	renderer = gtk_cell_renderer_toggle_new();
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+		       	"active", 0, NULL);
+	gtk_cell_renderer_toggle_set_radio(GTK_CELL_RENDERER_TOGGLE(renderer),
+			TRUE);
+	gtk_tree_view_column_set_expand(column, FALSE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	if(conf->menu.no_name == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 1, NULL);
+		gtk_tree_view_column_set_expand(column, FALSE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	if(conf->menu.no_desc == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 2, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	g_signal_connect_swapped(widget, "row-activated",
+			G_CALLBACK(_radiolist_on_row_activated), dialog);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_container_add(GTK_CONTAINER(container), window);
+	gtk_widget_show_all(window);
+	_builder_dialog_buttons(dialog, conf);
+	res = _builder_dialog_run(dialog);
+	/* FIXME implement the output */
+	gtk_widget_destroy(dialog);
+	return _builder_dialog_output(conf, opt, res);
+}
+
+static void _radiolist_on_row_activated(gpointer data)
+{
+	GtkWidget * dialog = data;
+
+	/* FIXME may be a different button */
+	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+}
+
+
 /* builder_yesno */
 int builder_yesno(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
