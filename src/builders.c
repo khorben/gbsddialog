@@ -201,6 +201,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
+	GtkWidget * widget;
+	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
 	GtkButtonsType buttons = GTK_BUTTONS_OK;
 	struct infobox_data id = { NULL, 0 };
 
@@ -212,12 +214,17 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		id.id = g_timeout_add(conf->sleep * 1000,
 				_infobox_on_timeout, &id);
 	}
-	id.dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+	id.dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
 			buttons, "%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
+	if(conf->bottomtitle != NULL
+			&& (widget = gtk_dialog_get_header_bar(
+					GTK_DIALOG(id.dialog))) != NULL)
+		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
+				conf->bottomtitle);
 	gtk_dialog_run(GTK_DIALOG(id.dialog));
 	if(id.id != 0)
 		g_source_remove(id.id);
@@ -634,14 +641,18 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text, int rows)
 {
 	GtkWidget * dialog;
+	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
 	GtkWidget * container;
 	GtkWidget * widget;
 
-	dialog = gtk_dialog_new();
+	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
-	if(conf->title != NULL)
-		gtk_window_set_title(GTK_WINDOW(dialog), conf->title);
+	if(conf->bottomtitle != NULL
+			&& (widget = gtk_dialog_get_header_bar(
+					GTK_DIALOG(dialog))) != NULL)
+		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
+				conf->bottomtitle);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	if(text != NULL)
 	{

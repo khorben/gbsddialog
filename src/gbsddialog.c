@@ -201,7 +201,9 @@ static struct option longopts[] = {
 	{"help-status",       no_argument,       NULL, HELP_PRINT_ITEMS},
 	{"help-tags",         no_argument,       NULL, HELP_PRINT_NAME},
 	{"hfile",             required_argument, NULL, HFILE},
+#endif
 	{"hline",             required_argument, NULL, HLINE},
+#if 0
 	{"hmsg",              required_argument, NULL, HMSG},
 #endif
 	{"ignore",            no_argument,       NULL, IGNORE},
@@ -529,6 +531,10 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case HELP_LABEL:
 				conf->button.help_label = optarg;
+				break;
+			case HLINE:
+				if(optarg[0] != '\0')
+					conf->bottomtitle = optarg;
 				break;
 			case IGNORE:
 				opt->ignore = true;
