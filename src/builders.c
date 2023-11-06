@@ -216,6 +216,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	}
 	id.dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
 			buttons, "%s", text);
+	if(conf->key.enable_esc == false)
+		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
 	gtk_dialog_run(GTK_DIALOG(id.dialog));
@@ -569,6 +571,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 
 	dialog = gtk_dialog_new();
+	if(conf->key.enable_esc == false)
+		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(dialog), conf->title);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
