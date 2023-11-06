@@ -261,8 +261,8 @@ static struct option longopts[] = {
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
 	{"shadow",            no_argument,       NULL, SHADOW},
 	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
-	{"sleep",             required_argument, NULL, SLEEP},
 #endif
+	{"sleep",             required_argument, NULL, SLEEP},
 	{"stderr",            no_argument,       NULL, STDERR},
 	{"stdout",            no_argument,       NULL, STDOUT},
 #if 0
@@ -548,6 +548,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case OUTPUT_FD:
 				opt->output_fd = strtol(optarg, NULL, 10);
+				break;
+			case SLEEP:
+				conf->sleep = strtoul(optarg, NULL, 10);
 				break;
 			case STDERR:
 				opt->output_fd = STDERR_FILENO;

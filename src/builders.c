@@ -36,6 +36,12 @@
 
 /* builders */
 /* types */
+struct infobox_data
+{
+	GtkWidget * dialog;
+	unsigned int id;
+};
+
 struct pause_data
 {
 	GtkWidget * dialog;
@@ -58,20 +64,40 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 /* functions */
 /* builder_infobox */
+static gboolean _infobox_on_timeout(gpointer data);
+
 int builder_infobox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	GtkWidget * dialog;
+	GtkButtonsType buttons = GTK_BUTTONS_OK;
+	struct infobox_data id = { NULL, 0 };
 
 	if(argc > 0)
 		error_args(opt->name, argc, argv);
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_OK, "%s", text);
+	if(conf->sleep > 0)
+	{
+		buttons = GTK_BUTTONS_NONE;
+		id.id = g_timeout_add(conf->sleep * 1000,
+				G_CALLBACK(_infobox_on_timeout), &id);
+	}
+	id.dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+			buttons, "%s", text);
 	if(conf->title != NULL)
-		gtk_window_set_title(GTK_WINDOW(dialog), conf->title);
-	gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
+	gtk_dialog_run(GTK_DIALOG(id.dialog));
+	if(id.id != 0)
+		g_source_remove(id.id);
 	return 0;
+}
+
+static gboolean _infobox_on_timeout(gpointer data)
+{
+	struct infobox_data * id = data;
+
+	gtk_dialog_response(GTK_DIALOG(id->dialog), GTK_RESPONSE_CLOSE);
+	id->id = 0;
+	return FALSE;
 }
 
 
