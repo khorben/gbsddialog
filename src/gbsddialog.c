@@ -285,8 +285,8 @@ static struct option longopts[] = {
 	{"checklist",    no_argument, NULL, CHECKLIST},
 	{"datebox",      no_argument, NULL, DATEBOX},
 	{"form",         no_argument, NULL, FORM},
-	{"gauge",        no_argument, NULL, GAUGE},
 #endif
+	{"gauge",        no_argument, NULL, GAUGE},
 	{"infobox",      no_argument, NULL, INFOBOX},
 	{"inputbox",     no_argument, NULL, INPUTBOX},
 	{"menu",         no_argument, NULL, MENU},
@@ -564,6 +564,13 @@ static int _parseargs(int argc, char const ** argv,
 				conf->title = optarg;
 				break;
 			/* Dialogs */
+			case GAUGE:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --gauge without "
+							"--and-dialog", opt->name);
+				opt->name = "--gauge";
+				opt->dialogbuilder = builder_gauge;
+				break;
 			case INFOBOX:
 				if(opt->dialogbuilder != NULL)
 					return -error(BSDDIALOG_ERROR, "%s and --infobox without "

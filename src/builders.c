@@ -64,6 +64,41 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 
 /* functions */
+/* builder_gauge */
+int builder_gauge(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * widget;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	gdouble fraction = 0.0;
+	char buf[8];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc > 1)
+		error_args(opt->name, argc - 1, argv + 1);
+	else if(argc == 1)
+		fraction = (gdouble)(strtoul(argv[0], NULL, 10)) / 100.0;
+	dialog = _builder_dialog(conf, text);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	widget = gtk_progress_bar_new();
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
+	snprintf(buf, sizeof(buf), "%.0lf %%", fraction * 100.0);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), buf);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(widget), fraction);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	/* FIXME read input */
+	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
 /* builder_infobox */
 static gboolean _infobox_on_timeout(gpointer data);
 
