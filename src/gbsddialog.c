@@ -288,9 +288,7 @@ static struct option longopts[] = {
 	{"gauge",        no_argument, NULL, GAUGE},
 #endif
 	{"infobox",      no_argument, NULL, INFOBOX},
-#if 0
 	{"inputbox",     no_argument, NULL, INPUTBOX},
-#endif
 	{"menu",         no_argument, NULL, MENU},
 #if 0
 	{"mixedform",    no_argument, NULL, MIXEDFORM},
@@ -572,6 +570,14 @@ static int _parseargs(int argc, char const ** argv,
 							"--and-dialog", opt->name);
 				opt->name = "--infobox";
 				opt->dialogbuilder = builder_infobox;
+				break;
+			case INPUTBOX:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --inputbox without "
+							"--and-dialog", opt->name);
+				opt->name = "--inputbox";
+				opt->dialogbuilder = builder_inputbox;
+				conf->auto_downmargin = 1;
 				break;
 			case MENU:
 				if(opt->dialogbuilder != NULL)

@@ -102,6 +102,61 @@ static gboolean _infobox_on_timeout(gpointer data)
 }
 
 
+/* builder_inputbox */
+static void _inputbox_on_activate(GtkWidget * widget);
+static void _inputbox_on_activate_cancel(GtkWidget * widget);
+
+int builder_inputbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	GtkEntryBuffer * buffer;
+
+	if(argc > 0)
+		error_args(opt->name, argc, argv);
+	dialog = _builder_dialog(conf, text);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	buffer = gtk_entry_buffer_new(NULL, -1);
+	widget = gtk_entry_new_with_buffer(buffer);
+	/* FIXME may be a different button (or never cancel) */
+	g_signal_connect_swapped(widget, "activate", conf->button.default_cancel
+			? G_CALLBACK(_inputbox_on_activate_cancel)
+			: G_CALLBACK(_inputbox_on_activate), dialog);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			dprintf(opt->output_fd, "%s\n",
+					gtk_entry_buffer_get_text(buffer));
+			break;
+		default:
+			ret = _builder_dialog_output(conf, opt, ret);
+			break;
+	}
+	g_object_unref(buffer);
+	return ret;
+}
+
+static void _inputbox_on_activate(GtkWidget * widget)
+{
+	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_OK);
+}
+
+static void _inputbox_on_activate_cancel(GtkWidget * widget)
+{
+	gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_CANCEL);
+}
+
+
 /* builder_menu */
 static void _menu_on_row_activated(gpointer data);
 
