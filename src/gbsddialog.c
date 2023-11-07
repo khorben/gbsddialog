@@ -155,14 +155,14 @@ enum OPTS {
 
 static struct option longopts[] = {
 	/* Options */
-#if 0
 	{"alternate-screen",  no_argument,       NULL, ALTERNATE_SCREEN},
-#endif
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
 #if 0
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
+#endif
 	{"backtitle",         required_argument, NULL, BACKTITLE},
+#if 0
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
@@ -215,7 +215,9 @@ static struct option longopts[] = {
 	{"item-depth",        no_argument,       NULL, ITEM_DEPTH},
 	{"item-help",         no_argument,       NULL, ITEM_BOTTOM_DESC},
 	{"item-prefix",       no_argument,       NULL, ITEM_PREFIX},
+#endif
 	{"keep-tite",         no_argument,       NULL, ALTERNATE_SCREEN},
+#if 0
 	{"left1-button",      required_argument, NULL, LEFT1_BUTTON},
 	{"left1-exit-code",   required_argument, NULL, LEFT1_EXIT_CODE},
 	{"left2-button",      required_argument, NULL, LEFT2_BUTTON},
@@ -240,9 +242,7 @@ static struct option longopts[] = {
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
 #endif
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
-#if 0
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
-#endif
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 	{"ok-label",          required_argument, NULL, OK_LABEL},
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
@@ -485,6 +485,10 @@ static int _parseargs(int argc, char const ** argv,
 		switch(arg)
 		{
 			/* Options */
+			case ALTERNATE_SCREEN:
+			case NORMAL_SCREEN:
+				/* no-op */
+				break;
 			case AND_DIALOG:
 				if(opt->dialogbuilder == NULL)
 					return -error(BSDDIALOG_ERROR,
