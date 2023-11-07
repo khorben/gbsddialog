@@ -79,6 +79,8 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, n, res;
+	gboolean set;
+	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
@@ -108,7 +110,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; i < n; i++)
 	{
 		gtk_list_store_insert(store, &iter, -1);
@@ -142,9 +144,39 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
-	/* FIXME implement the output */
-	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, opt, res);
+	switch(res)
+	{
+		case BSDDIALOG_HELP:
+			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
+					== TRUE)
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						1, &p, -1);
+				dprintf(opt->output_fd, "HELP %s\n", p);
+				free(p);
+			}
+			gtk_widget_destroy(dialog);
+			return res;
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			gtk_widget_destroy(dialog);
+			if(gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter) == FALSE)
+				return res;
+			do
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						0, &set, 1, &p, -1);
+				if(set)
+					dprintf(opt->output_fd, "%s\n", p);
+				free(p);
+			}
+			while(gtk_tree_model_iter_next(GTK_TREE_MODEL(store),
+						&iter));
+			return res;
+		default:
+			gtk_widget_destroy(dialog);
+			return _builder_dialog_output(conf, opt, res);
+	}
 }
 
 
@@ -317,7 +349,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; i < n; i++)
 	{
 		gtk_list_store_insert(store, &iter, -1);
@@ -348,15 +380,24 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
-	if((res == BSDDIALOG_OK || res == BSDDIALOG_EXTRA)
-			&& gtk_tree_selection_get_selected(treesel, NULL,
-				&iter) == TRUE)
+	switch(res)
 	{
-		gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &p, -1);
-		dprintf(opt->output_fd, "%s\n", p);
-		free(p);
-		gtk_widget_destroy(dialog);
-		return res;
+		case BSDDIALOG_HELP:
+			dprintf(opt->output_fd, "HELP ");
+			/* fallback */
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
+					== TRUE)
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						0, &p, -1);
+				dprintf(opt->output_fd, "%s\n", p);
+				free(p);
+				gtk_widget_destroy(dialog);
+				return res;
+			}
+			break;
 	}
 	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, opt, res);
@@ -503,6 +544,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, n, res;
+	gboolean set;
+	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
@@ -532,7 +575,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; i < n; i++)
 	{
 		gtk_list_store_insert(store, &iter, -1);
@@ -569,9 +612,39 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
-	/* FIXME implement the output */
-	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, opt, res);
+	switch(res)
+	{
+		case BSDDIALOG_HELP:
+			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
+					== TRUE)
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						1, &p, -1);
+				dprintf(opt->output_fd, "HELP %s\n", p);
+				free(p);
+			}
+			gtk_widget_destroy(dialog);
+			return res;
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			gtk_widget_destroy(dialog);
+			if(gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter) == FALSE)
+				return res;
+			do
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						0, &set, 1, &p, -1);
+				if(set)
+					dprintf(opt->output_fd, "%s\n", p);
+				free(p);
+			}
+			while(gtk_tree_model_iter_next(GTK_TREE_MODEL(store),
+						&iter));
+			return res;
+		default:
+			gtk_widget_destroy(dialog);
+			return _builder_dialog_output(conf, opt, res);
+	}
 }
 
 
