@@ -218,6 +218,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			buttons, "%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
+	gtk_window_set_position(GTK_WINDOW(id.dialog), GTK_WIN_POS_CENTER);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
 	if(conf->bottomtitle != NULL
@@ -648,6 +649,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
 					GTK_DIALOG(dialog))) != NULL)
