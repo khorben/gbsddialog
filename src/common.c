@@ -31,6 +31,7 @@
 
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include "common.h"
 
@@ -56,6 +57,63 @@ struct exitcode exitcodes[] =
 
 
 /* functions */
+/* custom_text */
+void custom_text(struct options * opt, char * text, char * buf)
+{
+	bool trim, crwrap;
+	int i, j;
+
+	if (strstr(text, "\\n") == NULL) {
+		/* "hasnl" mode */
+		trim = true;
+		crwrap = true;
+	} else {
+		trim = false;
+		crwrap = opt->cr_wrap;
+	}
+	if (opt->text_unchanged) {
+		trim = false;
+		crwrap = true;
+	}
+
+	for (i = 0, j = 0; text[i] != '\0'; i++) {
+		switch (text[i]) {
+			case '\\':
+				buf[j] = '\\';
+				switch (text[i+1]) {
+					case 'n': /* implicitly in "hasnl" mode */
+						buf[j] = '\n';
+						i++;
+						if (text[i+1] == '\n')
+							i++;
+						break;
+					case 't':
+						if (opt->tab_escape) {
+							buf[j] = '\t';
+						} else {
+							j++;
+							buf[j] = 't';
+						}
+						i++;
+						break;
+				}
+				break;
+			case '\n':
+				buf[j] = crwrap ? '\n' : ' ';
+				break;
+			case '\t':
+				buf[j] = opt->text_unchanged ? '\t' : ' ';
+				break;
+			default:
+				buf[j] = text[i];
+		}
+		if (!trim || buf[j] != ' ' || j == 0 || buf[j-1] != ' ')
+			j++;
+	}
+	buf[j] = '\0';
+}
+
+
 /* error */
 int error(int ret, char const * format, ...)
 {

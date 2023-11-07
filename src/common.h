@@ -124,6 +124,8 @@ extern struct exitcode exitcodes[];
 
 
 /* functions */
+void custom_text(struct options * opt, char * text, char * buf);
+
 int error(int ret, char const * format, ...);
 
 #endif /* !GBSDDIALOG_COMMON_H */

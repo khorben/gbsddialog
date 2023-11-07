@@ -175,7 +175,9 @@ static struct option longopts[] = {
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
 	{"colors",            no_argument,       NULL, TEXT_ESCAPE},
 	{"columns-per-row",   required_argument, NULL, COLUMNS_PER_ROW},
+#endif
 	{"cr-wrap",           no_argument,       NULL, CR_WRAP},
+#if 0
 	{"datebox-format",    required_argument, NULL, DATEBOX_FORMAT},
 	{"date-format",       required_argument, NULL, DATE_FORMAT},
 #endif
@@ -272,7 +274,9 @@ static struct option longopts[] = {
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
 	{"tab-len",           required_argument, NULL, TAB_LEN},
 	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
+#endif
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
+#if 0
 	{"theme",             required_argument, NULL, THEME},
 #endif
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
@@ -402,6 +406,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
+		custom_text(&opt, argv[0], text);
+
 		res = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, argv + 3, &opt);
 		*gbd->ret = EXITCODE(res);
@@ -492,6 +498,9 @@ static int _parseargs(int argc, char const ** argv,
 			case CANCEL_LABEL:
 				conf->button.cancel_label = optarg;
 				break;
+			case CR_WRAP:
+				opt->cr_wrap = true;
+				break;
 			case DEFAULT_ITEM:
 				opt->item_default = optarg;
 				break;
@@ -577,6 +586,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case STDOUT:
 				opt->output_fd = STDOUT_FILENO;
+				break;
+			case TEXT_UNCHANGED:
+				opt->text_unchanged = true;
 				break;
 			case TIMEOUT_EXIT_CODE:
 				exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(
