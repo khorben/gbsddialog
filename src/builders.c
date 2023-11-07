@@ -66,6 +66,9 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 /* functions */
 /* builder_checklist */
+static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data);
+
 int builder_checklist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -76,6 +79,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	GtkListStore * store;
 	GtkTreeIter iter;
+	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, n, res;
@@ -121,8 +125,11 @@ int builder_checklist(struct bsddialog_conf const * conf,
 				&& strcmp(argv[i * 3 + 1], opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_toggle_new(), "active", 0, NULL);
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(renderer, "toggled",
+			G_CALLBACK(_checklist_on_row_toggled), store);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"active", 0, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	if(conf->menu.no_name == false)
@@ -177,6 +184,26 @@ int builder_checklist(struct bsddialog_conf const * conf,
 			gtk_widget_destroy(dialog);
 			return _builder_dialog_output(conf, opt, res);
 	}
+}
+
+static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data)
+{
+	GtkListStore * store = data;
+	GtkTreePath * tp;
+	GtkTreeIter iter;
+	gboolean b;
+
+	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
+		return;
+	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
+	gtk_tree_path_free(tp);
+	if(b == FALSE)
+		return;
+	gtk_list_store_set(store, &iter, 0,
+			gtk_cell_renderer_toggle_get_active(
+				GTK_CELL_RENDERER_TOGGLE(renderer))
+			? FALSE : TRUE, -1);
 }
 
 
@@ -530,6 +557,9 @@ static gboolean _pause_on_timeout(gpointer data)
 
 
 /* builder_radiolist */
+static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data);
+
 int builder_radiolist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -587,10 +617,12 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
 	renderer = gtk_cell_renderer_toggle_new();
-	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-		       	"active", 0, NULL);
 	gtk_cell_renderer_toggle_set_radio(GTK_CELL_RENDERER_TOGGLE(renderer),
 			TRUE);
+	g_signal_connect(renderer, "toggled",
+			G_CALLBACK(_radiolist_on_row_toggled), store);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"active", 0, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	if(conf->menu.no_name == false)
@@ -645,6 +677,26 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 			gtk_widget_destroy(dialog);
 			return _builder_dialog_output(conf, opt, res);
 	}
+}
+
+static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data)
+{
+	GtkListStore * store = data;
+	GtkTreePath * tp;
+	GtkTreeIter iter;
+	gboolean b;
+
+	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
+		return;
+	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
+	gtk_tree_path_free(tp);
+	if(b == FALSE)
+		return;
+	gtk_list_store_set(store, &iter, 0,
+			gtk_cell_renderer_toggle_get_active(
+				GTK_CELL_RENDERER_TOGGLE(renderer))
+			? FALSE : TRUE, -1);
 }
 
 
