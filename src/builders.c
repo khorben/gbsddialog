@@ -66,8 +66,6 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 /* functions */
 /* builder_checklist */
-static void _checklist_on_row_activated(gpointer data);
-
 int builder_checklist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -139,8 +137,6 @@ int builder_checklist(struct bsddialog_conf const * conf,
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
-	g_signal_connect_swapped(widget, "row-activated",
-			G_CALLBACK(_checklist_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
 	gtk_widget_show_all(window);
@@ -149,13 +145,6 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	/* FIXME implement the output */
 	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, opt, res);
-}
-
-static void _checklist_on_row_activated(gpointer data)
-{
-	GtkWidget * dialog = data;
-
-	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
@@ -500,8 +489,6 @@ static gboolean _pause_on_timeout(gpointer data)
 
 
 /* builder_radiolist */
-static void _radiolist_on_row_activated(gpointer data);
-
 int builder_radiolist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -577,8 +564,6 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
-	g_signal_connect_swapped(widget, "row-activated",
-			G_CALLBACK(_radiolist_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
 	gtk_widget_show_all(window);
@@ -587,13 +572,6 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	/* FIXME implement the output */
 	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, opt, res);
-}
-
-static void _radiolist_on_row_activated(gpointer data)
-{
-	GtkWidget * dialog = data;
-
-	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
