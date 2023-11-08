@@ -54,16 +54,16 @@ struct gauge_data
 struct infobox_data
 {
 	GtkWidget * dialog;
-	unsigned int id;
+	guint id;
 };
 
 struct pause_data
 {
 	GtkWidget * dialog;
-	GtkWidget * widget;
+	GtkWidget * widget;	/* progress bar */
 	unsigned int secs;
 	gdouble step;
-	unsigned int id;
+	guint id;
 };
 
 
@@ -508,12 +508,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 			argc, (argc - 1) / 2,
 			(argv[0] != NULL) ? argv[0] : "(null)");
 #endif
-	if(argc < 1)
-	{
-		error_args(opt->name, argc, argv);
-		return BSDDIALOG_ERROR;
-	}
-	if((n = strtol(argv[0], NULL, 10)) > (argc - 1) / 2)
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) > (argc - 1) / 2)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
@@ -718,6 +713,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
+	int ret;
 	GtkWidget * dialog;
 	GtkWidget * container;
 	GtkWidget * window;
@@ -727,9 +723,10 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, n, res;
+	int i, n;
 	gboolean set;
 	char * p;
+	gboolean b;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
@@ -800,8 +797,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(dialog);
-	switch(res)
+	ret = _builder_dialog_run(dialog);
+	switch(ret)
 	{
 		case BSDDIALOG_HELP:
 			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
@@ -813,13 +810,15 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				free(p);
 			}
 			gtk_widget_destroy(dialog);
-			return res;
+			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
 			gtk_widget_destroy(dialog);
-			if(gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter) == FALSE)
-				return res;
-			do
+			for(b = gtk_tree_model_get_iter_first(
+						GTK_TREE_MODEL(store), &iter);
+					b != FALSE;
+					b = gtk_tree_model_iter_next(
+						GTK_TREE_MODEL(store), &iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 						0, &set, 1, &p, -1);
@@ -827,13 +826,13 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 					dprintf(opt->output_fd, "%s\n", p);
 				free(p);
 			}
-			while(gtk_tree_model_iter_next(GTK_TREE_MODEL(store),
-						&iter));
-			return res;
+			break;
 		default:
 			gtk_widget_destroy(dialog);
-			return _builder_dialog_output(conf, opt, res);
+			ret = _builder_dialog_output(conf, opt, ret);
+			break;
 	}
+	return ret;
 }
 
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -991,7 +990,8 @@ static int _builder_dialog_output(struct bsddialog_conf const * conf,
 	switch(res)
 	{
 		case BSDDIALOG_CANCEL:
-			dprintf(opt->output_fd, "%s\n", conf->button.cancel_label
+			dprintf(opt->output_fd, "%s\n",
+					conf->button.cancel_label
 					? conf->button.cancel_label : "Cancel");
 			break;
 		case BSDDIALOG_ESC:

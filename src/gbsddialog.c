@@ -329,7 +329,7 @@ typedef struct _GBSDDialog
 
 /* prototypes */
 static int _parseargs(int argc, char const ** argv,
-	       	struct bsddialog_conf * conf, struct options * opt);
+		struct bsddialog_conf * conf, struct options * opt);
 
 
 /* gbsddialog */
@@ -446,9 +446,13 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 
 
 /* parseargs */
+static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
+		int arg);
+
 static int _parseargs(int argc, char const ** argv,
-	       	struct bsddialog_conf * conf, struct options * opt)
+		struct bsddialog_conf * conf, struct options * opt)
 {
+	int ret;
 	int arg, i;
 
 #ifdef DEBUG
@@ -470,234 +474,250 @@ static int _parseargs(int argc, char const ** argv,
 	opt->mandatory_dialog = true;
 
 	for(i = 0; i < argc; i++)
-       	{
 		if(strcmp(argv[i], "--and-dialog") == 0
 				|| strcmp(argv[i], "--and-widget") == 0)
-	       	{
+		{
 			argc = i + 1;
 			break;
 		}
-	}
 	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
-       	{
-		switch(arg)
-		{
-			/* Options */
-			case ALTERNATE_SCREEN:
-			case NORMAL_SCREEN:
-				/* no-op */
-				break;
-			case AND_DIALOG:
-				if(opt->dialogbuilder == NULL)
-					return -error(BSDDIALOG_ERROR,
-							"--and-dialog without"
-							" previous --<dialog>");
-				break;
-			case CANCEL_EXIT_CODE:
-				exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case CANCEL_LABEL:
-				conf->button.cancel_label = optarg;
-				break;
-			case CR_WRAP:
-				opt->cr_wrap = true;
-				break;
-			case DEFAULT_ITEM:
-				opt->item_default = optarg;
-				break;
-			case DEFAULT_NO:
-				conf->button.default_cancel = true;
-				break;
-			case DISABLE_ESC:
-				conf->key.enable_esc = false;
-				break;
-			case ERROR_EXIT_CODE:
-				exitcodes[BSDDIALOG_ERROR + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case ESC_EXIT_CODE:
-				exitcodes[BSDDIALOG_ESC + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case EXIT_LABEL:
-				conf->button.ok_label = optarg;
-				break;
-			case EXTRA_BUTTON:
-				conf->button.with_extra = true;
-				break;
-			case EXTRA_EXIT_CODE:
-				exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case EXTRA_LABEL:
-				conf->button.extra_label = optarg;
-				break;
-			case HELP_BUTTON:
-				conf->button.with_help = true;
-				break;
-			case HELP_EXIT_CODE:
-				exitcodes[BSDDIALOG_HELP + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case HELP_LABEL:
-				conf->button.help_label = optarg;
-				break;
-			case HLINE:
-				if(optarg[0] != '\0')
-					conf->bottomtitle = optarg;
-				break;
-			case IGNORE:
-				opt->ignore = true;
-				break;
-			case INSECURE:
-				conf->form.securech = '*';
-				break;
-			case NO_CANCEL:
-				conf->button.without_cancel = true;
-				break;
-			case NO_DESCRIPTIONS:
-				conf->menu.no_desc = true;
-				break;
-			case NO_NAMES:
-				conf->menu.no_name = true;
-				break;
-			case NO_OK:
-				conf->button.without_ok = true;
-				break;
-			case OK_EXIT_CODE:
-				exitcodes[BSDDIALOG_OK + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case OK_LABEL:
-				conf->button.ok_label = optarg;
-				break;
-			case OUTPUT_FD:
-				opt->output_fd = strtol(optarg, NULL, 10);
-				break;
-			case PRINT_VERSION:
-				opt->mandatory_dialog = false;
-				dprintf(opt->output_fd, "Version: %s (libbsddialog: %s)\n",
-						VERSION, LIBBSDDIALOG_VERSION);
-				break;
-			case SLEEP:
-				conf->sleep = strtoul(optarg, NULL, 10);
-				break;
-			case STDERR:
-				opt->output_fd = STDERR_FILENO;
-				break;
-			case STDOUT:
-				opt->output_fd = STDOUT_FILENO;
-				break;
-			case TAB_ESCAPE:
-				opt->tab_escape = true;
-				break;
-			case TEXT_UNCHANGED:
-				opt->text_unchanged = true;
-				break;
-			case THEME:
-				g_object_set(gtk_settings_get_default(),
-						"gtk-theme-name", optarg, NULL);
-				break;
-			case TIMEOUT_EXIT_CODE:
-				exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(
-						optarg, NULL, 10);
-				break;
-			case TITLE:
-				conf->title = optarg;
-				break;
-			/* Dialogs */
-			case CALENDAR:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --calendar without "
-							"--and-dialog", opt->name);
-				opt->name = "--calendar";
-				opt->dialogbuilder = builder_calendar;
-				break;
-			case CHECKLIST:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --checklist without "
-							"--and-dialog", opt->name);
-				opt->name = "--checklist";
-				opt->dialogbuilder = builder_checklist;
-				conf->auto_downmargin = 1;
-				break;
-			case GAUGE:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --gauge without "
-							"--and-dialog", opt->name);
-				opt->name = "--gauge";
-				opt->dialogbuilder = builder_gauge;
-				break;
-			case INFOBOX:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --infobox without "
-							"--and-dialog", opt->name);
-				opt->name = "--infobox";
-				opt->dialogbuilder = builder_infobox;
-				break;
-			case INPUTBOX:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --inputbox without "
-							"--and-dialog", opt->name);
-				opt->name = "--inputbox";
-				opt->dialogbuilder = builder_inputbox;
-				conf->auto_downmargin = 1;
-				break;
-			case MENU:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --menu without "
-							"--and-dialog", opt->name);
-				opt->name = "--menu";
-				opt->dialogbuilder = builder_menu;
-				conf->auto_downmargin = 1;
-				break;
-			case MSGBOX:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --msgbox without "
-							"--and-dialog", opt->name);
-				opt->name = "--msgbox";
-				opt->dialogbuilder = builder_msgbox;
-				break;
-			case PASSWORDBOX:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --passwordbox without "
-							"--and-dialog", opt->name);
-				opt->name = "--passwordbox";
-				opt->dialogbuilder = builder_passwordbox;
-				conf->auto_downmargin = 1;
-				break;
-			case RADIOLIST:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --radiolist without "
-							"--and-dialog", opt->name);
-				opt->name = "--radiolist";
-				opt->dialogbuilder = builder_radiolist;
-				conf->auto_downmargin = 1;
-				break;
-			case PAUSE:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --pause without "
-							"--and-dialog", opt->name);
-				opt->name = "--pause";
-				opt->dialogbuilder = builder_pause;
-				break;
-			case YESNO:
-				if(opt->dialogbuilder != NULL)
-					return -error(BSDDIALOG_ERROR, "%s and --yesno without "
-							"--and-dialog", opt->name);
-				opt->name = "--yesno";
-				opt->dialogbuilder = builder_yesno;
-				break;
-			default: /* Error */
-				if(opt->ignore == true)
-					break;
-				return -error(BSDDIALOG_ERROR, "--ignore to continue");
-		}
-	}
+		if((ret = _parsearg(conf, opt, arg)) != 0)
+			return ret;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, argc);
 #endif
 	return argc;
+}
+
+static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
+		int arg)
+{
+	switch(arg)
+	{
+		/* Options */
+		case ALTERNATE_SCREEN:
+		case NORMAL_SCREEN:
+			/* no-op */
+			break;
+		case AND_DIALOG:
+			if(opt->dialogbuilder == NULL)
+				return -error(BSDDIALOG_ERROR,
+						"--and-dialog without"
+						" previous --<dialog>");
+			break;
+		case CANCEL_EXIT_CODE:
+			exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case CANCEL_LABEL:
+			conf->button.cancel_label = optarg;
+			break;
+		case CR_WRAP:
+			opt->cr_wrap = true;
+			break;
+		case DEFAULT_ITEM:
+			opt->item_default = optarg;
+			break;
+		case DEFAULT_NO:
+			conf->button.default_cancel = true;
+			break;
+		case DISABLE_ESC:
+			conf->key.enable_esc = false;
+			break;
+		case ERROR_EXIT_CODE:
+			exitcodes[BSDDIALOG_ERROR + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case ESC_EXIT_CODE:
+			exitcodes[BSDDIALOG_ESC + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case EXIT_LABEL:
+			conf->button.ok_label = optarg;
+			break;
+		case EXTRA_BUTTON:
+			conf->button.with_extra = true;
+			break;
+		case EXTRA_EXIT_CODE:
+			exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case EXTRA_LABEL:
+			conf->button.extra_label = optarg;
+			break;
+		case HELP_BUTTON:
+			conf->button.with_help = true;
+			break;
+		case HELP_EXIT_CODE:
+			exitcodes[BSDDIALOG_HELP + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case HELP_LABEL:
+			conf->button.help_label = optarg;
+			break;
+		case HLINE:
+			if(optarg[0] != '\0')
+				conf->bottomtitle = optarg;
+			break;
+		case IGNORE:
+			opt->ignore = true;
+			break;
+		case INSECURE:
+			conf->form.securech = '*';
+			break;
+		case NO_CANCEL:
+			conf->button.without_cancel = true;
+			break;
+		case NO_DESCRIPTIONS:
+			conf->menu.no_desc = true;
+			break;
+		case NO_NAMES:
+			conf->menu.no_name = true;
+			break;
+		case NO_OK:
+			conf->button.without_ok = true;
+			break;
+		case OK_EXIT_CODE:
+			exitcodes[BSDDIALOG_OK + 1].value = strtol(
+					optarg, NULL, 10);
+			break;
+		case OK_LABEL:
+			conf->button.ok_label = optarg;
+			break;
+		case OUTPUT_FD:
+			opt->output_fd = strtol(optarg, NULL, 10);
+			break;
+		case PRINT_VERSION:
+			opt->mandatory_dialog = false;
+			dprintf(opt->output_fd,
+					"Version: %s (libbsddialog: %s)\n",
+					VERSION, LIBBSDDIALOG_VERSION);
+			break;
+		case SLEEP:
+			conf->sleep = strtoul(optarg, NULL, 10);
+			break;
+		case STDERR:
+			opt->output_fd = STDERR_FILENO;
+			break;
+		case STDOUT:
+			opt->output_fd = STDOUT_FILENO;
+			break;
+		case TAB_ESCAPE:
+			opt->tab_escape = true;
+			break;
+		case TEXT_UNCHANGED:
+			opt->text_unchanged = true;
+			break;
+		case THEME:
+			g_object_set(gtk_settings_get_default(),
+					"gtk-theme-name", optarg, NULL);
+			break;
+		case TIMEOUT_EXIT_CODE:
+			exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(optarg,
+						NULL, 10);
+			break;
+		case TITLE:
+			conf->title = optarg;
+			break;
+		/* Dialogs */
+		case CALENDAR:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --calendar without "
+						"--and-dialog", opt->name);
+			opt->name = "--calendar";
+			opt->dialogbuilder = builder_calendar;
+			break;
+		case CHECKLIST:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --checklist without "
+						"--and-dialog", opt->name);
+			opt->name = "--checklist";
+			opt->dialogbuilder = builder_checklist;
+			conf->auto_downmargin = 1;
+			break;
+		case GAUGE:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --gauge without "
+						"--and-dialog", opt->name);
+			opt->name = "--gauge";
+			opt->dialogbuilder = builder_gauge;
+			break;
+		case INFOBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --infobox without "
+						"--and-dialog", opt->name);
+			opt->name = "--infobox";
+			opt->dialogbuilder = builder_infobox;
+			break;
+		case INPUTBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --inputbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--inputbox";
+			opt->dialogbuilder = builder_inputbox;
+			conf->auto_downmargin = 1;
+			break;
+		case MENU:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --menu without "
+						"--and-dialog", opt->name);
+			opt->name = "--menu";
+			opt->dialogbuilder = builder_menu;
+			conf->auto_downmargin = 1;
+			break;
+		case MSGBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --msgbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--msgbox";
+			opt->dialogbuilder = builder_msgbox;
+			break;
+		case PASSWORDBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --passwordbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--passwordbox";
+			opt->dialogbuilder = builder_passwordbox;
+			conf->auto_downmargin = 1;
+			break;
+		case RADIOLIST:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --radiolist without "
+						"--and-dialog", opt->name);
+			opt->name = "--radiolist";
+			opt->dialogbuilder = builder_radiolist;
+			conf->auto_downmargin = 1;
+			break;
+		case PAUSE:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --pause without "
+						"--and-dialog", opt->name);
+			opt->name = "--pause";
+			opt->dialogbuilder = builder_pause;
+			break;
+		case YESNO:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --yesno without "
+						"--and-dialog", opt->name);
+			opt->name = "--yesno";
+			opt->dialogbuilder = builder_yesno;
+			break;
+		default: /* Error */
+			if(opt->ignore == true)
+				break;
+			return -error(BSDDIALOG_ERROR, "--ignore to continue");
+	}
+	return 0;
 }
