@@ -210,10 +210,12 @@ static struct option longopts[] = {
 #endif
 	{"ignore",            no_argument,       NULL, IGNORE},
 	{"insecure",          no_argument,       NULL, INSECURE},
-#if 0
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
+#if 0
 	{"item-depth",        no_argument,       NULL, ITEM_DEPTH},
+#endif
 	{"item-help",         no_argument,       NULL, ITEM_BOTTOM_DESC},
+#if 0
 	{"item-prefix",       no_argument,       NULL, ITEM_PREFIX},
 #endif
 	{"keep-tite",         no_argument,       NULL, ALTERNATE_SCREEN},
@@ -568,6 +570,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case INSECURE:
 			conf->form.securech = '*';
+			break;
+		case ITEM_BOTTOM_DESC:
+			opt->item_bottomdesc = true;
 			break;
 		case NO_CANCEL:
 			conf->button.without_cancel = true;
