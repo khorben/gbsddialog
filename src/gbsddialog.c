@@ -271,7 +271,9 @@ static struct option longopts[] = {
 	{"stdout",            no_argument,       NULL, STDOUT},
 #if 0
 	{"switch-buttons",    no_argument,       NULL, SWITCH_BUTTONS},
+#endif
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
+#if 0
 	{"tab-len",           required_argument, NULL, TAB_LEN},
 	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 #endif
@@ -586,6 +588,9 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case STDOUT:
 				opt->output_fd = STDOUT_FILENO;
+				break;
+			case TAB_ESCAPE:
+				opt->tab_escape = true;
 				break;
 			case TEXT_UNCHANGED:
 				opt->text_unchanged = true;
