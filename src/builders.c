@@ -91,7 +91,10 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	guint year, month, day;
 
 	if(argc > 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_calendar_new();
@@ -268,7 +271,10 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
 #endif
 	if(argc > 1)
+	{
 		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
 	else if(argc == 1)
 		perc = strtoul(argv[0], NULL, 10);
 	gd.dialog = _builder_dialog(conf, NULL, rows);
@@ -409,7 +415,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	struct infobox_data id = { NULL, 0 };
 
 	if(argc > 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	if(conf->sleep > 0)
 	{
 		buttons = GTK_BUTTONS_NONE;
@@ -456,7 +465,10 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	GtkEntryBuffer * buffer;
 
 	if(argc > 1)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
@@ -596,7 +608,10 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 	int res;
 
 	if(argc > 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, text, rows);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
@@ -617,7 +632,10 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	GtkEntryBuffer * buffer;
 
 	if(argc > 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(NULL, -1);
@@ -659,9 +677,15 @@ int builder_pause(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 
 	if(argc == 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	if(argc > 1)
+	{
 		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
 	pd.secs = strtoul(argv[0], NULL, 10);
 	pd.dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
@@ -868,7 +892,10 @@ int builder_yesno(struct bsddialog_conf const * conf,
 	int ret;
 
 	if(argc > 0)
+	{
 		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, text, rows);
 	if(conf->button.without_cancel != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
