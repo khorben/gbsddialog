@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <strings.h>
+#include <time.h>
 #include <gtk/gtk.h>
 #include "callbacks.h"
 #include "builders.h"
@@ -84,11 +85,14 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
+	int ret;
 	GtkWidget * dialog;
 	GtkWidget * container;
 	GtkWidget * widget;
-	int res;
 	guint year, month, day;
+	struct tm t;
+	char buf[1024];
+	size_t len;
 
 	if(argc > 0)
 	{
@@ -101,11 +105,29 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
 	gtk_widget_show(widget);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(dialog);
 	gtk_calendar_get_date(GTK_CALENDAR(widget), &year, &month, &day);
-	dprintf(opt->output_fd, "%u/%u/%u\n", day, month + 1, year);
 	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, opt, res);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			if(opt->date_fmt != NULL)
+			{
+				memset(&t, 0, sizeof(t));
+				t.tm_year = year - 1900;
+				t.tm_mon = month;
+				t.tm_mday = day;
+				len = strftime(buf, sizeof(buf) - 1,
+						opt->date_fmt, &t);
+				buf[len] = '\n';
+				write(opt->output_fd, buf, len + 1);
+			}
+			else
+				dprintf(opt->output_fd, "%u/%u/%u\n", day, month + 1, year);
+			return ret;
+	}
+	return _builder_dialog_output(conf, opt, ret);
 }
 
 

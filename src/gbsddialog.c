@@ -179,8 +179,8 @@ static struct option longopts[] = {
 	{"cr-wrap",           no_argument,       NULL, CR_WRAP},
 #if 0
 	{"datebox-format",    required_argument, NULL, DATEBOX_FORMAT},
-	{"date-format",       required_argument, NULL, DATE_FORMAT},
 #endif
+	{"date-format",       required_argument, NULL, DATE_FORMAT},
 	{"defaultno",         no_argument,       NULL, DEFAULT_NO},
 #if 0
 	{"default-button",    required_argument, NULL, DEFAULT_BUTTON},
@@ -518,6 +518,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case DEFAULT_ITEM:
 			opt->item_default = optarg;
+			break;
+		case DATE_FORMAT:
+			opt->date_fmt = optarg;
 			break;
 		case DEFAULT_NO:
 			conf->button.default_cancel = true;
