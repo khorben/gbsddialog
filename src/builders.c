@@ -35,9 +35,22 @@
 #include "callbacks.h"
 #include "builders.h"
 
+#ifndef MIN
+# define MIN(a, b) ((a) <= (b) ? (a) : (b))
+#endif
+
 
 /* builders */
 /* types */
+struct gauge_data
+{
+	GtkWidget * dialog;
+	GtkWidget * label;
+	GtkWidget * widget;	/* progress bar */
+	guint id;
+	int sep;		/* -1 no, 0 yes, 1 percentage */
+};
+
 struct infobox_data
 {
 	GtkWidget * dialog;
@@ -59,6 +72,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text, int rows);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
+static int _builder_dialog_error(GtkWidget * parent, char const * error);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
 		struct options const * opt, int res);
 static int _builder_dialog_run(GtkWidget * dialog);
@@ -235,16 +249,20 @@ static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 
 
 /* builder_gauge */
+static gboolean _gauge_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data);
+static gboolean _gauge_on_can_read_eof(gpointer data);
+static void _gauge_set_percentage(struct gauge_data * gd, unsigned int perc);
+
 int builder_gauge(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
 	int ret;
-	GtkWidget * widget;
-	GtkWidget * dialog;
+	struct gauge_data gd = { NULL, NULL, NULL, 0, -1 };
+	unsigned int perc = 0;
 	GtkWidget * container;
-	gdouble fraction = 0.0;
-	char buf[8];
+	GIOChannel * channel;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
@@ -252,20 +270,129 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	if(argc > 1)
 		error_args(opt->name, argc - 1, argv + 1);
 	else if(argc == 1)
-		fraction = (gdouble)(strtoul(argv[0], NULL, 10)) / 100.0;
-	dialog = _builder_dialog(conf, text, rows);
-	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	widget = gtk_progress_bar_new();
-	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
-	snprintf(buf, sizeof(buf), "%.0lf %%", fraction * 100.0);
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), buf);
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(widget), fraction);
-	gtk_widget_show(widget);
-	gtk_container_add(GTK_CONTAINER(container), widget);
-	/* FIXME read input */
-	ret = _builder_dialog_run(dialog);
-	gtk_widget_destroy(dialog);
+		perc = strtoul(argv[0], NULL, 10);
+	gd.dialog = _builder_dialog(conf, NULL, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(gd.dialog));
+	if(text != NULL)
+	{
+		gd.label = gtk_label_new(text);
+		gtk_label_set_line_wrap(GTK_LABEL(gd.label), TRUE);
+		gtk_label_set_line_wrap_mode(GTK_LABEL(gd.label),
+				PANGO_WRAP_WORD_CHAR);
+		gtk_label_set_single_line_mode(GTK_LABEL(gd.label), FALSE);
+		if(rows > 0)
+			gtk_label_set_lines(GTK_LABEL(gd.label), rows);
+		gtk_widget_show(gd.label);
+		gtk_container_add(GTK_CONTAINER(container), gd.label);
+	}
+	gd.widget = gtk_progress_bar_new();
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(gd.widget), TRUE);
+	_gauge_set_percentage(&gd, perc);
+	gtk_widget_show(gd.widget);
+	gtk_container_add(GTK_CONTAINER(container), gd.widget);
+	channel = g_io_channel_unix_new(STDIN_FILENO);
+	g_io_channel_set_encoding(channel, NULL, NULL);
+	/* XXX ignore errors */
+	g_io_channel_set_flags(channel, g_io_channel_get_flags(channel)
+			| G_IO_FLAG_NONBLOCK, NULL);
+	gd.id = g_io_add_watch(channel, G_IO_IN, _gauge_on_can_read, &gd);
+	ret = _builder_dialog_run(gd.dialog);
+	if(gd.id != 0)
+		g_source_remove(gd.id);
+	gtk_widget_destroy(gd.dialog);
 	return ret;
+}
+
+static gboolean _gauge_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data)
+{
+	struct gauge_data * gd = data;
+	const char sep[] = "XXX\n";
+	const char end[] = "EOF\n";
+	GIOStatus status;
+	char buf[1024];
+	gsize r;
+	GError * error = NULL;
+	char * p, * q;
+	unsigned int perc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN)
+	{
+		_builder_dialog_error(gd->dialog, "Unexpected condition");
+		return _gauge_on_can_read_eof(gd);
+	}
+	if((status = g_io_channel_read_chars(channel, buf, sizeof(buf) - 1,
+					&r, &error)) == G_IO_ERROR)
+	{
+		_builder_dialog_error(gd->dialog, error->message);
+		g_error_free(error);
+		return _gauge_on_can_read_eof(gd);
+	}
+	else if(status == G_IO_STATUS_AGAIN)
+		return TRUE;
+	else if(status == G_IO_STATUS_EOF)
+		return _gauge_on_can_read_eof(gd);
+	buf[r] = '\0';
+	/* XXX the following parser assumes full lines are always obtained */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() buf=\"%s\"\n", __func__, buf);
+#endif
+	for(p = buf; p[0] != '\0'; p++)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() %d \"%s\"\n", __func__, gd->sep, p);
+#endif
+		if(strncmp(p, end, sizeof(end) - 1) == 0)
+			return _gauge_on_can_read_eof(gd);
+		if(strncmp(p, sep, sizeof(sep) - 1) == 0)
+			/* found a separator */
+			gd->sep = 0;
+		else if(gd->sep == 0 && sscanf(p, "%u", &perc) == 1)
+		{
+			/* set the current percentage */
+			_gauge_set_percentage(gd, perc);
+			gd->sep = 1;
+		}
+		else if(gd->sep == 1 && (q = strchr(p, '\n')) != NULL)
+		{
+			/* set the current text */
+			*q = '\0';
+			gtk_label_set_text(GTK_LABEL(gd->label), p);
+			gd->sep = -1;
+			p = q;
+			continue;
+		}
+		if((p = strchr(p, '\n')) == NULL)
+			break;
+	}
+	return TRUE;
+}
+
+static gboolean _gauge_on_can_read_eof(gpointer data)
+{
+	struct gauge_data * gd = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	gtk_dialog_response(GTK_DIALOG(gd->dialog), GTK_RESPONSE_CLOSE);
+	gd->id = 0;
+	return FALSE;
+}
+
+static void _gauge_set_percentage(struct gauge_data * gd, unsigned int perc)
+{
+	gdouble fraction;
+	char buf[8];
+
+	perc = MIN(perc, 100);
+	fraction = (gdouble)perc / 100.0;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(gd->widget), fraction);
+	snprintf(buf, sizeof(buf), "%u %%", perc);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(gd->widget), buf);
 }
 
 
@@ -834,6 +961,23 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			conf->button.default_cancel
 			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
+}
+
+
+/* builder_dialog_error */
+static int _builder_dialog_error(GtkWidget * parent, char const * error)
+{
+	GtkWidget * dialog;
+	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
+
+	dialog = gtk_message_dialog_new(parent ? GTK_WINDOW(parent) : NULL,
+			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", error);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return BSDDIALOG_ERROR;
 }
 
 
