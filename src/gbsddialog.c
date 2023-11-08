@@ -327,6 +327,8 @@ typedef struct _GBSDDialog
 	int * ret;
 	int argc;
 	char const ** argv;
+	GtkWidget * window;	/* for backtitle */
+	GtkWidget * label;
 } GBSDDialog;
 
 /* prototypes */
@@ -335,6 +337,7 @@ static int _parseargs(int argc, char const ** argv,
 
 
 /* gbsddialog */
+static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt);
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 
@@ -356,6 +359,40 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	fprintf(stderr, "DEBUG: %s() => 0\n", __func__);
 #endif
 	return 0;
+}
+
+static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
+{
+	GdkScreen * screen;
+	GtkWidget * widget;
+	gint scale;
+
+	if(gbd->label != NULL)
+	{
+		gtk_label_set_text(GTK_LABEL(gbd->label), opt->backtitle);
+		return;
+	}
+	if((screen = gdk_screen_get_default()) == NULL)
+		return;
+	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	/* FIXME:
+	 * - keep track of monitor changes
+	 * - draw a desktop window on each monitor instead? */
+	scale = gdk_screen_get_monitor_scale_factor(screen, 0);
+	gtk_window_set_default_size(GTK_WINDOW(gbd->window),
+			gdk_screen_get_width(screen) * scale,
+			gdk_screen_get_height(screen) * scale);
+	gtk_window_set_type_hint(GTK_WINDOW(gbd->window),
+			GDK_WINDOW_TYPE_HINT_DESKTOP);
+	gbd->label = gtk_label_new(opt->backtitle);
+	gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
+	gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
+	gtk_widget_override_font(gbd->label, pango_font_description_from_string(
+				"Sans Bold Italic 32"));
+	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
+	gtk_widget_show_all(gbd->window);
 }
 
 static gboolean _gbsddialog_on_idle(gpointer data)
@@ -388,9 +425,12 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 
 	if(opt.mandatory_dialog && opt.dialogbuilder == NULL)
 	{
-		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected a --<dialog>"));
+		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
+					"expected a --<dialog>"));
 		return _gbsddialog_on_idle_quit(gbd);
 	}
+	if(opt.backtitle != NULL && gbd->window == NULL)
+		_gbsddialog_backtitle(gbd, &opt);
 	if(opt.dialogbuilder != NULL)
 	{
 		if(argc < 3)
@@ -400,7 +440,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		}
 		if((text = strdup(argv[0])) == NULL)
 		{
-			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "cannot allocate <text>"));
+			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
+						"cannot allocate <text>"));
 			return _gbsddialog_on_idle_quit(gbd);
 		}
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
@@ -507,6 +548,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 				return -error(BSDDIALOG_ERROR,
 						"--and-dialog without"
 						" previous --<dialog>");
+			break;
+		case BACKTITLE:
+			opt->backtitle = optarg;
 			break;
 		case CANCEL_EXIT_CODE:
 			exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg,
