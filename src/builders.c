@@ -143,6 +143,8 @@ static void _calendar_on_day_activated(gpointer data)
 
 
 /* builder_checklist */
+static void _checklist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data);
 
@@ -229,6 +231,8 @@ int builder_checklist(struct bsddialog_conf const * conf,
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
+	g_signal_connect(widget, "row-activated",
+			G_CALLBACK(_checklist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
 	gtk_widget_show_all(window);
@@ -266,6 +270,23 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static void _checklist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean set;
+	(void) column;
+	(void) data;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
+	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
+		return;
+	gtk_tree_model_get(model, &iter, 0, &set, -1);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, set ? FALSE : TRUE,
+			-1);
 }
 
 static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -774,6 +795,8 @@ static gboolean _pause_on_timeout(gpointer data)
 
 
 /* builder_radiolist */
+static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data);
 
@@ -864,6 +887,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
+	g_signal_connect(widget, "row-activated",
+			G_CALLBACK(_radiolist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
 	gtk_widget_show_all(window);
@@ -901,6 +926,24 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean b;
+	(void) column;
+	(void) data;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+		gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, FALSE, -1);
+	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
+		return;
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, TRUE, -1);
 }
 
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
