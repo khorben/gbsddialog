@@ -231,7 +231,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	g_signal_connect(widget, "row-activated",
 			G_CALLBACK(_checklist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
-	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(dialog);
@@ -626,7 +626,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	g_signal_connect_swapped(widget, "row-activated",
 			G_CALLBACK(_menu_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
-	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(dialog);
@@ -887,7 +887,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	g_signal_connect(widget, "row-activated",
 			G_CALLBACK(_radiolist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
-	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(dialog);
