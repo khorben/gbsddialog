@@ -276,9 +276,7 @@ static struct option longopts[] = {
 	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 #endif
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
-#if 0
 	{"theme",             required_argument, NULL, THEME},
-#endif
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
 #if 0
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
@@ -591,6 +589,10 @@ static int _parseargs(int argc, char const ** argv,
 				break;
 			case TEXT_UNCHANGED:
 				opt->text_unchanged = true;
+				break;
+			case THEME:
+				g_object_set(gtk_settings_get_default(),
+						"gtk-theme-name", optarg, NULL);
 				break;
 			case TIMEOUT_EXIT_CODE:
 				exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(
