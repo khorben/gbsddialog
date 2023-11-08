@@ -81,6 +81,8 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 /* functions */
 /* builder_calendar */
+static void _calendar_on_day_activated(gpointer data);
+
 int builder_calendar(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -102,6 +104,8 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_calendar_new();
+	g_signal_connect_swapped(widget, "day-selected-double-click",
+			G_CALLBACK(_calendar_on_day_activated), dialog);
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
 	gtk_widget_show(widget);
 	_builder_dialog_buttons(dialog, conf);
@@ -128,6 +132,13 @@ int builder_calendar(struct bsddialog_conf const * conf,
 			return ret;
 	}
 	return _builder_dialog_output(conf, opt, ret);
+}
+
+static void _calendar_on_day_activated(gpointer data)
+{
+	GtkWidget * dialog = data;
+
+	gtk_window_activate_default(GTK_WINDOW(dialog));
 }
 
 
