@@ -606,14 +606,17 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0; i < n; i++)
+	for(i = 0, set = FALSE; i < n; i++)
 	{
 		gtk_list_store_insert(store, &iter, -1);
 		gtk_list_store_set(store, &iter,
-				0, strcasecmp(argv[i * 3 + 3], "on") == 0,
-				1, argv[i * 3 + 1], 2, argv[i * 3 + 2], -1);
+				0, set == FALSE && (set = strcasecmp(
+						argv[i * 3 + 3], "on") == 0)
+				? TRUE : FALSE, 1, argv[i * 3 + 1],
+				2, argv[i * 3 + 2], -1);
 		if(opt->item_default != NULL
-				&& strcmp(argv[i * 3 + 1], opt->item_default) == 0)
+				&& strcmp(argv[i * 3 + 1],
+					opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
 	renderer = gtk_cell_renderer_toggle_new();
