@@ -1018,8 +1018,8 @@ int builder_yesno(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	GtkWidget * dialog;
 	int ret;
+	GtkWidget * dialog;
 
 	if(argc > 0)
 	{
