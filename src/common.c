@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include "common.h"
 
 
@@ -58,7 +59,7 @@ struct exitcode exitcodes[] =
 
 /* functions */
 /* custom_text */
-void custom_text(struct options * opt, char * text, char * buf)
+void custom_text(struct options * opt, char const * text, char * buf)
 {
 	bool trim, crwrap;
 	int i, j;
