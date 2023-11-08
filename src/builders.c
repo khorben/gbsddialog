@@ -967,6 +967,52 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 }
 
 
+/* builder_textbox */
+int builder_textbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkWidget * widget;
+	GtkTextBuffer * buffer;
+	GtkTextIter iter;
+	FILE * fp;
+	char buf[4096];
+	size_t size;
+
+	if(argc > 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	/* FIXME use a GIOChannel instead */
+	if((fp = fopen(text, "r")) == NULL)
+		return BSDDIALOG_ERROR;
+	dialog = _builder_dialog(conf, NULL, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	widget = gtk_text_view_new();
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+	gtk_text_buffer_get_start_iter(buffer, &iter);
+	while((size = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
+		gtk_text_buffer_insert(buffer, &iter, buf, size);
+	fclose(fp);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
+	gtk_widget_show_all(window);
+	gtk_dialog_add_button(GTK_DIALOG(dialog), "Exit", GTK_RESPONSE_CLOSE);
+	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
 /* builder_yesno */
 int builder_yesno(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
