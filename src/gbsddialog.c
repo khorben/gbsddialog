@@ -391,7 +391,11 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 				"Sans Bold Italic 32"));
 	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(widget),
+			gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
+			FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
+	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
 	gtk_widget_show_all(gbd->window);
 }
 
@@ -526,7 +530,6 @@ static int _parseargs(int argc, char const ** argv,
 	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
 		if((ret = _parsearg(conf, opt, arg)) != 0)
 			return ret;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, argc);
 #endif
