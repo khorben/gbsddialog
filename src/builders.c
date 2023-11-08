@@ -94,6 +94,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	guint year, month, day;
 	struct tm t;
 	char buf[1024];
+	char const * fmt = "%d/%m/%Y";
 	size_t len;
 
 	if(argc > 0)
@@ -117,18 +118,14 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
 			if(opt->date_fmt != NULL)
-			{
-				memset(&t, 0, sizeof(t));
-				t.tm_year = year - 1900;
-				t.tm_mon = month;
-				t.tm_mday = day;
-				len = strftime(buf, sizeof(buf) - 1,
-						opt->date_fmt, &t);
-				buf[len] = '\n';
-				write(opt->output_fd, buf, len + 1);
-			}
-			else
-				dprintf(opt->output_fd, "%u/%u/%u\n", day, month + 1, year);
+				fmt = opt->date_fmt;
+			memset(&t, 0, sizeof(t));
+			t.tm_year = year - 1900;
+			t.tm_mon = month;
+			t.tm_mday = day;
+			len = strftime(buf, sizeof(buf) - 1, fmt, &t);
+			buf[len] = '\n';
+			write(opt->output_fd, buf, len + 1);
 			return ret;
 	}
 	return _builder_dialog_output(conf, opt, ret);
