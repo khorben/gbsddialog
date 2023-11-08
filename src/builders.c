@@ -689,6 +689,9 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 
 	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
 		return;
+	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
+			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
+		gtk_list_store_set(store, &iter, 0, FALSE, -1);
 	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
