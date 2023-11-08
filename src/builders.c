@@ -65,6 +65,33 @@ static int _builder_dialog_run(GtkWidget * dialog);
 
 
 /* functions */
+/* builder_calendar */
+int builder_calendar(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	int res;
+	guint year, month, day;
+
+	if(argc > 0)
+		error_args(opt->name, argc, argv);
+	dialog = _builder_dialog(conf, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	widget = gtk_calendar_new();
+	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
+	gtk_widget_show(widget);
+	_builder_dialog_buttons(dialog, conf);
+	res = _builder_dialog_run(dialog);
+	gtk_calendar_get_date(GTK_CALENDAR(widget), &year, &month, &day);
+	dprintf(opt->output_fd, "%u/%u/%u\n", day, month + 1, year);
+	gtk_widget_destroy(dialog);
+	return _builder_dialog_output(conf, opt, res);
+}
+
+
 /* builder_checklist */
 static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data);

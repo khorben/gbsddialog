@@ -286,9 +286,7 @@ static struct option longopts[] = {
 	{"title",             required_argument, NULL, TITLE},
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
-#if 0
 	{"calendar",     no_argument, NULL, CALENDAR},
-#endif
 	{"checklist",    no_argument, NULL, CHECKLIST},
 #if 0
 	{"datebox",      no_argument, NULL, DATEBOX},
@@ -602,6 +600,13 @@ static int _parseargs(int argc, char const ** argv,
 				conf->title = optarg;
 				break;
 			/* Dialogs */
+			case CALENDAR:
+				if(opt->dialogbuilder != NULL)
+					return -error(BSDDIALOG_ERROR, "%s and --calendar without "
+							"--and-dialog", opt->name);
+				opt->name = "--calendar";
+				opt->dialogbuilder = builder_calendar;
+				break;
 			case CHECKLIST:
 				if(opt->dialogbuilder != NULL)
 					return -error(BSDDIALOG_ERROR, "%s and --checklist without "
