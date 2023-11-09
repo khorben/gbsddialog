@@ -368,6 +368,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	GdkScreen * screen;
 	GtkWidget * widget;
 	gint scale;
+	const GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
 
 	if(gbd->label != NULL)
 	{
@@ -377,6 +378,8 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	if((screen = gdk_screen_get_default()) == NULL)
 		return;
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_widget_override_background_color(gbd->window, GTK_STATE_FLAG_NORMAL,
+			&blue);
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
