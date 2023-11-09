@@ -231,9 +231,7 @@ static struct option longopts[] = {
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-label",          required_argument, NULL, CANCEL_LABEL},
-#if 0
 	{"no-lines",          no_argument,       NULL, NO_LINES},
-#endif
 	{"no-names",          no_argument,       NULL, NO_NAMES},
 	{"no-ok",             no_argument,       NULL, NO_OK},
 	{"nook",              no_argument,       NULL, NO_OK},
@@ -336,7 +334,8 @@ static int _parseargs(int argc, char const ** argv,
 
 
 /* gbsddialog */
-static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt);
+static void _gbsddialog_backtitle(GBSDDialog * gbd,
+		struct bsddialog_conf const * conf, struct options * opt);
 static void _backtitle_apply_style(GtkWidget * widget,
 		GdkRGBA * bg, GdkRGBA * fg);
 static void _backtitle_bikeshed_color(GdkRGBA * color);
@@ -363,7 +362,8 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	return 0;
 }
 
-static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
+static void _gbsddialog_backtitle(GBSDDialog * gbd,
+		struct bsddialog_conf const * conf, struct options * opt)
 {
 	GdkScreen * screen;
 	GtkWidget * widget;
@@ -380,7 +380,23 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	}
 	if((screen = gdk_screen_get_default()) == NULL)
 		return;
+	if(opt->bikeshed)
+	{
+		srandom(time(NULL) ^ getpid() ^ getuid());
+		_backtitle_bikeshed_color(&bg);
+		_backtitle_bikeshed_color(&fg);
+	}
+	else
+	{
+		widget = gtk_tree_view_new();
+		style = gtk_widget_get_style_context(widget);
+		gtk_style_context_get_background_color(style,
+				GTK_STATE_FLAG_SELECTED, &bg);
+		gtk_style_context_get_color(style, GTK_STATE_SELECTED, &fg);
+		gtk_widget_destroy(widget);
+	}
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	_backtitle_apply_style(gbd->window, &bg, &fg);
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
@@ -397,27 +413,14 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 				"Sans Bold Italic 32"));
 	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
-	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+	if(conf->no_lines != true)
+	{
+		separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+		_backtitle_apply_style(separator, &fg, &fg);
+		gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+	}
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
 	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
-	if(opt->bikeshed)
-	{
-		srandom(time(NULL) ^ getpid() ^ getuid());
-		_backtitle_bikeshed_color(&bg);
-		_backtitle_bikeshed_color(&fg);
-	}
-	else
-	{
-		widget = gtk_tree_view_new();
-		style = gtk_widget_get_style_context(widget);
-		gtk_style_context_get_background_color(style,
-				GTK_STATE_FLAG_SELECTED, &bg);
-		gtk_style_context_get_color(style, GTK_STATE_SELECTED, &fg);
-		gtk_widget_destroy(widget);
-	}
-	_backtitle_apply_style(gbd->window, &bg, &fg);
-	_backtitle_apply_style(separator, &fg, &fg);
 	gtk_widget_show_all(gbd->window);
 }
 
@@ -485,7 +488,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		return _gbsddialog_on_idle_quit(gbd);
 	}
 	if(opt.backtitle != NULL && gbd->window == NULL)
-		_gbsddialog_backtitle(gbd, &opt);
+		_gbsddialog_backtitle(gbd, &conf, &opt);
 	if(opt.dialogbuilder != NULL)
 	{
 		if(argc < 3)
@@ -698,6 +701,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case NO_DESCRIPTIONS:
 			conf->menu.no_desc = true;
+			break;
+		case NO_LINES:
+			conf->no_lines = true;
 			break;
 		case NO_NAMES:
 			conf->menu.no_name = true;
