@@ -1006,7 +1006,12 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
-	gtk_dialog_add_button(GTK_DIALOG(dialog), "Exit", GTK_RESPONSE_CLOSE);
+	gtk_dialog_add_button(GTK_DIALOG(dialog), "Exit", GTK_RESPONSE_OK);
+#if GTK_CHECK_VERSION(3, 12, 0)
+	if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(dialog))) != NULL)
+		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(widget),
+				FALSE);
+#endif
 	ret = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
