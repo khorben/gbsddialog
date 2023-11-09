@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 #include <getopt.h>
 #include "builders.h"
@@ -165,8 +166,8 @@ static struct option longopts[] = {
 #if 0
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
-	{"bikeshed",          no_argument,       NULL, BIKESHED},
 #endif
+	{"bikeshed",          no_argument,       NULL, BIKESHED},
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
 #if 0
@@ -368,7 +369,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	GdkScreen * screen;
 	GtkWidget * widget;
 	gint scale;
-	const GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
+	GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
 
 	if(gbd->label != NULL)
 	{
@@ -378,6 +379,16 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	if((screen = gdk_screen_get_default()) == NULL)
 		return;
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	if(opt->bikeshed)
+	{
+		srandom(time(NULL) ^ getpid() ^ getuid());
+		blue.red = random();
+		blue.red /= RAND_MAX;
+		blue.green = random();
+		blue.green /= RAND_MAX;
+		blue.blue = random();
+		blue.blue /= RAND_MAX;
+	}
 	gtk_widget_override_background_color(gbd->window, GTK_STATE_FLAG_NORMAL,
 			&blue);
 	/* FIXME:
@@ -559,6 +570,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case BACKTITLE:
 			opt->backtitle = optarg;
+			break;
+		case BIKESHED:
+			opt->bikeshed = true;
 			break;
 		case CANCEL_EXIT_CODE:
 			exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg,
