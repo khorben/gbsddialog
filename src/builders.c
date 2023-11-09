@@ -997,7 +997,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	widget = gtk_text_view_new();
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(widget), FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(widget), GTK_WRAP_WORD_CHAR);
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 	while((size = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
