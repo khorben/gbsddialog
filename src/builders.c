@@ -201,7 +201,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; i < n; i++)
 	{
-		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
 				0, strcasecmp(argv[i * j + 3], "on") == 0,
 				1, argv[i * j + 1], 2, argv[i * j + 2],
@@ -635,7 +635,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; i < n; i++)
 	{
-		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
 				0, argv[i * j + 1], 1, argv[i * j + 2],
 				(j == 3) ? 2 : -1,
@@ -890,7 +890,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0, set = FALSE; i < n; i++)
 	{
-		gtk_list_store_insert(store, &iter, -1);
+		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
 				0, set == FALSE && (set = strcasecmp(
 						argv[i * j + 3], "on") == 0)
