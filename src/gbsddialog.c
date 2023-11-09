@@ -341,7 +341,7 @@ static int _parseargs(int argc, char const ** argv,
 
 /* gbsddialog */
 static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt);
-static void _backtitle_bikeshed(GtkWidget * widget);
+static void _backtitle_bikeshed(GtkWidget * widget, GdkRGBA * bg, GdkRGBA * fg);
 static void _backtitle_bikeshed_color(GdkRGBA * color);
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
@@ -370,8 +370,12 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 {
 	GdkScreen * screen;
 	GtkWidget * widget;
+	GtkWidget * separator;
 	gint scale;
 	const GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
+	const GdkRGBA white = { 1.0, 1.0, 1.0, 1.0 };
+	GdkRGBA bg = { 0.0, 0.0, 0.0, 1.0 };
+	GdkRGBA fg = { 0.0, 0.0, 0.0, 1.0 };
 
 	if(gbd->label != NULL)
 	{
@@ -382,10 +386,17 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 		return;
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(opt->bikeshed)
-		_backtitle_bikeshed(gbd->window);
+	{
+		srandom(time(NULL) ^ getpid() ^ getuid());
+		_backtitle_bikeshed_color(&bg);
+		_backtitle_bikeshed_color(&fg);
+	}
 	else
-		gtk_widget_override_background_color(gbd->window,
-				GTK_STATE_FLAG_NORMAL, &blue);
+	{
+		bg = blue;
+		fg = white;
+	}
+	_backtitle_bikeshed(gbd->window, &bg, &fg);
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
@@ -402,24 +413,30 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 				"Sans Bold Italic 32"));
 	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(widget),
-			gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-			FALSE, TRUE, 4);
+	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	_backtitle_bikeshed(separator, &fg, &fg);
+	gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
 	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
 	gtk_widget_show_all(gbd->window);
 }
 
-static void _backtitle_bikeshed(GtkWidget * widget)
+static void _backtitle_bikeshed(GtkWidget * widget, GdkRGBA * bg, GdkRGBA * fg)
 {
 	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
 
-	srandom(time(NULL) ^ getpid() ^ getuid());
-	_backtitle_bikeshed_color(&color);
-	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL,
-			&color);
-	_backtitle_bikeshed_color(&color);
-	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, &color);
+	if(bg == NULL)
+	{
+		bg = &color;
+		_backtitle_bikeshed_color(bg);
+	}
+	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, bg);
+	if(fg == NULL)
+	{
+		fg = &color;
+		_backtitle_bikeshed_color(fg);
+	}
+	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, fg);
 }
 
 static void _backtitle_bikeshed_color(GdkRGBA * color)
