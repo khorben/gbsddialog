@@ -341,7 +341,8 @@ static int _parseargs(int argc, char const ** argv,
 
 /* gbsddialog */
 static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt);
-static void _backtitle_bikeshed(GtkWidget * widget, GdkRGBA * bg, GdkRGBA * fg);
+static void _backtitle_apply_style(GtkWidget * widget,
+		GdkRGBA * bg, GdkRGBA * fg);
 static void _backtitle_bikeshed_color(GdkRGBA * color);
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
@@ -371,9 +372,8 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	GdkScreen * screen;
 	GtkWidget * widget;
 	GtkWidget * separator;
+	GtkStyleContext * style;
 	gint scale;
-	const GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
-	const GdkRGBA white = { 1.0, 1.0, 1.0, 1.0 };
 	GdkRGBA bg = { 0.0, 0.0, 0.0, 1.0 };
 	GdkRGBA fg = { 0.0, 0.0, 0.0, 1.0 };
 
@@ -385,18 +385,6 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	if((screen = gdk_screen_get_default()) == NULL)
 		return;
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	if(opt->bikeshed)
-	{
-		srandom(time(NULL) ^ getpid() ^ getuid());
-		_backtitle_bikeshed_color(&bg);
-		_backtitle_bikeshed_color(&fg);
-	}
-	else
-	{
-		bg = blue;
-		fg = white;
-	}
-	_backtitle_bikeshed(gbd->window, &bg, &fg);
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
@@ -414,14 +402,31 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
 	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	_backtitle_bikeshed(separator, &fg, &fg);
 	gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
 	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
+	if(opt->bikeshed)
+	{
+		srandom(time(NULL) ^ getpid() ^ getuid());
+		_backtitle_bikeshed_color(&bg);
+		_backtitle_bikeshed_color(&fg);
+	}
+	else
+	{
+		widget = gtk_tree_view_new();
+		style = gtk_widget_get_style_context(widget);
+		gtk_style_context_get_background_color(style,
+				GTK_STATE_FLAG_SELECTED, &bg);
+		gtk_style_context_get_color(style, GTK_STATE_SELECTED, &fg);
+		gtk_widget_destroy(widget);
+	}
+	_backtitle_apply_style(gbd->window, &bg, &fg);
+	_backtitle_apply_style(separator, &fg, &fg);
 	gtk_widget_show_all(gbd->window);
 }
 
-static void _backtitle_bikeshed(GtkWidget * widget, GdkRGBA * bg, GdkRGBA * fg)
+static void _backtitle_apply_style(GtkWidget * widget, GdkRGBA * bg,
+		GdkRGBA * fg)
 {
 	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
 
