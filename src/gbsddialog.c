@@ -163,10 +163,8 @@ static struct option longopts[] = {
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
 #endif
 	{"backtitle",         required_argument, NULL, BACKTITLE},
-#if 0
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
-#endif
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
@@ -562,8 +560,8 @@ static int _parseargs(int argc, char const ** argv,
 #endif
 
 	memset(conf, 0, sizeof(*conf));
-	conf->y = BSDDIALOG_CENTER;
-	conf->x = BSDDIALOG_CENTER;
+	conf->y = BSDDIALOG_AUTOSIZE;
+	conf->x = BSDDIALOG_AUTOSIZE;
 	conf->shadow = true;
 	conf->text.cols_per_row = DEFAULT_COLS_PER_ROW;
 	conf->key.enable_esc = true;
@@ -609,6 +607,21 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case BACKTITLE:
 			opt->backtitle = optarg;
+			break;
+		case BEGIN_X:
+			conf->x = (int)strtol(optarg, NULL, 10);
+			if(conf->x < BSDDIALOG_CENTER)
+				return -error(BSDDIALOG_ERROR,
+						"--begin-x %d is < %d",
+						conf->x, BSDDIALOG_CENTER);
+			break;
+		case BEGIN_Y:
+			conf->y = (int)strtol(optarg, NULL, 10);
+			if(conf->y < BSDDIALOG_CENTER)
+				return -error(BSDDIALOG_ERROR,
+						"--begin-y %d is < %d",
+						conf->y, BSDDIALOG_CENTER);
+			conf->auto_topmargin = 0;
 			break;
 		case BIKESHED:
 			opt->bikeshed = true;

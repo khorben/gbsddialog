@@ -73,7 +73,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text, int rows);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
-static int _builder_dialog_error(GtkWidget * parent, char const * error);
+static int _builder_dialog_error(GtkWidget * parent,
+		struct bsddialog_conf const * conf, char const * error);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
 		struct options const * opt, int res);
 static int _builder_dialog_run(GtkWidget * dialog);
@@ -382,13 +383,13 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 #endif
 	if(condition != G_IO_IN)
 	{
-		_builder_dialog_error(gd->dialog, "Unexpected condition");
+		_builder_dialog_error(gd->dialog, NULL, "Unexpected condition");
 		return _gauge_on_can_read_eof(gd);
 	}
 	if((status = g_io_channel_read_chars(channel, buf, sizeof(buf) - 1,
 					&r, &error)) == G_IO_ERROR)
 	{
-		_builder_dialog_error(gd->dialog, error->message);
+		_builder_dialog_error(gd->dialog, NULL, error->message);
 		g_error_free(error);
 		return _gauge_on_can_read_eof(gd);
 	}
@@ -484,7 +485,6 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			buttons, "%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
-	gtk_window_set_position(GTK_WINDOW(id.dialog), GTK_WIN_POS_CENTER);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
 	if(conf->bottomtitle != NULL
@@ -492,6 +492,13 @@ int builder_infobox(struct bsddialog_conf const * conf,
 					GTK_DIALOG(id.dialog))) != NULL)
 		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
 				conf->bottomtitle);
+	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
+		gtk_window_fullscreen(GTK_WINDOW(id.dialog));
+	else if(conf->x > 0 && conf->y > 0)
+		gtk_window_move(GTK_WINDOW(id.dialog), conf->x, conf->y);
+	else
+		gtk_window_set_position(GTK_WINDOW(id.dialog),
+				GTK_WIN_POS_CENTER);
 	gtk_dialog_run(GTK_DIALOG(id.dialog));
 	if(id.id != 0)
 		g_source_remove(id.id);
@@ -1073,7 +1080,6 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
 					GTK_DIALOG(dialog))) != NULL)
@@ -1092,6 +1098,12 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_widget_show(widget);
 		gtk_container_add(GTK_CONTAINER(container), widget);
 	}
+	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
+		gtk_window_fullscreen(GTK_WINDOW(dialog));
+	else if(conf->x > 0 && conf->y > 0)
+		gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
+	else
+		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	return dialog;
 }
 
@@ -1126,7 +1138,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 
 
 /* builder_dialog_error */
-static int _builder_dialog_error(GtkWidget * parent, char const * error)
+static int _builder_dialog_error(GtkWidget * parent,
+		struct bsddialog_conf const * conf, char const * error)
 {
 	GtkWidget * dialog;
 	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
@@ -1136,6 +1149,17 @@ static int _builder_dialog_error(GtkWidget * parent, char const * error)
 			"%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", error);
+	if(parent == NULL && conf != NULL)
+	{
+		if(conf->x == BSDDIALOG_FULLSCREEN
+				|| conf->y == BSDDIALOG_FULLSCREEN)
+			gtk_window_fullscreen(GTK_WINDOW(dialog));
+		else if(conf->x > 0 && conf->y > 0)
+			gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
+		else
+			gtk_window_set_position(GTK_WINDOW(dialog),
+					GTK_WIN_POS_CENTER);
+	}
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return BSDDIALOG_ERROR;
