@@ -33,6 +33,7 @@
 #include <strings.h>
 #include <time.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "builders.h"
 
@@ -344,13 +345,17 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		gtk_label_set_line_wrap_mode(GTK_LABEL(gd.label),
 				PANGO_WRAP_WORD_CHAR);
 		gtk_label_set_single_line_mode(GTK_LABEL(gd.label), FALSE);
+#if GTK_CHECK_VERSION(3, 10, 0)
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(gd.label), rows);
+#endif
 		gtk_widget_show(gd.label);
 		gtk_container_add(GTK_CONTAINER(container), gd.label);
 	}
 	gd.widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(gd.widget), TRUE);
+#endif
 	_gauge_set_percentage(&gd, perc);
 	gtk_widget_show(gd.widget);
 	gtk_container_add(GTK_CONTAINER(container), gd.widget);
@@ -470,7 +475,11 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	GtkWidget * widget;
+#if GTK_CHECK_VERSION(3, 12, 0)
 	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
+#else
+	const GtkDialogFlags flags = 0;
+#endif
 	GtkButtonsType buttons = GTK_BUTTONS_OK;
 	struct infobox_data id = { NULL, 0 };
 
@@ -495,11 +504,13 @@ int builder_infobox(struct bsddialog_conf const * conf,
 				(void *)conf);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
+#if GTK_CHECK_VERSION(3, 12, 0)
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
 					GTK_DIALOG(id.dialog))) != NULL)
 		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
 				conf->bottomtitle);
+#endif
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(id.dialog));
 	else if(conf->x > 0 && conf->y > 0)
@@ -776,7 +787,9 @@ int builder_pause(struct bsddialog_conf const * conf,
 	pd.dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
 	pd.widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(pd.widget), TRUE);
+#endif
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(pd.widget), argv[0]);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pd.widget), 1.0);
 	pd.step = (pd.secs > 0) ? 1.0 / (gdouble) pd.secs : 1.0;
@@ -803,7 +816,11 @@ static gboolean _pause_on_timeout(gpointer data)
 	fraction = gtk_progress_bar_get_fraction(GTK_PROGRESS_BAR(pd->widget));
 	if(fraction - pd->step < 0.0)
 	{
+#if GTK_CHECK_VERSION(3, 10, 0)
 		gtk_window_close(GTK_WINDOW(pd->dialog));
+#else
+		gtk_dialog_response(GTK_DIALOG(pd->dialog), GTK_RESPONSE_CLOSE);
+#endif
 		pd->id = 0;
 		return FALSE;
 	}
@@ -1094,7 +1111,11 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text, int rows)
 {
 	GtkWidget * dialog;
+#if GTK_CHECK_VERSION(3, 12, 0)
 	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
+#else
+	const GtkDialogFlags flags = 0;
+#endif
 	GtkWidget * container;
 	GtkWidget * widget;
 
@@ -1104,11 +1125,13 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	if(conf->key.f1_message != NULL)
 		g_signal_connect(dialog, "key-press-event",
 				G_CALLBACK(_dialog_on_key_press), (void *)conf);
+#if GTK_CHECK_VERSION(3, 12, 0)
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
 					GTK_DIALOG(dialog))) != NULL)
 		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
 				conf->bottomtitle);
+#endif
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	if(text != NULL)
 	{
@@ -1117,8 +1140,10 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
 				PANGO_WRAP_WORD_CHAR);
 		gtk_label_set_single_line_mode(GTK_LABEL(widget), FALSE);
+#if GTK_CHECK_VERSION(3, 10, 0)
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
+#endif
 		gtk_widget_show(widget);
 		gtk_container_add(GTK_CONTAINER(container), widget);
 	}
@@ -1176,7 +1201,11 @@ static int _builder_dialog_error(GtkWidget * parent,
 		struct bsddialog_conf const * conf, char const * error)
 {
 	GtkWidget * dialog;
+#if GTK_CHECK_VERSION(3, 12, 0)
 	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
+#else
+	const GtkDialogFlags flags = 0;
+#endif
 
 	dialog = gtk_message_dialog_new(parent ? GTK_WINDOW(parent) : NULL,
 			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,

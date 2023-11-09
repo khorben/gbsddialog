@@ -336,9 +336,15 @@ static int _parseargs(int argc, char const ** argv,
 /* gbsddialog */
 static void _gbsddialog_backtitle(GBSDDialog * gbd,
 		struct bsddialog_conf const * conf, struct options * opt);
+#if GTK_CHECK_VERSION(3, 0, 0)
 static void _backtitle_apply_style(GtkWidget * widget,
 		GdkRGBA * bg, GdkRGBA * fg);
 static void _backtitle_bikeshed_color(GdkRGBA * color);
+#else
+static void _backtitle_apply_style(GtkWidget * widget,
+		GdkColor * bg, GdkColor * fg);
+static void _backtitle_bikeshed_color(GdkColor * color);
+#endif
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 
@@ -368,10 +374,20 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	GdkScreen * screen;
 	GtkWidget * widget;
 	GtkWidget * separator;
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
-	gint scale;
+#else
+	GtkStyle * style;
+#endif
+	gint scale = 1;
+	PangoFontDescription * fontdesc;
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GdkRGBA bg = { 0.0, 0.0, 0.0, 1.0 };
 	GdkRGBA fg = { 0.0, 0.0, 0.0, 1.0 };
+#else
+	GdkColor bg = { 0, 0, 0, 65535 };
+	GdkColor fg = { 0, 65535, 65535, 65535 };
+#endif
 
 	if(gbd->label != NULL)
 	{
@@ -389,10 +405,15 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	else
 	{
 		widget = gtk_tree_view_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
 		style = gtk_widget_get_style_context(widget);
 		gtk_style_context_get_background_color(style,
 				GTK_STATE_FLAG_SELECTED, &bg);
 		gtk_style_context_get_color(style, GTK_STATE_SELECTED, &fg);
+#else
+		style = gtk_widget_get_style(widget);
+		/* FIXME obtain the colors */
+#endif
 		gtk_widget_destroy(widget);
 	}
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -400,7 +421,9 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
+#if GTK_CHECK_VERSION(3, 12, 0)
 	scale = gdk_screen_get_monitor_scale_factor(screen, 0);
+#endif
 	gtk_window_set_default_size(GTK_WINDOW(gbd->window),
 			gdk_screen_get_width(screen) * scale,
 			gdk_screen_get_height(screen) * scale);
@@ -409,13 +432,26 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	gbd->label = gtk_label_new(opt->backtitle);
 	gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
 	gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
-	gtk_widget_override_font(gbd->label, pango_font_description_from_string(
-				"Sans Bold Italic 32"));
+	fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_widget_override_font(gbd->label, fontdesc);
+#else
+	gtk_widget_modify_font(gbd->label, fontdesc);
+#endif
+	pango_font_description_free(fontdesc);
+#if GTK_CHECK_VERSION(3, 0, 0)
 	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
+	widget = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
 	if(conf->no_lines != true)
 	{
+#if GTK_CHECK_VERSION(3, 0, 0)
 		separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+		separator = gtk_hseparator_new();
+#endif
 		_backtitle_apply_style(separator, &fg, &fg);
 		gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
 	}
@@ -424,25 +460,43 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	gtk_widget_show_all(gbd->window);
 }
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 static void _backtitle_apply_style(GtkWidget * widget, GdkRGBA * bg,
 		GdkRGBA * fg)
+#else
+static void _backtitle_apply_style(GtkWidget * widget, GdkColor * bg,
+		GdkColor * fg)
+#endif
 {
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
+#else
+	GdkColor color = { 0, 0, 0, 0 };
+#endif
 
 	if(bg == NULL)
 	{
 		bg = &color;
 		_backtitle_bikeshed_color(bg);
 	}
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, bg);
+#else
+	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, bg);
+#endif
 	if(fg == NULL)
 	{
 		fg = &color;
 		_backtitle_bikeshed_color(fg);
 	}
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, fg);
+#else
+	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, fg);
+#endif
 }
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 static void _backtitle_bikeshed_color(GdkRGBA * color)
 {
 	color->red = random();
@@ -452,6 +506,14 @@ static void _backtitle_bikeshed_color(GdkRGBA * color)
 	color->blue = random();
 	color->blue /= RAND_MAX;
 }
+#else
+static void _backtitle_bikeshed_color(GdkColor * color)
+{
+	color->red = random();
+	color->green = random();
+	color->blue = random();
+}
+#endif
 
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
