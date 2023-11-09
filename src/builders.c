@@ -1233,6 +1233,7 @@ static int _builder_dialog_error(GtkWidget * parent,
 static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf)
 {
+	int ret;
 	GtkWidget * dialog;
 	const GtkDialogFlags flags = 0;
 	GtkButtonsType buttons = GTK_BUTTONS_CLOSE;
@@ -1242,8 +1243,9 @@ static int _builder_dialog_help(GtkWidget * parent,
 			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", conf->key.f1_message);
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	ret = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
