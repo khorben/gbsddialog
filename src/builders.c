@@ -300,8 +300,7 @@ static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_list_store_set(store, &iter, 0,
-			gtk_cell_renderer_toggle_get_active(
+	gtk_list_store_set(store, &iter, 0, gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
 }
@@ -960,8 +959,7 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_list_store_set(store, &iter, 0,
-			gtk_cell_renderer_toggle_get_active(
+	gtk_list_store_set(store, &iter, 0, gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
 }
