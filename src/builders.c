@@ -75,6 +75,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
 static int _builder_dialog_error(GtkWidget * parent,
 		struct bsddialog_conf const * conf, char const * error);
+static int _builder_dialog_help(GtkWidget * parent,
+		struct bsddialog_conf const * conf);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
 		struct options const * opt, int res);
 static int _builder_dialog_run(GtkWidget * dialog);
@@ -459,6 +461,8 @@ static void _gauge_set_percentage(struct gauge_data * gd, unsigned int perc)
 
 
 /* builder_infobox */
+static gboolean _infobox_on_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data);
 static gboolean _infobox_on_timeout(gpointer data);
 
 int builder_infobox(struct bsddialog_conf const * conf,
@@ -485,6 +489,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			buttons, "%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
+	if(conf->key.f1_message != NULL)
+		g_signal_connect(id.dialog, "key-press-event",
+				G_CALLBACK(_infobox_on_key_press),
+				(void *)conf);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
 	if(conf->bottomtitle != NULL
@@ -503,6 +511,16 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	if(id.id != 0)
 		g_source_remove(id.id);
 	return 0;
+}
+
+static gboolean _infobox_on_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data)
+{
+	struct bsddialog_conf const * conf = data;
+
+	if(event->keyval == GDK_KEY_F1)
+		_builder_dialog_help(widget, conf);
+	return FALSE;
 }
 
 static gboolean _infobox_on_timeout(gpointer data)
@@ -1069,6 +1087,9 @@ int builder_yesno(struct bsddialog_conf const * conf,
 
 
 /* builder_dialog */
+static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data);
+
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		char const * text, int rows)
 {
@@ -1080,6 +1101,9 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
+	if(conf->key.f1_message != NULL)
+		g_signal_connect(dialog, "key-press-event",
+				G_CALLBACK(_dialog_on_key_press), (void *)conf);
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
 					GTK_DIALOG(dialog))) != NULL)
@@ -1105,6 +1129,16 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	else
 		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
 	return dialog;
+}
+
+static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data)
+{
+	struct bsddialog_conf const * conf = data;
+
+	if(event->keyval == GDK_KEY_F1)
+		_builder_dialog_help(widget, conf);
+	return FALSE;
 }
 
 
@@ -1163,6 +1197,24 @@ static int _builder_dialog_error(GtkWidget * parent,
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return BSDDIALOG_ERROR;
+}
+
+
+/* builder_dialog_help */
+static int _builder_dialog_help(GtkWidget * parent,
+		struct bsddialog_conf const * conf)
+{
+	GtkWidget * dialog;
+	const GtkDialogFlags flags = 0;
+	GtkButtonsType buttons = GTK_BUTTONS_CLOSE;
+
+	dialog = gtk_message_dialog_new((parent != NULL)
+			? GTK_WINDOW(parent) : NULL, flags,
+			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", conf->key.f1_message);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 

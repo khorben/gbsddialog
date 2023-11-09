@@ -204,9 +204,7 @@ static struct option longopts[] = {
 	{"hfile",             required_argument, NULL, HFILE},
 #endif
 	{"hline",             required_argument, NULL, HLINE},
-#if 0
 	{"hmsg",              required_argument, NULL, HMSG},
-#endif
 	{"ignore",            no_argument,       NULL, IGNORE},
 	{"insecure",          no_argument,       NULL, INSECURE},
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
@@ -682,6 +680,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case HLINE:
 			if(optarg[0] != '\0')
 				conf->bottomtitle = optarg;
+			break;
+		case HMSG:
+			conf->key.f1_message = optarg;
 			break;
 		case IGNORE:
 			opt->ignore = true;
