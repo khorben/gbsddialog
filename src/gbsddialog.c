@@ -341,6 +341,8 @@ static int _parseargs(int argc, char const ** argv,
 
 /* gbsddialog */
 static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt);
+static void _backtitle_bikeshed(GtkWidget * widget);
+static void _backtitle_bikeshed_color(GdkRGBA * color);
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 
@@ -369,7 +371,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	GdkScreen * screen;
 	GtkWidget * widget;
 	gint scale;
-	GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
+	const GdkRGBA blue = { 0.0, 0.0, 1.0, 1.0 };
 
 	if(gbd->label != NULL)
 	{
@@ -380,17 +382,10 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 		return;
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(opt->bikeshed)
-	{
-		srandom(time(NULL) ^ getpid() ^ getuid());
-		blue.red = random();
-		blue.red /= RAND_MAX;
-		blue.green = random();
-		blue.green /= RAND_MAX;
-		blue.blue = random();
-		blue.blue /= RAND_MAX;
-	}
-	gtk_widget_override_background_color(gbd->window, GTK_STATE_FLAG_NORMAL,
-			&blue);
+		_backtitle_bikeshed(gbd->window);
+	else
+		gtk_widget_override_background_color(gbd->window,
+				GTK_STATE_FLAG_NORMAL, &blue);
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
@@ -413,6 +408,28 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd, struct options * opt)
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
 	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
 	gtk_widget_show_all(gbd->window);
+}
+
+static void _backtitle_bikeshed(GtkWidget * widget)
+{
+	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
+
+	srandom(time(NULL) ^ getpid() ^ getuid());
+	_backtitle_bikeshed_color(&color);
+	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL,
+			&color);
+	_backtitle_bikeshed_color(&color);
+	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, &color);
+}
+
+static void _backtitle_bikeshed_color(GdkRGBA * color)
+{
+	color->red = random();
+	color->red /= RAND_MAX;
+	color->green = random();
+	color->green /= RAND_MAX;
+	color->blue = random();
+	color->blue /= RAND_MAX;
 }
 
 static gboolean _gbsddialog_on_idle(gpointer data)
