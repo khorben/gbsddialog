@@ -495,7 +495,9 @@ int builder_infobox(struct bsddialog_conf const * conf,
 				_infobox_on_timeout, &id);
 	}
 	id.dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
-			buttons, "%s", text);
+			buttons, "%s", "Information");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(id.dialog),
+			"%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
 	if(conf->key.f1_message != NULL)
@@ -504,6 +506,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 				(void *)conf);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
+	else
+		gtk_window_set_title(GTK_WINDOW(id.dialog), "Information");
 #if GTK_CHECK_VERSION(3, 12, 0)
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
@@ -1212,6 +1216,7 @@ static int _builder_dialog_error(GtkWidget * parent,
 			"%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", error);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(parent == NULL && conf != NULL)
 	{
 		if(conf->x == BSDDIALOG_FULLSCREEN
@@ -1243,6 +1248,7 @@ static int _builder_dialog_help(GtkWidget * parent,
 			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", conf->key.f1_message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Help");
 	ret = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
