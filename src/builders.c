@@ -44,6 +44,13 @@
 
 /* builders */
 /* types */
+struct datebox_data
+{
+	GtkWidget * day;
+	GtkWidget * month;
+	GtkWidget * year;
+};
+
 struct gauge_data
 {
 	GtkWidget * dialog;
@@ -319,6 +326,122 @@ static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 	gtk_list_store_set(store, &iter, 0, gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
+}
+
+
+/* builder_datebox */
+static void _datebox_on_year_value_changed(GtkWidget * widget);
+
+int builder_datebox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	struct datebox_data dd = { NULL, NULL, NULL };
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkListStore * months;
+	GtkCellRenderer * renderer;
+	GtkTreeIter iter;
+	guint i, year, month, day;
+	time_t t;
+	struct tm tm;
+	char buf[1024];
+	char const * fmt = "%d/%m/%Y";
+	size_t len;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc == 3)
+	{
+		day = strtoul(argv[0], NULL, 10);
+		month = strtoul(argv[1], NULL, 10);
+		year = strtoul(argv[2], NULL, 10);
+	}
+	else if(argc > 0)
+	{
+		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
+	else if((t = time(NULL)) != (time_t)-1 && localtime_r(&t, &tm) == NULL)
+	{
+		/* FIXME report error */
+		return BSDDIALOG_ERROR;
+	}
+	else
+	{
+		day = tm.tm_mday;
+		month = tm.tm_mon + 1;
+		year = tm.tm_year + 1900;
+	}
+	dialog = _builder_dialog(conf, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	gtk_box_pack_start(GTK_BOX(box),
+		       	gtk_label_new("Day: "), FALSE, TRUE, 0);
+	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
+	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.day), TRUE);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.day), (gdouble)day);
+	gtk_box_pack_start(GTK_BOX(box), dd.day, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box),
+			gtk_label_new("Month: "), FALSE, TRUE, 0);
+	months = gtk_list_store_new(2, G_TYPE_LONG, G_TYPE_STRING);
+	for(i = 0; i < 12; i++)
+	{
+		tm.tm_mon = i;
+		strftime(buf, sizeof(buf) - 1, "%B", &tm);
+		gtk_list_store_append(months, &iter);
+		gtk_list_store_set(months, &iter, 0, i, 1, buf, -1);
+	}
+	dd.month = gtk_combo_box_new_with_model(GTK_TREE_MODEL(months));
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(dd.month), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(dd.month), renderer,
+			"text", 1, NULL);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(dd.month), month - 1);
+	gtk_box_pack_start(GTK_BOX(box), dd.month, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box),
+			gtk_label_new("Year: "), FALSE, TRUE, 0);
+	dd.year = gtk_spin_button_new_with_range(-9999.0, 9999.0, 1.0);
+	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.year), TRUE);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.year), (gdouble)year);
+	g_signal_connect(dd.year, "value-changed",
+		       	G_CALLBACK(_datebox_on_year_value_changed), NULL);
+	gtk_box_pack_start(GTK_BOX(box), dd.year, TRUE, TRUE, 0);
+	gtk_widget_show_all(box);
+	gtk_container_add(GTK_CONTAINER(container), box);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			if(opt->date_fmt != NULL)
+				fmt = opt->date_fmt;
+			memset(&tm, 0, sizeof(tm));
+			tm.tm_mday = gtk_spin_button_get_value_as_int(
+					GTK_SPIN_BUTTON(dd.day));
+			tm.tm_mon = gtk_combo_box_get_active(GTK_COMBO_BOX(
+						dd.month));
+			tm.tm_year = gtk_spin_button_get_value_as_int(
+					GTK_SPIN_BUTTON(dd.year)) - 1900;
+			len = strftime(buf, sizeof(buf) - 1, fmt, &tm);
+			buf[len] = '\n';
+			write(opt->output_fd, buf, len + 1);
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static void _datebox_on_year_value_changed(GtkWidget * widget)
+{
+	/* there is no year zero */
+	if(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget)) == 0)
+		/* FIXME this may make it look like year -1 can't be set */
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), 1.0);
 }
 
 
