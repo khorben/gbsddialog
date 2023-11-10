@@ -103,7 +103,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * widget;
 	guint year, month, day;
-	struct tm t;
+	struct tm tm;
 	char buf[1024];
 	char const * fmt = "%d/%m/%Y";
 	size_t len;
@@ -142,11 +142,11 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		case BSDDIALOG_OK:
 			if(opt->date_fmt != NULL)
 				fmt = opt->date_fmt;
-			memset(&t, 0, sizeof(t));
-			t.tm_year = year - 1900;
-			t.tm_mon = month;
-			t.tm_mday = day;
-			len = strftime(buf, sizeof(buf) - 1, fmt, &t);
+			memset(&tm, 0, sizeof(tm));
+			tm.tm_mday = day;
+			tm.tm_mon = month;
+			tm.tm_year = year - 1900;
+			len = strftime(buf, sizeof(buf) - 1, fmt, &tm);
 			buf[len] = '\n';
 			write(opt->output_fd, buf, len + 1);
 			return ret;
