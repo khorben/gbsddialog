@@ -567,7 +567,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		rows = (int)strtol(gbd->argv[1], NULL, 10);
 		cols = (int)strtol(gbd->argv[2], NULL, 10);
 
-		custom_text(&opt, argv[0], text);
+		if(opt.dialogbuilder != builder_textbox)
+			custom_text(&opt, argv[0], text);
 
 		res = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, argv + 3, &opt);
