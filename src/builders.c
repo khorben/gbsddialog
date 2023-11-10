@@ -101,7 +101,13 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	char const * fmt = "%d/%m/%Y";
 	size_t len;
 
-	if(argc > 0)
+	if(argc == 3)
+	{
+		day = strtoul(argv[0], NULL, 10);
+		month = strtoul(argv[1], NULL, 10);
+		year = strtoul(argv[2], NULL, 10);
+	}
+	else if(argc > 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
@@ -109,6 +115,12 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_calendar_new();
+	if(argc == 3 && day <= 31 && month >= 1 && month <= 12 && year != 0)
+	{
+		gtk_calendar_select_day(GTK_CALENDAR(widget), day);
+		gtk_calendar_select_month(GTK_CALENDAR(widget), month - 1,
+				year);
+	}
 	g_signal_connect_swapped(widget, "day-selected-double-click",
 			G_CALLBACK(_calendar_on_day_activated), dialog);
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
