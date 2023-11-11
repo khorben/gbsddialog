@@ -224,8 +224,8 @@ static struct option longopts[] = {
 	{"left3-button",      required_argument, NULL, LEFT3_BUTTON},
 	{"left3-exit-code",   required_argument, NULL, LEFT3_EXIT_CODE},
 	{"load-theme",        required_argument, NULL, LOAD_THEME},
-	{"max-input",         required_argument, NULL, MAX_INPUT},
 #endif
+	{"max-input",         required_argument, NULL, MAX_INPUT},
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
@@ -759,6 +759,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case ITEM_BOTTOM_DESC:
 			opt->item_bottomdesc = true;
+			break;
+		case MAX_INPUT:
+			opt->max_input_form = strtoul(optarg, NULL, 10);
 			break;
 		case NO_CANCEL:
 			conf->button.without_cancel = true;
