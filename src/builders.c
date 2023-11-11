@@ -640,7 +640,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			"%s", text);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
-	if(conf->key.f1_message != NULL)
+	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
 		g_signal_connect(id.dialog, "key-press-event",
 				G_CALLBACK(_infobox_on_key_press),
 				(void *)conf);
@@ -1371,7 +1371,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
-	if(conf->key.f1_message != NULL)
+	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
 		g_signal_connect(dialog, "key-press-event",
 				G_CALLBACK(_dialog_on_key_press), (void *)conf);
 #if GTK_CHECK_VERSION(3, 12, 0)
@@ -1484,10 +1484,18 @@ static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf)
 {
 	int ret;
+	struct bsddialog_conf conf2;
 	GtkWidget * dialog;
 	const GtkDialogFlags flags = 0;
 	GtkButtonsType buttons = GTK_BUTTONS_CLOSE;
 
+	if(conf->key.f1_file != NULL)
+	{
+		memset(&conf2, 0, sizeof(conf2));
+		conf2.title = "Help";
+		return builder_textbox(&conf2, conf->key.f1_file, 0, 0, 0, NULL,
+				NULL);
+	}
 	dialog = gtk_message_dialog_new((parent != NULL)
 			? GTK_WINDOW(parent) : NULL, flags,
 			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");

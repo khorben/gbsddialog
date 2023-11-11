@@ -201,8 +201,8 @@ static struct option longopts[] = {
 	{"help-print-name",   no_argument,       NULL, HELP_PRINT_NAME},
 	{"help-status",       no_argument,       NULL, HELP_PRINT_ITEMS},
 	{"help-tags",         no_argument,       NULL, HELP_PRINT_NAME},
-	{"hfile",             required_argument, NULL, HFILE},
 #endif
+	{"hfile",             required_argument, NULL, HFILE},
 	{"hline",             required_argument, NULL, HLINE},
 	{"hmsg",              required_argument, NULL, HMSG},
 	{"ignore",            no_argument,       NULL, IGNORE},
@@ -740,6 +740,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case HELP_LABEL:
 			conf->button.help_label = optarg;
+			break;
+		case HFILE:
+			conf->key.f1_file = optarg;
 			break;
 		case HLINE:
 			if(optarg[0] != '\0')
