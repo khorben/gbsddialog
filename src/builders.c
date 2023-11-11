@@ -80,6 +80,7 @@ struct timebox_data
 	GtkWidget * hour;
 	GtkWidget * minute;
 	GtkWidget * second;
+	guint id;
 };
 
 
@@ -1207,6 +1208,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 
 
 /* builder_timebox */
+static gboolean _timebox_on_idle(gpointer data);
+static void _timebox_on_value_changed(GtkWidget * widget);
+
 int builder_timebox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -1252,12 +1256,13 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	/* XXX values < 10 have no preceding 0 */
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 	td.hour = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.hour), (gdouble)hour);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.hour), TRUE);
+	g_signal_connect(td.hour, "value-changed",
+			G_CALLBACK(_timebox_on_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box),
 			gtk_label_new(":"), FALSE, TRUE, 4);
@@ -1265,6 +1270,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.minute), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.minute), (gdouble)minute);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.minute), TRUE);
+	g_signal_connect(td.minute, "value-changed",
+			G_CALLBACK(_timebox_on_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box),
 			gtk_label_new(":"), FALSE, TRUE, 4);
@@ -1272,11 +1279,16 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.second), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.second), (gdouble)second);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.second), TRUE);
+	g_signal_connect(td.second, "value-changed",
+			G_CALLBACK(_timebox_on_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.second, TRUE, TRUE, 0);
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	_builder_dialog_buttons(dialog, conf);
+	td.id = g_idle_add(_timebox_on_idle, &td);
 	ret = _builder_dialog_run(dialog);
+	if(td.id != 0)
+		g_source_remove(td.id);
 	switch(ret)
 	{
 		case BSDDIALOG_EXTRA:
@@ -1296,6 +1308,26 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static gboolean _timebox_on_idle(gpointer data)
+{
+	struct timebox_data * td = data;
+
+	_timebox_on_value_changed(td->hour);
+	_timebox_on_value_changed(td->minute);
+	_timebox_on_value_changed(td->second);
+	td->id = 0;
+	return FALSE;
+}
+
+static void _timebox_on_value_changed(GtkWidget * widget)
+{
+	char buf[3];
+
+	snprintf(buf, sizeof(buf), "%02u", gtk_spin_button_get_value_as_int(
+				GTK_SPIN_BUTTON(widget)));
+	gtk_entry_set_text(GTK_ENTRY(widget), buf);
 }
 
 
