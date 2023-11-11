@@ -218,6 +218,9 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
 	widget = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
@@ -773,6 +776,9 @@ int builder_menu(struct bsddialog_conf const * conf,
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
 	widget = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
@@ -1031,6 +1037,9 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
 	widget = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
@@ -1186,6 +1195,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
 	widget = gtk_text_view_new();
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(widget), FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);

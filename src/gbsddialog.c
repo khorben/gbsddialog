@@ -235,9 +235,7 @@ static struct option longopts[] = {
 	{"no-names",          no_argument,       NULL, NO_NAMES},
 	{"no-ok",             no_argument,       NULL, NO_OK},
 	{"nook",              no_argument,       NULL, NO_OK},
-#if 0
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
-#endif
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
@@ -777,6 +775,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case NO_OK:
 			conf->button.without_ok = true;
+			break;
+		case NO_SHADOW:
+			conf->shadow = false;
 			break;
 		case OK_EXIT_CODE:
 			exitcodes[BSDDIALOG_OK + 1].value = strtol(
