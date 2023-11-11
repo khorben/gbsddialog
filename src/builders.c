@@ -75,6 +75,13 @@ struct pause_data
 	guint id;
 };
 
+struct timebox_data
+{
+	GtkWidget * hour;
+	GtkWidget * minute;
+	GtkWidget * second;
+};
+
 
 /* prototypes */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
@@ -1194,6 +1201,99 @@ int builder_textbox(struct bsddialog_conf const * conf,
 				FALSE);
 #endif
 	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
+/* builder_timebox */
+int builder_timebox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	struct timebox_data td = { NULL, NULL, NULL };
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	guint hour, minute, second;
+	time_t t;
+	struct tm tm;
+	char const * fmt = "%H:%M:%S";
+	char buf[1024];
+	size_t len;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	memset(&tm, 0, sizeof(tm));
+	/* for more accurate time representation (eg leap seconds) */
+	if((t = time(NULL)) == (time_t)-1 || localtime_r(&t, &tm) == NULL)
+	{
+		/* FIXME report error */
+		return BSDDIALOG_ERROR;
+	}
+	if(argc == 3)
+	{
+		hour = strtoul(argv[0], NULL, 10);
+		minute = strtoul(argv[1], NULL, 10);
+		second = strtoul(argv[2], NULL, 10);
+	}
+	else if(argc > 0)
+	{
+		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
+	else
+	{
+		hour = tm.tm_hour;
+		minute = tm.tm_min;
+		second = tm.tm_sec;
+	}
+	dialog = _builder_dialog(conf, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	/* XXX values < 10 have no preceding 0 */
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	td.hour = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
+	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.hour), (gdouble)hour);
+	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.hour), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box),
+			gtk_label_new(":"), FALSE, TRUE, 4);
+	td.minute = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
+	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.minute), TRUE);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.minute), (gdouble)minute);
+	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.minute), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box),
+			gtk_label_new(":"), FALSE, TRUE, 4);
+	td.second = gtk_spin_button_new_with_range(0.0, 60.0, 1.0);
+	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.second), TRUE);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.second), (gdouble)second);
+	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.second), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), td.second, TRUE, TRUE, 0);
+	gtk_widget_show_all(box);
+	gtk_container_add(GTK_CONTAINER(container), box);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			if(opt->time_fmt != NULL)
+				fmt = opt->time_fmt;
+			tm.tm_hour = gtk_spin_button_get_value_as_int(
+					GTK_SPIN_BUTTON(td.hour));
+			tm.tm_min = gtk_spin_button_get_value_as_int(
+					GTK_SPIN_BUTTON(td.minute));
+			tm.tm_sec = gtk_spin_button_get_value_as_int(
+					GTK_SPIN_BUTTON(td.second));
+			len = strftime(buf, sizeof(buf) - 1, fmt, &tm);
+			buf[len] = '\n';
+			write(opt->output_fd, buf, len + 1);
+			break;
+	}
 	gtk_widget_destroy(dialog);
 	return ret;
 }

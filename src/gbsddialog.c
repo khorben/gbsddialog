@@ -277,9 +277,7 @@ static struct option longopts[] = {
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
 	{"theme",             required_argument, NULL, THEME},
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
-#if 0
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
-#endif
 	{"title",             required_argument, NULL, TITLE},
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
@@ -308,8 +306,8 @@ static struct option longopts[] = {
 	{"rangebox",     no_argument, NULL, RANGEBOX},
 #endif
 	{"textbox",      no_argument, NULL, TEXTBOX},
-#if 0
 	{"timebox",      no_argument, NULL, TIMEBOX},
+#if 0
 	{"treeview",     no_argument, NULL, TREEVIEW},
 #endif
 	{"yesno",        no_argument, NULL, YESNO},
@@ -813,6 +811,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(optarg,
 						NULL, 10);
 			break;
+		case TIME_FORMAT:
+			opt->time_fmt = optarg;
+			break;
 		case TITLE:
 			conf->title = optarg;
 			break;
@@ -917,6 +918,14 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--textbox";
 			opt->dialogbuilder = builder_textbox;
+			break;
+		case TIMEBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --timebox without "
+						"--and-dialog", opt->name);
+			opt->name = "--timebox";
+			opt->dialogbuilder = builder_timebox;
 			break;
 		case YESNO:
 			if(opt->dialogbuilder != NULL)
