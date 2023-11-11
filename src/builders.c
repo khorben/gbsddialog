@@ -373,10 +373,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	else if((t = time(NULL)) != (time_t)-1 && localtime_r(&t, &tm) == NULL)
-	{
-		/* FIXME report error */
-		return BSDDIALOG_ERROR;
-	}
+		return _builder_dialog_error(NULL, conf, strerror(errno));
 	else
 	{
 		day = tm.tm_mday;
@@ -1232,10 +1229,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	memset(&tm, 0, sizeof(tm));
 	/* for more accurate time representation (eg leap seconds) */
 	if((t = time(NULL)) == (time_t)-1 || localtime_r(&t, &tm) == NULL)
-	{
-		/* FIXME report error */
-		return BSDDIALOG_ERROR;
-	}
+		return _builder_dialog_error(NULL, conf, strerror(errno));
 	if(argc == 3)
 	{
 		hour = strtoul(argv[0], NULL, 10);
