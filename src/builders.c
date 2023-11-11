@@ -391,7 +391,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.day), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.day), (gdouble)day);
-	gtk_box_pack_start(GTK_BOX(box), dd.day, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box), dd.day, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box),
 			gtk_label_new("Month: "), FALSE, TRUE, 0);
 	months = gtk_list_store_new(2, G_TYPE_LONG, G_TYPE_STRING);
@@ -492,7 +492,8 @@ int builder_gauge(struct bsddialog_conf const * conf,
 			gtk_label_set_lines(GTK_LABEL(gd.label), rows);
 #endif
 		gtk_widget_show(gd.label);
-		gtk_container_add(GTK_CONTAINER(container), gd.label);
+		gtk_box_pack_start(GTK_BOX(container), gd.label, FALSE, TRUE,
+				4);
 	}
 	gd.widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -1399,7 +1400,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
 		gtk_widget_show(widget);
-		gtk_container_add(GTK_CONTAINER(container), widget);
+		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
 	}
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(dialog));
