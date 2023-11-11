@@ -1282,8 +1282,6 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), box);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(dialog);
-	if(td.id != 0)
-		g_source_remove(td.id);
 	switch(ret)
 	{
 		case BSDDIALOG_EXTRA:
