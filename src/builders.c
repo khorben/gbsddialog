@@ -849,6 +849,136 @@ static void _menu_on_row_activated(gpointer data)
 }
 
 
+/* builder_mixedgauge */
+static void _mixedgauge_set_percentage(GtkWidget * widget, int perc);
+
+int builder_mixedgauge(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget;
+	int i, perc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc > 1 && (argc % 2) == 0)
+	{
+		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, NULL, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	if(text != NULL)
+	{
+		widget = gtk_label_new(text);
+		gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
+		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
+				PANGO_WRAP_WORD_CHAR);
+		gtk_label_set_single_line_mode(GTK_LABEL(widget), FALSE);
+#if GTK_CHECK_VERSION(3, 10, 0)
+		if(rows > 0)
+			gtk_label_set_lines(GTK_LABEL(widget), rows);
+#endif
+		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
+	}
+	/* items */
+	for(i = 0; i * 2 + 2 < argc; i++)
+	{
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+		widget = gtk_label_new(argv[i * 2 + 1]);
+		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
+		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+		widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
+#endif
+		_mixedgauge_set_percentage(widget,
+				strtol(argv[i * 2 + 2], NULL, 10));
+		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(container), box);
+	}
+	/* global progress bar */
+	widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
+#endif
+	perc = (argc >= 1) ? strtol(argv[0], NULL, 10) : 0;
+	_mixedgauge_set_percentage(widget, perc);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	gtk_widget_show_all(container);
+	ret = _builder_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static void _mixedgauge_set_percentage(GtkWidget * widget, int perc)
+{
+	gdouble fraction = 0.0;
+	char buf[16] = "";
+
+	if(perc < 0)
+		switch(-perc)
+		{
+			case 0:
+				strcpy(buf, "Success");
+				fraction = 1.0;
+				break;
+			case 1:
+				strcpy(buf, "Failed");
+				break;
+			case 2:
+				strcpy(buf, "Passed");
+				fraction = 1.0;
+				break;
+			case 3:
+				strcpy(buf, "Completed");
+				fraction = 1.0;
+				break;
+			case 4:
+				strcpy(buf, "Checked");
+				fraction = 1.0;
+				break;
+			case 5:
+				strcpy(buf, "Done");
+				fraction = 1.0;
+				break;
+			case 6:
+				strcpy(buf, "Skipped");
+				break;
+			case 7:
+				strcpy(buf, "In Progress");
+				fraction = -1.0;
+				break;
+			case 8: /* (blank) */
+				buf[0] = '\0';
+				break;
+			case 9:
+				strcpy(buf, "N/A");
+				break;
+			default:
+				buf[0] = '\0';
+				break;
+		}
+	else
+	{
+		perc = MIN(perc, 100);
+		fraction = (gdouble)perc / 100.0;
+		snprintf(buf, sizeof(buf), "%d %%", perc);
+	}
+	if(fraction < 0.0 || fraction > 1.0)
+		/* FIXME keep pulsing until closing */
+		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(widget));
+	else
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(widget), fraction);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), buf);
+}
+
+
 /* builder_msgbox */
 int builder_msgbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
