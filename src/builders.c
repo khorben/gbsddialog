@@ -385,7 +385,11 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	gtk_box_pack_start(GTK_BOX(box),
 		       	gtk_label_new("Day: "), FALSE, TRUE, 0);
 	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
@@ -876,7 +880,11 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	/* items */
 	for(i = 0; i * 2 + 2 < argc; i++)
 	{
+#if GTK_CHECK_VERSION(3, 0, 0)
 		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+		box = gtk_hbox_new(FALSE, 4);
+#endif
 		widget = gtk_label_new(argv[i * 2 + 1]);
 		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -1399,7 +1407,11 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	td.hour = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.hour), (gdouble)hour);
