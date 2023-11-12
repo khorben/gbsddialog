@@ -873,6 +873,24 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	/* items */
+	for(i = 0; i * 2 + 2 < argc; i++)
+	{
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+		widget = gtk_label_new(argv[i * 2 + 1]);
+		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+		widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
+#endif
+		_mixedgauge_set_percentage(widget,
+				strtol(argv[i * 2 + 2], NULL, 10));
+		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(container), box);
+	}
+	/* text */
 	if(text != NULL)
 	{
 		widget = gtk_label_new(text);
@@ -886,22 +904,6 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 #endif
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
 	}
-	/* items */
-	for(i = 0; i * 2 + 2 < argc; i++)
-	{
-		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-		widget = gtk_label_new(argv[i * 2 + 1]);
-		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
-		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
-		widget = gtk_progress_bar_new();
-#if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
-#endif
-		_mixedgauge_set_percentage(widget,
-				strtol(argv[i * 2 + 2], NULL, 10));
-		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(container), box);
-	}
 	/* global progress bar */
 	widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -909,7 +911,7 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 #endif
 	perc = (argc >= 1) ? strtol(argv[0], NULL, 10) : 0;
 	_mixedgauge_set_percentage(widget, perc);
-	gtk_container_add(GTK_CONTAINER(container), widget);
+	gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(container);
 	ret = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
