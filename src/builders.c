@@ -395,6 +395,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.day), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.day), (gdouble)day);
+	gtk_entry_set_activates_default(GTK_ENTRY(dd.day), TRUE);
 	gtk_box_pack_start(GTK_BOX(box), dd.day, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box),
 			gtk_label_new("Month: "), FALSE, TRUE, 0);
@@ -418,6 +419,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dd.year = gtk_spin_button_new_with_range(-9999.0, 9999.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.year), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.year), (gdouble)year);
+	gtk_entry_set_activates_default(GTK_ENTRY(dd.year), TRUE);
 	g_signal_connect(dd.year, "value-changed",
 		       	G_CALLBACK(_datebox_on_year_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), dd.year, TRUE, TRUE, 0);
@@ -1416,6 +1418,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.hour), (gdouble)hour);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.hour), TRUE);
+	gtk_entry_set_activates_default(GTK_ENTRY(td.hour), TRUE);
 	g_signal_connect(td.hour, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
@@ -1424,6 +1427,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.minute), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.minute), (gdouble)minute);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.minute), TRUE);
+	gtk_entry_set_activates_default(GTK_ENTRY(td.minute), TRUE);
 	g_signal_connect(td.minute, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
@@ -1432,6 +1436,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.second), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.second), (gdouble)second);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.second), TRUE);
+	gtk_entry_set_activates_default(GTK_ENTRY(td.second), TRUE);
 	g_signal_connect(td.second, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.second, TRUE, TRUE, 0);
