@@ -1308,6 +1308,54 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 }
 
 
+/* builder_rangebox */
+int builder_rangebox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * box;
+	GtkWidget * widget;
+	int value = 0, min, max;
+
+	if(argc == 3)
+		/* XXX detect and report errors */
+		value = strtol(argv[2], NULL, 10);
+	else if(argc < 2 || argc > 3)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	/* XXX detect and report errors */
+	min = strtol(argv[0], NULL, 10);
+	max = strtol(argv[1], NULL, 10);
+	dialog = _builder_dialog(conf, text, rows);
+	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	widget = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	if(argc == 3)
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
+				(gdouble)value);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	gtk_widget_show(widget);
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 4);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(dialog);
+	value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			dprintf(opt->output_fd, "%d\n", value);
+			return ret;
+		default:
+			return _builder_dialog_output(conf, opt, ret);
+	}
+}
+
+
 /* builder_textbox */
 int builder_textbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,

@@ -300,9 +300,7 @@ static struct option longopts[] = {
 #endif
 	{"pause",        no_argument, NULL, PAUSE},
 	{"radiolist",    no_argument, NULL, RADIOLIST},
-#if 0
 	{"rangebox",     no_argument, NULL, RANGEBOX},
-#endif
 	{"textbox",      no_argument, NULL, TEXTBOX},
 	{"timebox",      no_argument, NULL, TIMEBOX},
 #if 0
@@ -917,6 +915,14 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->name = "--radiolist";
 			opt->dialogbuilder = builder_radiolist;
 			conf->auto_downmargin = 1;
+			break;
+		case RANGEBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --rangebox without "
+						"--and-dialog", opt->name);
+			opt->name = "--rangebox";
+			opt->dialogbuilder = builder_rangebox;
 			break;
 		case PAUSE:
 			if(opt->dialogbuilder != NULL)
