@@ -918,6 +918,14 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->dialogbuilder = builder_passwordbox;
 			conf->auto_downmargin = 1;
 			break;
+		case PAUSE:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --pause without "
+						"--and-dialog", opt->name);
+			opt->name = "--pause";
+			opt->dialogbuilder = builder_pause;
+			break;
 		case RADIOLIST:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
@@ -934,14 +942,6 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--rangebox";
 			opt->dialogbuilder = builder_rangebox;
-			break;
-		case PAUSE:
-			if(opt->dialogbuilder != NULL)
-				return -error(BSDDIALOG_ERROR,
-						"%s and --pause without "
-						"--and-dialog", opt->name);
-			opt->name = "--pause";
-			opt->dialogbuilder = builder_pause;
 			break;
 		case TEXTBOX:
 			if(opt->dialogbuilder != NULL)
