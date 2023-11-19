@@ -123,6 +123,7 @@ int error(int ret, char const * format, ...)
 	fprintf(stderr, "%s: ", PROGNAME);
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
+	fputc('\n', stderr);
 	va_end(ap);
 	return ret;
 }
