@@ -113,6 +113,7 @@ struct options
 	const char *screen_mode;
 	/* Dialog */
 	bool mandatory_dialog;
+	bool without_buttons;
 	const char *name;
 	int (*dialogbuilder)(struct bsddialog_conf const * conf,
 	    char const * text, int rows, int cols,

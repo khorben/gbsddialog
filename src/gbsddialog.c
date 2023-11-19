@@ -96,6 +96,7 @@ enum OPTS {
 	LEFT3_EXIT_CODE,
 	LOAD_THEME,
 	MAX_INPUT,
+	NO_BUTTONS,
 	NO_CANCEL,
 	NO_DESCRIPTIONS,
 	NO_LINES,
@@ -229,6 +230,7 @@ static struct option longopts[] = {
 	{"load-theme",        required_argument, NULL, LOAD_THEME},
 #endif
 	{"max-input",         required_argument, NULL, MAX_INPUT},
+	{"no-buttons",        no_argument,       NULL, NO_BUTTONS},
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
@@ -768,6 +770,10 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case MAX_INPUT:
 			opt->max_input_form = strtoul(optarg, NULL, 10);
+			break;
+		case NO_BUTTONS:
+			/* XXX should be in struct bsddialog_conf */
+			opt->without_buttons = true;
 			break;
 		case NO_CANCEL:
 			conf->button.without_cancel = true;
