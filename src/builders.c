@@ -53,6 +53,7 @@ struct datebox_data
 
 struct gauge_data
 {
+	struct options const * opt;
 	GtkWidget * dialog;
 	GtkWidget * label;
 	GtkWidget * widget;	/* progress bar */
@@ -469,7 +470,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	int ret;
-	struct gauge_data gd = { NULL, NULL, NULL, 0, -1 };
+	struct gauge_data gd = { NULL, NULL, NULL, NULL, 0, -1 };
 	unsigned int perc = 0;
 	GtkWidget * container;
 	GIOChannel * channel;
@@ -484,6 +485,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	}
 	else if(argc == 1)
 		perc = strtoul(argv[0], NULL, 10);
+	gd.opt = opt;
 	gd.dialog = _builder_dialog(conf, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(gd.dialog));
 	if(text != NULL)
@@ -596,7 +598,8 @@ static gboolean _gauge_on_can_read_eof(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	gtk_dialog_response(GTK_DIALOG(gd->dialog), GTK_RESPONSE_CLOSE);
+	if(!gd->opt->ignore_eof)
+		gtk_dialog_response(GTK_DIALOG(gd->dialog), GTK_RESPONSE_CLOSE);
 	gd->id = 0;
 	return FALSE;
 }

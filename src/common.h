@@ -97,6 +97,7 @@ struct options
 	int getH;
 	int getW;
 	bool ignore;
+	bool ignore_eof;
 	int output_fd;
 	/* Text option */
 	bool cr_wrap;

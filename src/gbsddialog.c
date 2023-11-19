@@ -83,6 +83,7 @@ enum OPTS {
 	HLINE,
 	HMSG,
 	IGNORE,
+	IGNORE_EOF,
 	INSECURE,
 	ITEM_BOTTOM_DESC,
 	ITEM_DEPTH,
@@ -207,6 +208,7 @@ static struct option longopts[] = {
 	{"hline",             required_argument, NULL, HLINE},
 	{"hmsg",              required_argument, NULL, HMSG},
 	{"ignore",            no_argument,       NULL, IGNORE},
+	{"ignore-eof",        no_argument,       NULL, IGNORE_EOF},
 	{"insecure",          no_argument,       NULL, INSECURE},
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
 #if 0
@@ -754,6 +756,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case IGNORE:
 			opt->ignore = true;
+			break;
+		case IGNORE_EOF:
+			opt->ignore_eof = true;
 			break;
 		case INSECURE:
 			conf->form.securech = '*';
