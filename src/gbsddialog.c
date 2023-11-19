@@ -30,6 +30,7 @@
 
 
 
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -243,7 +244,9 @@ static struct option longopts[] = {
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
 #if 0
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
+#endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
+#if 0
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
 #endif
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
@@ -650,6 +653,8 @@ static int _parseargs(int argc, char const ** argv,
 static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		int arg)
 {
+	struct winsize ws;
+
 	switch(arg)
 	{
 		/* Options */
@@ -786,6 +791,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case OUTPUT_FD:
 			opt->output_fd = strtol(optarg, NULL, 10);
+			break;
+		case PRINT_MAXSIZE:
+			opt->mandatory_dialog = false;
+			ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
+					ws.ws_row, ws.ws_col);
 			break;
 		case PRINT_VERSION:
 			opt->mandatory_dialog = false;
