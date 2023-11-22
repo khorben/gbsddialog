@@ -2,6 +2,8 @@ TARGETS	= gbsddialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
+#For compatibility with Xdialog(1)
+#CPPFLAGS+= -DWITH_XDIALOG
 CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-3.0`
 LDFLAGS	= `pkg-config --libs gtk+-3.0`
 INSTALL	= install

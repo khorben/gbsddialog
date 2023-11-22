@@ -83,7 +83,9 @@ enum OPTS {
 	HLINE,
 	HMSG,
 	IGNORE,
+#ifdef WITH_XDIALOG
 	IGNORE_EOF,
+#endif
 	INSECURE,
 	ITEM_BOTTOM_DESC,
 	ITEM_DEPTH,
@@ -209,7 +211,9 @@ static struct option longopts[] = {
 	{"hline",             required_argument, NULL, HLINE},
 	{"hmsg",              required_argument, NULL, HMSG},
 	{"ignore",            no_argument,       NULL, IGNORE},
+#ifdef WITH_XDIALOG
 	{"ignore-eof",        no_argument,       NULL, IGNORE_EOF},
+#endif
 	{"insecure",          no_argument,       NULL, INSECURE},
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
 #if 0
@@ -230,7 +234,9 @@ static struct option longopts[] = {
 	{"load-theme",        required_argument, NULL, LOAD_THEME},
 #endif
 	{"max-input",         required_argument, NULL, MAX_INPUT},
+#ifdef WITH_XDIALOG
 	{"no-buttons",        no_argument,       NULL, NO_BUTTONS},
+#endif
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
@@ -759,9 +765,11 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case IGNORE:
 			opt->ignore = true;
 			break;
+#ifdef WITH_XDIALOG
 		case IGNORE_EOF:
 			opt->ignore_eof = true;
 			break;
+#endif
 		case INSECURE:
 			conf->form.securech = '*';
 			break;
@@ -771,10 +779,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case MAX_INPUT:
 			opt->max_input_form = strtoul(optarg, NULL, 10);
 			break;
+#ifdef WITH_XDIALOG
 		case NO_BUTTONS:
 			/* XXX should be in struct bsddialog_conf */
 			opt->without_buttons = true;
 			break;
+#endif
 		case NO_CANCEL:
 			conf->button.without_cancel = true;
 			break;
