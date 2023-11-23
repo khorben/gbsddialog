@@ -499,6 +499,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(gd.label), rows);
 #endif
+		gtk_misc_set_alignment(GTK_MISC(gd.label), 0.0, 0.5);
 		gtk_widget_show(gd.label);
 		gtk_box_pack_start(GTK_BOX(container), gd.label, FALSE, TRUE,
 				4);
@@ -919,6 +920,7 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
 	}
 	/* global progress bar */
@@ -1635,6 +1637,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_widget_show(widget);
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
 	}
