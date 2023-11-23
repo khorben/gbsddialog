@@ -43,7 +43,9 @@
 #include "gbsddialog.h"
 
 /* FIXME conflicts with <sys/syslimits.h> */
-#undef MAX_INPUT
+#ifdef MAX_INPUT
+# undef MAX_INPUT
+#endif
 
 
 /* getopt_long */
