@@ -1020,6 +1020,8 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 
 
 /* builder_passwordbox */
+static void _passwordbox_on_toggled(GtkWidget * widget, gpointer data);
+
 int builder_passwordbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -1027,6 +1029,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	int ret;
 	GtkWidget * dialog;
 	GtkWidget * container;
+	GtkWidget * checkbox;
 	GtkWidget * widget;
 	GtkEntryBuffer * buffer;
 
@@ -1046,8 +1049,12 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
-	gtk_widget_show(widget);
-	gtk_container_add(GTK_CONTAINER(container), widget);
+	gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
+	checkbox = gtk_check_button_new_with_label("Show password");
+	g_signal_connect(checkbox, "toggled",
+			G_CALLBACK(_passwordbox_on_toggled), widget);
+	gtk_container_add(GTK_CONTAINER(container), checkbox);
+	gtk_widget_show_all(container);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
@@ -1064,6 +1071,15 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	}
 	g_object_unref(buffer);
 	return ret;
+}
+
+static void _passwordbox_on_toggled(GtkWidget * widget, gpointer data)
+{
+	GtkWidget * entry = data;
+	gboolean active;
+
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	gtk_entry_set_visibility(GTK_ENTRY(entry), active);
 }
 
 
