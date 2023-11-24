@@ -581,9 +581,13 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 				argc - 3, argv + 3, &opt);
 		*gbd->ret = EXITCODE(res);
 		free(text);
+		if(res == BSDDIALOG_ERROR)
+			return _gbsddialog_on_idle_quit(gbd);
 		if(conf.get_height != NULL && conf.get_width != NULL)
 			dprintf(opt.output_fd, "DialogSize: %d, %d\n",
 					*conf.get_height, *conf.get_width);
+		if(res == BSDDIALOG_CANCEL || res == BSDDIALOG_ESC)
+			return _gbsddialog_on_idle_quit(gbd);
 	}
 	else
 		/* FIXME report error */
