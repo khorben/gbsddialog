@@ -258,9 +258,7 @@ static struct option longopts[] = {
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 #endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
-#if 0
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
-#endif
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
 #if 0
 	{"quoted",            no_argument,       NULL, QUOTED},
@@ -583,6 +581,9 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 				argc - 3, argv + 3, &opt);
 		*gbd->ret = EXITCODE(res);
 		free(text);
+		if(conf.get_height != NULL && conf.get_width != NULL)
+			dprintf(opt.output_fd, "DialogSize: %d, %d\n",
+					*conf.get_height, *conf.get_width);
 	}
 	else
 		/* FIXME report error */
@@ -820,6 +821,10 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
 					ws.ws_row, ws.ws_col);
+			break;
+		case PRINT_SIZE:
+			conf->get_height = &opt->getH;
+			conf->get_width = &opt->getW;
 			break;
 		case PRINT_VERSION:
 			opt->mandatory_dialog = false;

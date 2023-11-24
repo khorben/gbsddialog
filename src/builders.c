@@ -95,7 +95,8 @@ static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
 		struct options const * opt, int res);
-static int _builder_dialog_run(GtkWidget * dialog);
+static int _builder_dialog_run(struct bsddialog_conf const * conf,
+		GtkWidget * dialog);
 
 
 /* functions */
@@ -141,7 +142,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
 	gtk_widget_show(widget);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_calendar_get_date(GTK_CALENDAR(widget), &year, &month, &day);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -268,7 +269,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -427,7 +428,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
 		case BSDDIALOG_EXTRA:
@@ -517,7 +518,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	g_io_channel_set_flags(channel, g_io_channel_get_flags(channel)
 			| G_IO_FLAG_NONBLOCK, NULL);
 	gd.id = g_io_add_watch(channel, G_IO_IN, _gauge_on_can_read, &gd);
-	ret = _builder_dialog_run(gd.dialog);
+	ret = _builder_dialog_run(conf, gd.dialog);
 	if(gd.id != 0)
 		g_source_remove(gd.id);
 	gtk_widget_destroy(gd.dialog);
@@ -679,9 +680,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	else
 		gtk_window_set_position(GTK_WINDOW(id.dialog),
 				GTK_WIN_POS_CENTER);
-	gtk_dialog_run(GTK_DIALOG(id.dialog));
+	_builder_dialog_run(conf, id.dialog);
 	if(id.id != 0)
 		g_source_remove(id.id);
+	gtk_widget_destroy(id.dialog);
 	return 0;
 }
 
@@ -734,7 +736,7 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
@@ -831,7 +833,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(dialog);
+	res = _builder_dialog_run(conf, dialog);
 	switch(res)
 	{
 		case BSDDIALOG_HELP:
@@ -932,7 +934,7 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	_mixedgauge_set_percentage(widget, perc);
 	gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(container);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
 }
@@ -1015,7 +1017,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, text, rows);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(dialog);
+	res = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return _builder_dialog_output(conf, opt, res);
 }
@@ -1058,7 +1060,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), checkbox);
 	gtk_widget_show_all(container);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
@@ -1121,7 +1123,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), pd.widget);
 	pd.id = g_timeout_add(1000, _pause_on_timeout, &pd);
 	_builder_dialog_buttons(pd.dialog, conf);
-	ret = _builder_dialog_run(pd.dialog);
+	ret = _builder_dialog_run(conf, pd.dialog);
 	gtk_widget_destroy(pd.dialog);
 	if(pd.id != 0)
 		g_source_remove(pd.id);
@@ -1257,7 +1259,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -1366,7 +1368,7 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 4);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -1435,7 +1437,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(widget),
 				FALSE);
 #endif
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
 }
@@ -1520,7 +1522,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
 		case BSDDIALOG_EXTRA:
@@ -1590,7 +1592,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			conf->button.default_cancel
 			? GTK_RESPONSE_NO : GTK_RESPONSE_YES);
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
 }
@@ -1747,7 +1749,7 @@ static int _builder_dialog_help(GtkWidget * parent,
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", conf->key.f1_message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Help");
-	ret = _builder_dialog_run(dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
 }
@@ -1784,11 +1786,15 @@ static int _builder_dialog_output(struct bsddialog_conf const * conf,
 
 
 /* builder_dialog_run */
-static int _builder_dialog_run(GtkWidget * dialog)
+static int _builder_dialog_run(struct bsddialog_conf const * conf,
+		GtkWidget * dialog)
 {
 	int res;
 
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if(conf->get_height != NULL || conf->get_width != NULL)
+		gtk_window_get_size(GTK_WINDOW(dialog),
+				conf->get_width, conf->get_height);
 	gtk_widget_hide(dialog);
 	switch(res)
 	{
