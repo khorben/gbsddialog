@@ -837,7 +837,7 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 					VERSION, LIBBSDDIALOG_VERSION);
 			break;
 		case SLEEP:
-			conf->sleep = strtoul(optarg, NULL, 10);
+			conf->sleep = strtoul(optarg, NULL, 10) * 1000;
 			break;
 		case STDERR:
 			opt->output_fd = STDERR_FILENO;
