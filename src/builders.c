@@ -772,13 +772,14 @@ int builder_menu(struct bsddialog_conf const * conf,
 	int i, j, n, res;
 	char * p;
 
+	j = opt->item_bottomdesc ? 3 : 2;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
-			argc, (argc - 1) / 2,
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
+			rows, cols, argc, (argc - 1) / j,
 			(argv[0] != NULL) ? argv[0] : "(null)");
 #endif
-	j = opt->item_bottomdesc ? 3 : 2;
-	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) > (argc - 1) / j)
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
@@ -802,7 +803,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget), 2);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0; i < n; i++)
+	for(i = 0; i < n && i * (j + 1) < argc; i++)
 	{
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
