@@ -649,8 +649,12 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #endif
 	{
 		buttons = GTK_BUTTONS_NONE;
-		id.id = g_timeout_add(conf->sleep,
+#ifdef WITH_XDIALOG
+		id.id = g_timeout_add((conf->sleep > 0) ? conf->sleep : 1000,
 				_infobox_on_timeout, &id);
+#else
+		id.id = g_timeout_add(conf->sleep, _infobox_on_timeout, &id);
+#endif
 	}
 	id.dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
 			buttons, "%s", "Information");
