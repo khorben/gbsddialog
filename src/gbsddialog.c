@@ -257,6 +257,9 @@ static struct option longopts[] = {
 #if 0
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 #endif
+#ifdef WITH_XDIALOG
+	{"password",          no_argument,       NULL, INSECURE},
+#endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
