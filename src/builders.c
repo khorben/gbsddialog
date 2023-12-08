@@ -731,6 +731,8 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
+	if(conf->form.securech != '\0')
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_widget_show(widget);
