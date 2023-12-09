@@ -572,7 +572,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	{
 		if(argc < 3)
 		{
-			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR, "expected <text> <rows> <cols>"));
+			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
+						"expected <text> <rows> <cols>"));
 			return _gbsddialog_on_idle_quit(gbd);
 		}
 		if((text = strdup(argv[0])) == NULL)
@@ -732,8 +733,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->bikeshed = true;
 			break;
 		case CANCEL_EXIT_CODE:
-			exitcodes[BSDDIALOG_CANCEL + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_CANCEL + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case CANCEL_LABEL:
 			conf->button.cancel_label = optarg;
@@ -754,12 +755,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			conf->key.enable_esc = false;
 			break;
 		case ERROR_EXIT_CODE:
-			exitcodes[BSDDIALOG_ERROR + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_ERROR + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case ESC_EXIT_CODE:
-			exitcodes[BSDDIALOG_ESC + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_ESC + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case EXIT_LABEL:
 			conf->button.ok_label = optarg;
@@ -768,8 +769,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			conf->button.with_extra = true;
 			break;
 		case EXTRA_EXIT_CODE:
-			exitcodes[BSDDIALOG_EXTRA + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_EXTRA + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case EXTRA_LABEL:
 			conf->button.extra_label = optarg;
@@ -778,8 +779,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			conf->button.with_help = true;
 			break;
 		case HELP_EXIT_CODE:
-			exitcodes[BSDDIALOG_HELP + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_HELP + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case HELP_LABEL:
 			conf->button.help_label = optarg;
@@ -836,8 +837,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			conf->shadow = false;
 			break;
 		case OK_EXIT_CODE:
-			exitcodes[BSDDIALOG_OK + 1].value = strtol(
-					optarg, NULL, 10);
+			exitcodes[BSDDIALOG_OK + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case OK_LABEL:
 			conf->button.ok_label = optarg;
@@ -881,8 +882,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 					"gtk-theme-name", optarg, NULL);
 			break;
 		case TIMEOUT_EXIT_CODE:
-			exitcodes[BSDDIALOG_TIMEOUT + 1].value = strtol(optarg,
-						NULL, 10);
+			exitcodes[BSDDIALOG_TIMEOUT + 1].value
+				= strtol(optarg, NULL, 10);
 			break;
 		case TIME_FORMAT:
 			opt->time_fmt = optarg;
