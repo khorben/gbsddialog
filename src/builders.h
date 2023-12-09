@@ -37,6 +37,11 @@
 
 
 /* builders */
+# ifdef WITH_XDIALOG
+int builder_2inputsbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
+# endif
 int builder_calendar(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);

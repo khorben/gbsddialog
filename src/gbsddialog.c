@@ -146,6 +146,9 @@ enum OPTS {
 	GAUGE,
 	INFOBOX,
 	INPUTBOX,
+#ifdef WITH_XDIALOG
+	INPUTSBOX2,
+#endif
 	MENU,
 	MIXEDFORM,
 	MIXEDGAUGE,
@@ -295,6 +298,9 @@ static struct option longopts[] = {
 	{"title",             required_argument, NULL, TITLE},
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
+#ifdef WITH_XDIALOG
+	{ "2inputsbox",  no_argument, NULL, INPUTSBOX2},
+#endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
 	{"datebox",      no_argument, NULL, DATEBOX},
@@ -942,6 +948,17 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->dialogbuilder = builder_inputbox;
 			conf->auto_downmargin = 1;
 			break;
+#ifdef WITH_XDIALOG
+		case INPUTSBOX2:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --2inputsbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--2inputsbox";
+			opt->dialogbuilder = builder_2inputsbox;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case MENU:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
