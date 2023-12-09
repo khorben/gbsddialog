@@ -357,6 +357,9 @@ static void _backtitle_bikeshed_color(GdkColor * color);
 #endif
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
+#if GTK_CHECK_VERSION(2, 2, 0)
+static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data);
+#endif
 
 int gbsddialog(int * ret, int argc, char const ** argv)
 {
@@ -430,7 +433,6 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	_backtitle_apply_style(gbd->window, &bg, &fg);
 	/* FIXME:
-	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
 #if GTK_CHECK_VERSION(3, 10, 0)
 	scale = gtk_widget_get_scale_factor(gbd->window);
@@ -438,6 +440,10 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	gtk_window_set_default_size(GTK_WINDOW(gbd->window),
 			gdk_screen_get_width(screen) * scale,
 			gdk_screen_get_height(screen) * scale);
+#if GTK_CHECK_VERSION(2, 2, 0)
+	g_signal_connect(screen, "size-changed",
+			G_CALLBACK(_backtitle_on_size_changed), gbd);
+#endif
 	gtk_window_set_type_hint(GTK_WINDOW(gbd->window),
 			GDK_WINDOW_TYPE_HINT_DESKTOP);
 	gbd->label = gtk_label_new(opt->backtitle);
@@ -625,6 +631,21 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 	free(gbd);
 	return FALSE;
 }
+
+#if GTK_CHECK_VERSION(2, 2, 0)
+static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
+{
+	GBSDDialog * gbd = data;
+	gint scale = 1;
+
+#if GTK_CHECK_VERSION(3, 10, 0)
+	scale = gtk_widget_get_scale_factor(gbd->window);
+#endif
+	gtk_window_resize(GTK_WINDOW(gbd->window),
+			gdk_screen_get_width(screen) * scale,
+			gdk_screen_get_height(screen) * scale);
+}
+#endif
 
 
 /* parseargs */
