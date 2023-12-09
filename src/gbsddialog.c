@@ -432,8 +432,8 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	/* FIXME:
 	 * - keep track of monitor changes
 	 * - draw a desktop window on each monitor instead? */
-#if GTK_CHECK_VERSION(3, 12, 0)
-	scale = gdk_screen_get_monitor_scale_factor(screen, 0);
+#if GTK_CHECK_VERSION(3, 10, 0)
+	scale = gtk_widget_get_scale_factor(gbd->window);
 #endif
 	gtk_window_set_default_size(GTK_WINDOW(gbd->window),
 			gdk_screen_get_width(screen) * scale,
