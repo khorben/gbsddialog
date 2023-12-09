@@ -419,7 +419,8 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 		style = gtk_widget_get_style_context(widget);
 		gtk_style_context_get_background_color(style,
 				GTK_STATE_FLAG_SELECTED, &bg);
-		gtk_style_context_get_color(style, GTK_STATE_SELECTED, &fg);
+		gtk_style_context_get_color(style, GTK_STATE_FLAG_SELECTED,
+				&fg);
 #else
 		style = gtk_widget_get_style(widget);
 		/* FIXME obtain the colors */
