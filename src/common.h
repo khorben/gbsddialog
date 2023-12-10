@@ -90,6 +90,10 @@ struct options
 	bool item_bottomdesc;
 	/* Forms options */
 	int unsigned max_input_form;
+#ifdef WITH_XDIALOG
+	/* Help */
+	char * help;
+#endif
 	/* Date and Time options */
 	char *date_fmt;
 	char *time_fmt;

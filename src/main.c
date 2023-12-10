@@ -82,7 +82,11 @@ int main(int argc, char * argv[])
 					VERSION, LIBBSDDIALOG_VERSION);
 			return (BSDDIALOG_OK);
 		}
+#ifdef WITH_XDIALOG
+		if(strcmp(argv[i], "--usage") == 0)
+#else
 		if(strcmp(argv[i], "--help") == 0)
+#endif
 		{
 			_usage();
 			return (BSDDIALOG_OK);
@@ -101,7 +105,11 @@ int main(int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
+#ifdef WITH_XDIALOG
+        printf("usage: " PROGNAME_GBSDDIALOG " --usage | --version\n");
+#else
         printf("usage: " PROGNAME_GBSDDIALOG " --help | --version\n");
+#endif
         printf("       " PROGNAME_GBSDDIALOG " [--<opt>] --<dialog> <text> <rows> <cols> "
             "[<arg>] [--<opt>]\n");
         printf("       " PROGNAME_GBSDDIALOG " ... --<dialog1> ... [--and-dialog --<dialog2> "
@@ -122,6 +130,9 @@ static int _usage(void)
             " --left1-button <label>, --left1-exit-code <retval>,"
             " --left2-button <label>,\n --left2-exit-code <retval>,"
             " --left3-button <label>, --left3-exit-code <retval>,\n"
+#ifdef WITH_XDIALOG
+	    " --help <text>,\n"
+#endif
             " --help-button, --help-exit-code <retval>, --help-label <label>,\n"
             " --help-print-items, --help-print-name, --hfile <file>,"
             " --hline <string>,\n --hmsg <string>, --ignore, --insecure,"

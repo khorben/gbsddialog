@@ -76,6 +76,9 @@ enum OPTS {
 	EXTRA_BUTTON,
 	EXTRA_EXIT_CODE,
 	EXTRA_LABEL,
+#ifdef WITH_XDIALOG
+	HELP,
+#endif
 	HELP_BUTTON,
 	HELP_EXIT_CODE,
 	HELP_LABEL,
@@ -204,6 +207,9 @@ static struct option longopts[] = {
 	{"extra-button",      no_argument,       NULL, EXTRA_BUTTON},
 	{"extra-exit-code",   required_argument, NULL, EXTRA_EXIT_CODE},
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
+#ifdef WITH_XDIALOG
+	{"help",	      required_argument, NULL, HELP},
+#endif
 	{"help-button",       no_argument,       NULL, HELP_BUTTON},
 	{"help-exit-code",    required_argument, NULL, HELP_EXIT_CODE},
 	{"help-label",        required_argument, NULL, HELP_LABEL},
@@ -782,6 +788,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case EXTRA_LABEL:
 			conf->button.extra_label = optarg;
+			break;
+		case HELP:
+			opt->help = optarg;
 			break;
 		case HELP_BUTTON:
 			conf->button.with_help = true;
