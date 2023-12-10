@@ -841,6 +841,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			buttons, "%s", "Information");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(id.dialog),
 			"%s", text);
+#ifdef WITH_XDIALOG
+	if(opt->without_buttons)
+		gtk_window_set_decorated(GTK_WINDOW(id.dialog), FALSE);
+#endif
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
 	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
