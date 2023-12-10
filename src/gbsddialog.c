@@ -148,6 +148,7 @@ enum OPTS {
 	INPUTBOX,
 #ifdef WITH_XDIALOG
 	INPUTSBOX2,
+	INPUTSBOX3,
 #endif
 	MENU,
 	MIXEDFORM,
@@ -300,6 +301,7 @@ static struct option longopts[] = {
 	/* Dialogs */
 #ifdef WITH_XDIALOG
 	{ "2inputsbox",  no_argument, NULL, INPUTSBOX2},
+	{ "3inputsbox",  no_argument, NULL, INPUTSBOX3},
 #endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
@@ -956,6 +958,15 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--2inputsbox";
 			opt->dialogbuilder = builder_2inputsbox;
+			conf->auto_downmargin = 1;
+			break;
+		case INPUTSBOX3:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --3inputsbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--3inputsbox";
+			opt->dialogbuilder = builder_3inputsbox;
 			conf->auto_downmargin = 1;
 			break;
 #endif

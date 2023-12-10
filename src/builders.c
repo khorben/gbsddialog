@@ -177,6 +177,103 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	g_object_unref(buffer2);
 	return ret;
 }
+
+
+/* builder_3inputsbox */
+int builder_3inputsbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget;
+	GtkEntryBuffer * buffer1;
+	GtkEntryBuffer * buffer2;
+	GtkEntryBuffer * buffer3;
+	GtkSizeGroup * group;
+
+	if(argc != 6)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
+	dialog = _builder_dialog(conf, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	/* input 1 */
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	widget = gtk_label_new(argv[0]);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+	buffer1 = gtk_entry_buffer_new(argv[1], -1);
+	widget = gtk_entry_new_with_buffer(buffer1);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(opt->max_input_form > 0)
+		gtk_entry_set_max_length(GTK_ENTRY(widget),
+				opt->max_input_form);
+	if(cols > 0)
+		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
+	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(container), box);
+	/* input 2 */
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	widget = gtk_label_new(argv[2]);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+	buffer2 = gtk_entry_buffer_new(argv[3], -1);
+	widget = gtk_entry_new_with_buffer(buffer2);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(opt->max_input_form > 0)
+		gtk_entry_set_max_length(GTK_ENTRY(widget),
+				opt->max_input_form);
+	if(cols > 0)
+		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
+	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(container), box);
+	/* input 3 */
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	widget = gtk_label_new(argv[4]);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+	buffer3 = gtk_entry_buffer_new(argv[5], -1);
+	widget = gtk_entry_new_with_buffer(buffer3);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(opt->max_input_form > 0)
+		gtk_entry_set_max_length(GTK_ENTRY(widget),
+				opt->max_input_form);
+	if(conf->form.securech != '\0')
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	if(cols > 0)
+		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
+	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(container), box);
+	gtk_widget_show_all(container);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			dprintf(opt->output_fd, "%s/%s/%s\n",
+					gtk_entry_buffer_get_text(buffer1),
+					gtk_entry_buffer_get_text(buffer2),
+					gtk_entry_buffer_get_text(buffer3));
+			break;
+		default:
+			ret = _builder_dialog_output(conf, opt, ret);
+			break;
+	}
+	g_object_unref(buffer1);
+	g_object_unref(buffer2);
+	g_object_unref(buffer3);
+	return ret;
+}
 # endif
 
 
