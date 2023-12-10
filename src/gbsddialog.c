@@ -30,7 +30,6 @@
 
 
 
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -712,7 +711,11 @@ static int _parseargs(int argc, char const ** argv,
 static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		int arg)
 {
-	struct winsize ws;
+	GdkScreen * screen;
+	GtkStyleContext * style;
+	gdouble ex, fontsize, resolution;
+	GdkRectangle workarea;
+	PangoFontDescription const * fontdesc;
 
 	switch(arg)
 	{
@@ -871,9 +874,30 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
-			ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+			/* obtain the default screen */
+			if((screen = gdk_screen_get_default()) == NULL)
+				return -error(BSDDIALOG_ERROR, "Could not"
+						" obtain the screen size");
+			/* obtain the workarea */
+			gdk_screen_get_monitor_workarea(screen,
+					gdk_screen_get_primary_monitor(screen),
+					&workarea);
+			/* obtain the default font size */
+			style = gtk_style_context_new();
+			fontdesc = gtk_style_context_get_font(style,
+					GTK_STATE_FLAG_NORMAL);
+			fontsize = pango_font_description_get_size(fontdesc);
+			if(pango_font_description_get_size_is_absolute(fontdesc))
+				ex = fontsize;
+			else
+			{
+				resolution = gdk_screen_get_resolution(screen);
+				ex = (fontsize * resolution)
+					/ (72.0 * PANGO_SCALE);
+			}
 			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
-					ws.ws_row, ws.ws_col);
+					(int)(workarea.height / ex / 2),
+					(int)(workarea.width / ex));
 			break;
 		case PRINT_SIZE:
 			conf->get_height = &opt->getH;
