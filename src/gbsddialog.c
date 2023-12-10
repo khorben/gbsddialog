@@ -50,7 +50,12 @@
 /* getopt_long */
 enum OPTS {
 	/* Options */
+#ifdef WITH_XDIALOG
+	ALLOW_CLOSE = '?' + 1,
+	ALTERNATE_SCREEN,
+#else
 	ALTERNATE_SCREEN = '?' + 1,
+#endif
 	AND_DIALOG,
 	ASCII_LINES,
 	BACKTITLE,
@@ -169,6 +174,9 @@ enum OPTS {
 
 static struct option longopts[] = {
 	/* Options */
+#ifdef WITH_XDIALOG
+	{"allow-close",	      no_argument,	 NULL, ALLOW_CLOSE},
+#endif
 	{"alternate-screen",  no_argument,       NULL, ALTERNATE_SCREEN},
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
@@ -252,6 +260,9 @@ static struct option longopts[] = {
 #endif
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
+#ifdef WITH_XDIALOG
+	{"no-close",	      no_argument,	 NULL, DISABLE_ESC},
+#endif
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-label",          required_argument, NULL, CANCEL_LABEL},
@@ -720,6 +731,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 	switch(arg)
 	{
 		/* Options */
+		case ALLOW_CLOSE:
+			conf->key.enable_esc = true;
+			break;
 		case ALTERNATE_SCREEN:
 		case NORMAL_SCREEN:
 			/* no-op */
