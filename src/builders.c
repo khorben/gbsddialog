@@ -113,18 +113,21 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	GtkEntryBuffer * buffer1;
 	GtkEntryBuffer * buffer2;
+	GtkSizeGroup * group;
 
 	if(argc != 4)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
+	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	dialog = _builder_dialog(conf, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 	widget = gtk_label_new(argv[0]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
 	widget = gtk_entry_new_with_buffer(buffer1);
@@ -140,6 +143,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 	widget = gtk_label_new(argv[2]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
 	widget = gtk_entry_new_with_buffer(buffer2);
