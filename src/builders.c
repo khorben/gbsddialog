@@ -817,24 +817,34 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	GtkButtonsType buttons = GTK_BUTTONS_OK;
 	struct confopt_data confopt = { conf, opt };
 	struct infobox_data id = { NULL, 0 };
+	int timeout = (conf->sleep > INT_MAX) ? INT_MAX : (int)conf->sleep;
 
+#ifdef WITH_XDIALOG
+	if(argc == 1)
+	{
+		if((timeout = strtol(argv[0], NULL, 10)) > 0)
+			timeout = timeout * 1000;
+		argc--;
+	}
+#endif
 	if(argc > 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
 #ifdef WITH_XDIALOG
-	if(conf->sleep > 0 || opt->without_buttons)
+	if(timeout > 0 || opt->without_buttons)
 #else
-	if(conf->sleep > 0)
+	if(timeout > 0)
 #endif
 	{
 		buttons = GTK_BUTTONS_NONE;
 #ifdef WITH_XDIALOG
-		id.id = g_timeout_add((conf->sleep > 0) ? conf->sleep : 1000,
-				_infobox_on_timeout, &id);
+		if(timeout >= 0)
+			id.id = g_timeout_add((timeout > 0) ? timeout : 1000,
+					_infobox_on_timeout, &id);
 #else
-		id.id = g_timeout_add(conf->sleep, _infobox_on_timeout, &id);
+		id.id = g_timeout_add(timeout, _infobox_on_timeout, &id);
 #endif
 	}
 	id.dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
