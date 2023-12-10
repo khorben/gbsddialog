@@ -44,6 +44,12 @@
 
 /* builders */
 /* types */
+struct confopt_data
+{
+	struct bsddialog_conf const * conf;
+	struct options const * opt;
+};
+
 struct datebox_data
 {
 	GtkWidget * day;
@@ -86,13 +92,14 @@ struct timebox_data
 
 /* prototypes */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
-		char const * text, int rows);
+		struct options const * opt, char const * text, int rows);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
 static int _builder_dialog_error(GtkWidget * parent,
 		struct bsddialog_conf const * conf, char const * error);
 static int _builder_dialog_help(GtkWidget * parent,
-		struct bsddialog_conf const * conf);
+		struct bsddialog_conf const * conf,
+		struct options const * opt);
 static int _builder_dialog_output(struct bsddialog_conf const * conf,
 		struct options const * opt, int res);
 static int _builder_dialog_run(struct bsddialog_conf const * conf,
@@ -121,7 +128,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -200,7 +207,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -305,7 +312,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_calendar_new();
 	if(argc == 3 && day <= 31 && month >= 1 && month <= 12 && year != 0)
@@ -386,7 +393,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / j;
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(j, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -558,7 +565,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 		month = tm.tm_mon + 1;
 		year = tm.tm_year + 1900;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -660,7 +667,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	else if(argc == 1)
 		perc = strtoul(argv[0], NULL, 10);
 	gd.opt = opt;
-	gd.dialog = _builder_dialog(conf, NULL, rows);
+	gd.dialog = _builder_dialog(conf, opt, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(gd.dialog));
 	if(text != NULL)
 	{
@@ -808,6 +815,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	const GtkDialogFlags flags = 0;
 #endif
 	GtkButtonsType buttons = GTK_BUTTONS_OK;
+	struct confopt_data confopt = { conf, opt };
 	struct infobox_data id = { NULL, 0 };
 
 	if(argc > 0)
@@ -837,8 +845,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
 	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
 		g_signal_connect(id.dialog, "key-press-event",
-				G_CALLBACK(_infobox_on_key_press),
-				(void *)conf);
+				G_CALLBACK(_infobox_on_key_press), &confopt);
 	if(conf->title != NULL)
 		gtk_window_set_title(GTK_WINDOW(id.dialog), conf->title);
 	else
@@ -867,10 +874,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 static gboolean _infobox_on_key_press(GtkWidget * widget, GdkEventKey * event,
 		gpointer data)
 {
-	struct bsddialog_conf const * conf = data;
+	struct confopt_data * confopt = data;
 
 	if(event->keyval == GDK_KEY_F1)
-		_builder_dialog_help(widget, conf);
+		_builder_dialog_help(widget, confopt->conf, confopt->opt);
 	return FALSE;
 }
 
@@ -900,7 +907,7 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
@@ -965,7 +972,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / j;
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(j, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING);
@@ -1067,7 +1074,7 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc - 1, argv + 1);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, NULL, rows);
+	dialog = _builder_dialog(conf, opt, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* items */
 	for(i = 0; i * 2 + 2 < argc; i++)
@@ -1195,7 +1202,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	_builder_dialog_buttons(dialog, conf);
 	res = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
@@ -1222,7 +1229,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
@@ -1289,7 +1296,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	pd.secs = strtoul(argv[0], NULL, 10);
-	pd.dialog = _builder_dialog(conf, text, rows);
+	pd.dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
 	pd.widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -1375,7 +1382,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	}
 	else if(n == 0)
 		n = (argc - 1) / j;
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	store = gtk_list_store_new(j, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -1533,7 +1540,7 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 	/* XXX detect and report errors */
 	min = strtol(argv[0], NULL, 10);
 	max = strtol(argv[1], NULL, 10);
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	widget = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -1583,7 +1590,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	/* FIXME use a GIOChannel instead */
 	if((fp = fopen(text, "r")) == NULL)
 		return BSDDIALOG_ERROR;
-	dialog = _builder_dialog(conf, NULL, rows);
+	dialog = _builder_dialog(conf, opt, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -1662,7 +1669,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 		minute = tm.tm_min;
 		second = tm.tm_sec;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -1744,7 +1751,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows);
 	if(conf->button.without_cancel != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.cancel_label != NULL)
@@ -1779,7 +1786,7 @@ static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
 		gpointer data);
 
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
-		char const * text, int rows)
+		struct options const * opt, char const * text, int rows)
 {
 	GtkWidget * dialog;
 #if GTK_CHECK_VERSION(3, 12, 0)
@@ -1789,13 +1796,14 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 #endif
 	GtkWidget * container;
 	GtkWidget * widget;
+	struct confopt_data confopt = { conf, opt };
 
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
 	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
 		g_signal_connect(dialog, "key-press-event",
-				G_CALLBACK(_dialog_on_key_press), (void *)conf);
+				G_CALLBACK(_dialog_on_key_press), &confopt);
 #if GTK_CHECK_VERSION(3, 12, 0)
 	if(conf->bottomtitle != NULL
 			&& (widget = gtk_dialog_get_header_bar(
@@ -1831,10 +1839,10 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
 		gpointer data)
 {
-	struct bsddialog_conf const * conf = data;
+	struct confopt_data * confopt = data;
 
 	if(event->keyval == GDK_KEY_F1)
-		_builder_dialog_help(widget, conf);
+		_builder_dialog_help(widget, confopt->conf, confopt->opt);
 	return FALSE;
 }
 
@@ -1904,13 +1912,17 @@ static int _builder_dialog_error(GtkWidget * parent,
 
 /* builder_dialog_help */
 static int _builder_dialog_help(GtkWidget * parent,
-		struct bsddialog_conf const * conf)
+		struct bsddialog_conf const * conf,
+		struct options const * opt)
 {
 	int ret;
 	struct bsddialog_conf conf2;
 	GtkWidget * dialog;
 	const GtkDialogFlags flags = 0;
 	GtkButtonsType buttons = GTK_BUTTONS_CLOSE;
+#ifndef WITH_XDIALOG
+	(void) opt;
+#endif
 
 	if(conf->key.f1_file != NULL)
 	{
@@ -1919,6 +1931,13 @@ static int _builder_dialog_help(GtkWidget * parent,
 		return builder_textbox(&conf2, conf->key.f1_file, 0, 0, 0, NULL,
 				NULL);
 	}
+#ifdef WITH_XDIALOG
+	if(parent != NULL && opt->help != NULL && opt->help[0] == '\0')
+	{
+		gtk_dialog_response(GTK_DIALOG(parent), GTK_RESPONSE_HELP);
+		return 0;
+	}
+#endif
 	dialog = gtk_message_dialog_new((parent != NULL)
 			? GTK_WINDOW(parent) : NULL, flags,
 			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");
