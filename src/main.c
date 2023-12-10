@@ -40,6 +40,13 @@
 #include "common.h"
 #include "gbsddialog.h"
 
+#ifndef PROGNAME_BSDDIALOG
+# define PROGNAME_BSDDIALOG	"bsddialog"
+#endif
+#ifndef PROGNAME_GBSDDIALOG
+# define PROGNAME_GBSDDIALOG	"gbsddialog"
+#endif
+
 
 /* prototypes */
 static int _usage(void);
@@ -56,7 +63,7 @@ int main(int argc, char * argv[])
 	if((p = getenv("DISPLAY")) == NULL
 			|| strlen(p) == 0)
 	{
-		execvp("bsddialog", argv);
+		execvp(PROGNAME_BSDDIALOG, argv);
 		_exit(127);
 	}
 
@@ -94,10 +101,10 @@ int main(int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-        printf("usage: gbsddialog --help | --version\n");
-        printf("       gbsddialog [--<opt>] --<dialog> <text> <rows> <cols> "
+        printf("usage: " PROGNAME_GBSDDIALOG " --help | --version\n");
+        printf("       " PROGNAME_GBSDDIALOG " [--<opt>] --<dialog> <text> <rows> <cols> "
             "[<arg>] [--<opt>]\n");
-        printf("       gbsddialog ... --<dialog1> ... [--and-dialog --<dialog2> "
+        printf("       " PROGNAME_GBSDDIALOG " ... --<dialog1> ... [--and-dialog --<dialog2> "
             "...] ...\n");
         printf("\n");
 
