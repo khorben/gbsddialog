@@ -182,10 +182,12 @@ static struct option longopts[] = {
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
-#if 0
 	{"clear",             no_argument,       NULL, CLEAR_SCREEN},
+#if 0
 	{"clear-dialog",      no_argument,       NULL, CLEAR_DIALOG},
+#endif
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
+#if 0
 	{"colors",            no_argument,       NULL, TEXT_ESCAPE},
 	{"columns-per-row",   required_argument, NULL, COLUMNS_PER_ROW},
 #endif
@@ -755,6 +757,10 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case CR_WRAP:
 			opt->cr_wrap = true;
+			break;
+		case CLEAR_SCREEN:
+			opt->mandatory_dialog = false;
+			opt->clearscreen = true;
 			break;
 		case DEFAULT_ITEM:
 			opt->item_default = optarg;
