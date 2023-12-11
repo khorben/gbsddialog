@@ -15,6 +15,7 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- "$$PWD" $(PACKAGE)-$(VERSION)
 	$(TAR) -czf $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README.md \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
