@@ -1,13 +1,15 @@
 TARGETS	= Xdialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
-CPPFLAGS= -D_FORTIFY_SOURCE=2 -DWITH_XDIALOG
+CPPFLAGS= -D_FORTIFY_SOURCE=2
 #for Gtk+ 2
-#CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-2.0`
-#LDFLAGS= `pkg-config --libs gtk+-2.0`
+#CFLAGSF= `pkg-config --cflags gtk+-2.0`
+#LDFLAGSF= `pkg-config --libs gtk+-2.0`
 #for Gtk+ 3
-CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-3.0`
-LDFLAGS	= `pkg-config --libs gtk+-3.0`
+CFLAGSF	= `pkg-config --cflags gtk+-3.0`
+LDFLAGSF= `pkg-config --libs gtk+-3.0`
+CFLAGS	= -W -Wall -g -O2
+LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p
 RM	= rm -f
@@ -16,10 +18,10 @@ OBJS	= Xdialog.o
 all: $(TARGETS)
 
 Xdialog: $(OBJS)
-	$(CC) $(LDFLAGS) -o Xdialog $(OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Xdialog $(OBJS)
 
 Xdialog.o: Xdialog.c ../src/gbsddialog
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o Xdialog.o -c Xdialog.c
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o Xdialog.o -c Xdialog.c
 
 clean:
 	$(RM) $(OBJS)
