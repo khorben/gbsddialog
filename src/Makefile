@@ -10,9 +10,8 @@ INSTALL	= install
 MKDIR	= mkdir -p
 RM	= rm -f
 OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
-TARGET	= gbsddialog
 
-all: $(TARGET)
+all: $(TARGETS)
 
 gbsddialog: $(OBJS)
 	$(CC) $(LDFLAGS) -o gbsddialog $(OBJS)
@@ -36,7 +35,7 @@ clean:
 	$(RM) $(OBJS)
 
 distclean: clean
-	$(RM) $(TARGET)
+	$(RM) $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(BINDIR)
