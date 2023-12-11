@@ -1,4 +1,4 @@
-/* gbsddialog */
+/* Xdialog */
 /* main.c */
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
