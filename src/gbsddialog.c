@@ -731,9 +731,11 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 	switch(arg)
 	{
 		/* Options */
+#ifdef WITH_XDIALOG
 		case ALLOW_CLOSE:
 			conf->key.enable_esc = true;
 			break;
+#endif
 		case ALTERNATE_SCREEN:
 		case NORMAL_SCREEN:
 			/* no-op */
@@ -812,9 +814,11 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case EXTRA_LABEL:
 			conf->button.extra_label = optarg;
 			break;
+#ifdef WITH_XDIALOG
 		case HELP:
 			opt->help = optarg;
 			break;
+#endif
 		case HELP_BUTTON:
 			conf->button.with_help = true;
 			break;
