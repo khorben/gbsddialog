@@ -2,6 +2,10 @@ TARGETS	= Xdialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2 -DWITH_XDIALOG
+#for Gtk+ 2
+#CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-2.0`
+#LDFLAGS= `pkg-config --libs gtk+-2.0`
+#for Gtk+ 3
 CFLAGS	= -W -Wall -g -O2 `pkg-config --cflags gtk+-3.0`
 LDFLAGS	= `pkg-config --libs gtk+-3.0`
 INSTALL	= install
