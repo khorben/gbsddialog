@@ -1,4 +1,4 @@
-SUBDIRS	= src
+SUBDIRS	= src tools
 
 all:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE)) || break; done
