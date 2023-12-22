@@ -8,7 +8,7 @@ CPPFLAGS= -D_FORTIFY_SOURCE=2
 #for Gtk+ 3
 CFLAGSF	= `pkg-config --cflags gtk+-3.0`
 LDFLAGSF= `pkg-config --libs gtk+-3.0`
-CFLAGS	= -W -Wall -g -O2
+CFLAGS	= -W -Wall -g -O2 -fstack-protector
 LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p
