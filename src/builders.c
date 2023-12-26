@@ -100,8 +100,6 @@ static int _builder_dialog_error(GtkWidget * parent,
 static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
-static int _builder_dialog_output(struct bsddialog_conf const * conf,
-		struct options const * opt, int res);
 static int _builder_dialog_run(struct bsddialog_conf const * conf,
 		GtkWidget * dialog);
 
@@ -175,9 +173,6 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 			dprintf(opt->output_fd, "%s/%s\n",
 					gtk_entry_buffer_get_text(buffer1),
 					gtk_entry_buffer_get_text(buffer2));
-			break;
-		default:
-			ret = _builder_dialog_output(conf, opt, ret);
 			break;
 	}
 	g_object_unref(buffer1);
@@ -272,9 +267,6 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 					gtk_entry_buffer_get_text(buffer2),
 					gtk_entry_buffer_get_text(buffer3));
 			break;
-		default:
-			ret = _builder_dialog_output(conf, opt, ret);
-			break;
 	}
 	g_object_unref(buffer1);
 	g_object_unref(buffer2);
@@ -344,7 +336,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 			write(opt->output_fd, buf, len + 1);
 			return ret;
 	}
-	return _builder_dialog_output(conf, opt, ret);
+	return ret;
 }
 
 static void _calendar_on_day_activated(gpointer data)
@@ -475,9 +467,6 @@ int builder_checklist(struct bsddialog_conf const * conf,
 					dprintf(opt->output_fd, "%s\n", p);
 				free(p);
 			}
-			break;
-		default:
-			_builder_dialog_output(conf, opt, ret);
 			break;
 	}
 	gtk_widget_destroy(dialog);
@@ -945,9 +934,6 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 			dprintf(opt->output_fd, "%s\n",
 					gtk_entry_buffer_get_text(buffer));
 			break;
-		default:
-			ret = _builder_dialog_output(conf, opt, ret);
-			break;
 	}
 	g_object_unref(buffer);
 	return ret;
@@ -961,6 +947,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
+	int ret;
 	GtkWidget * dialog;
 	GtkWidget * container;
 	GtkWidget * window;
@@ -969,7 +956,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkTreeIter iter;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, n, res;
+	int i, j, n;
 	char * p;
 
 	j = opt->item_bottomdesc ? 3 : 2;
@@ -1034,8 +1021,8 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(conf, dialog);
-	switch(res)
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
 	{
 		case BSDDIALOG_HELP:
 			dprintf(opt->output_fd, "HELP ");
@@ -1050,12 +1037,12 @@ int builder_menu(struct bsddialog_conf const * conf,
 				dprintf(opt->output_fd, "%s\n", p);
 				free(p);
 				gtk_widget_destroy(dialog);
-				return res;
+				return ret;
 			}
 			break;
 	}
 	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, opt, res);
+	return ret;
 }
 
 static void _menu_on_row_activated(gpointer data)
@@ -1208,8 +1195,8 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
+	int ret;
 	GtkWidget * dialog;
-	int res;
 
 	if(argc > 0)
 	{
@@ -1218,9 +1205,9 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
 	_builder_dialog_buttons(dialog, conf);
-	res = _builder_dialog_run(conf, dialog);
+	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
-	return _builder_dialog_output(conf, opt, res);
+	return ret;
 }
 
 
@@ -1269,9 +1256,6 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 		case BSDDIALOG_OK:
 			dprintf(opt->output_fd, "%s\n",
 					gtk_entry_buffer_get_text(buffer));
-			break;
-		default:
-			ret = _builder_dialog_output(conf, opt, ret);
 			break;
 	}
 	g_object_unref(buffer);
@@ -1483,9 +1467,6 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				free(p);
 			}
 			break;
-		default:
-			_builder_dialog_output(conf, opt, ret);
-			break;
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -1573,10 +1554,9 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
 			dprintf(opt->output_fd, "%d\n", value);
-			return ret;
-		default:
-			return _builder_dialog_output(conf, opt, ret);
+			break;
 	}
+	return ret;
 }
 
 
@@ -1961,36 +1941,6 @@ static int _builder_dialog_help(GtkWidget * parent,
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
-}
-
-
-/* builder_dialog_output */
-static int _builder_dialog_output(struct bsddialog_conf const * conf,
-		struct options const * opt, int res)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, res);
-#endif
-	switch(res)
-	{
-		case BSDDIALOG_CANCEL:
-			dprintf(opt->output_fd, "%s\n",
-					conf->button.cancel_label
-					? conf->button.cancel_label : "Cancel");
-			break;
-		case BSDDIALOG_ESC:
-			dprintf(opt->output_fd, "%s\n", "[ESC]");
-			break;
-		case BSDDIALOG_EXTRA:
-			dprintf(opt->output_fd, "%s\n", conf->button.extra_label
-					? conf->button.extra_label : "Extra");
-			break;
-		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%s\n", conf->button.ok_label
-					? conf->button.ok_label : "OK");
-			break;
-	}
-	return res;
 }
 
 
