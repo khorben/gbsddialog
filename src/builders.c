@@ -368,7 +368,8 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, n;
-	gboolean b, set;
+	gboolean b, set, toquote;
+	char quotech;
 	char * p;
 
 #ifdef DEBUG
@@ -442,6 +443,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
+	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -450,7 +452,17 @@ int builder_checklist(struct bsddialog_conf const * conf,
 				break;
 			gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 					1, &p, -1);
-			dprintf(opt->output_fd, "HELP %s\n", p);
+			if(opt->item_output_sepnl == FALSE)
+				toquote = TRUE;
+			else if(strchr(p, ' ') != NULL)
+				toquote = opt->item_always_quote;
+			else
+				toquote = FALSE;
+			if(toquote)
+				dprintf(opt->output_fd, "HELP %c%s%c\n",
+						quotech, p, quotech);
+			else
+				dprintf(opt->output_fd, "HELP %s\n", p);
 			free(p);
 			break;
 		case BSDDIALOG_EXTRA:
@@ -464,7 +476,21 @@ int builder_checklist(struct bsddialog_conf const * conf,
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 						0, &set, 1, &p, -1);
 				if(set)
-					dprintf(opt->output_fd, "%s\n", p);
+				{
+					if(opt->item_output_sepnl == FALSE)
+						toquote = TRUE;
+					else if(strchr(p, ' ') != NULL)
+						toquote = opt->item_always_quote;
+					else
+						toquote = FALSE;
+					if(toquote)
+						dprintf(opt->output_fd,
+								"%c%s%c\n",
+								quotech, p,
+								quotech);
+					else
+						dprintf(opt->output_fd, "%s\n", p);
+				}
 				free(p);
 			}
 			break;
@@ -958,6 +984,8 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkTreeSelection * treesel;
 	int i, j, n;
 	char * p;
+	gboolean selected, toquote;
+	char quotech;
 
 	j = opt->item_bottomdesc ? 3 : 2;
 #ifdef DEBUG
@@ -1022,19 +1050,28 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
+	selected = gtk_tree_selection_get_selected(treesel, NULL, &iter);
+	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
-			dprintf(opt->output_fd, "HELP ");
-			/* fallback */
+			if(selected == TRUE)
+				dprintf(opt->output_fd, "HELP ");
+			/* fallthrough */
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
-					== TRUE)
+			if(selected)
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 						0, &p, -1);
-				dprintf(opt->output_fd, "%s\n", p);
+				toquote = FALSE;
+				if(strchr(p, ' ') != NULL)
+					toquote = opt->item_always_quote;
+				if(toquote)
+					dprintf(opt->output_fd, "%c%s%c\n",
+							quotech, p, quotech);
+				else
+					dprintf(opt->output_fd, "%s\n", p);
 				free(p);
 				gtk_widget_destroy(dialog);
 				return ret;
@@ -1363,7 +1400,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, n;
-	gboolean b, set;
+	gboolean b, set, toquote;
+	char quotech;
 	char * p;
 
 #ifdef DEBUG
@@ -1441,6 +1479,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
+	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -1449,7 +1488,14 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				break;
 			gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 					1, &p, -1);
-			dprintf(opt->output_fd, "HELP %s\n", p);
+			toquote = FALSE;
+			if(strchr(p, ' ') != NULL)
+				toquote = opt->item_always_quote;
+			if(toquote)
+				dprintf(opt->output_fd, "HELP %c%s%c\n",
+						quotech, p, quotech);
+			else
+				dprintf(opt->output_fd, "HELP %s\n", p);
 			free(p);
 			break;
 		case BSDDIALOG_EXTRA:
@@ -1463,7 +1509,18 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 						0, &set, 1, &p, -1);
 				if(set)
-					dprintf(opt->output_fd, "%s\n", p);
+				{
+					toquote = FALSE;
+					if(strchr(p, ' ') != NULL)
+						toquote = opt->item_always_quote;
+					if(toquote)
+						dprintf(opt->output_fd,
+								"%c%s%c\n",
+								quotech, p,
+								quotech);
+					else
+						dprintf(opt->output_fd, "%s\n", p);
+				}
 				free(p);
 			}
 			break;

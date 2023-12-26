@@ -285,8 +285,8 @@ static struct option longopts[] = {
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
-#if 0
 	{"quoted",            no_argument,       NULL, QUOTED},
+#if 0
 	{"right1-button",     required_argument, NULL, RIGHT1_BUTTON},
 	{"right1-exit-code",  required_argument, NULL, RIGHT1_EXIT_CODE},
 	{"right2-button",     required_argument, NULL, RIGHT2_BUTTON},
@@ -297,8 +297,8 @@ static struct option longopts[] = {
 	{"separate-output",   no_argument,       NULL, SEPARATE_OUTPUT},
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
 	{"shadow",            no_argument,       NULL, SHADOW},
-	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
 #endif
+	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
 	{"sleep",             required_argument, NULL, SLEEP},
 	{"stderr",            no_argument,       NULL, STDERR},
 	{"stdout",            no_argument,       NULL, STDOUT},
@@ -926,6 +926,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			dprintf(opt->output_fd,
 					"Version: %s (libbsddialog: %s)\n",
 					VERSION, LIBBSDDIALOG_VERSION);
+			break;
+		case QUOTED:
+			opt->item_always_quote = true;
+			break;
+		case SINGLE_QUOTED:
+			opt->item_singlequote = true;
 			break;
 		case SLEEP:
 			conf->sleep = strtoul(optarg, NULL, 10) * 1000;
