@@ -127,3 +127,32 @@ int error(int ret, char const * format, ...)
 	va_end(ap);
 	return ret;
 }
+
+
+/* string_needs_quoting */
+int string_needs_quoting(char const * str)
+{
+	char const * p;
+
+	for(p = str; *p != '\0'; p++)
+		switch(*p)
+		{
+			case '|':
+			case '&':
+			case ';':
+			case '<':
+			case '>':
+			case '(':
+			case ')':
+			case '$':
+			case '`':
+			case '\\':
+			case '"':
+			case '\'':
+			case ' ':
+			case '\t':
+			case '\n':
+				return 1;
+		}
+	return 0;
+}

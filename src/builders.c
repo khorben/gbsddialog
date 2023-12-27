@@ -489,7 +489,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 					CLS_NAME, &p, -1);
 			if(opt->item_output_sepnl == FALSE)
 				toquote = TRUE;
-			else if(strchr(p, ' ') != NULL)
+			else if(string_needs_quoting(p))
 				toquote = opt->item_always_quote;
 			else
 				toquote = FALSE;
@@ -515,7 +515,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 				{
 					if(opt->item_output_sepnl == FALSE)
 						toquote = TRUE;
-					else if(strchr(p, ' ') != NULL)
+					else if(string_needs_quoting(p))
 						toquote = opt->item_always_quote;
 					else
 						toquote = FALSE;
@@ -1111,7 +1111,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 						MLS_NAME, &p, -1);
 				toquote = FALSE;
-				if(strchr(p, ' ') != NULL)
+				if(string_needs_quoting(p))
 					toquote = opt->item_always_quote;
 				if(toquote)
 					dprintf(opt->output_fd, "%c%s%c\n",
@@ -1539,7 +1539,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 			gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
 					RLS_NAME, &p, -1);
 			toquote = FALSE;
-			if(strchr(p, ' ') != NULL)
+			if(string_needs_quoting(p))
 				toquote = opt->item_always_quote;
 			if(toquote)
 				dprintf(opt->output_fd, "HELP %c%s%c\n",
@@ -1562,7 +1562,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				if(set)
 				{
 					toquote = FALSE;
-					if(strchr(p, ' ') != NULL)
+					if(string_needs_quoting(p))
 						toquote = opt->item_always_quote;
 					if(toquote)
 						dprintf(opt->output_fd,
