@@ -404,8 +404,8 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	char * p, * sep = "";
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
-			argc, (argc - 1) / 3,
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
+			rows, cols, argc, (argc - 1) / 3,
 			(argv[0] != NULL) ? argv[0] : "(null)");
 #endif
 	j = opt->item_bottomdesc ? 4 : 3;
@@ -1451,8 +1451,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
-			argc, (argc - 1) / 3,
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
+			rows, cols, argc, (argc - 1) / 3,
 			(argv[0] != NULL) ? argv[0] : "(null)");
 #endif
 	j = opt->item_bottomdesc ? 4 : 3;
@@ -1570,7 +1570,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 								quotech, p,
 								quotech);
 					else
-						dprintf(opt->output_fd, "%s\n", p);
+						dprintf(opt->output_fd, "%s\n",
+								p);
 				}
 				free(p);
 			}
