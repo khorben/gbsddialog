@@ -1119,8 +1119,6 @@ int builder_menu(struct bsddialog_conf const * conf,
 				else
 					dprintf(opt->output_fd, "%s\n", p);
 				free(p);
-				gtk_widget_destroy(dialog);
-				return ret;
 			}
 			break;
 	}
