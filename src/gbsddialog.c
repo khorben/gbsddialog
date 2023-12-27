@@ -276,9 +276,7 @@ static struct option longopts[] = {
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 	{"ok-label",          required_argument, NULL, OK_LABEL},
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
-#if 0
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
-#endif
 #ifdef WITH_XDIALOG
 	{"password",          no_argument,       NULL, INSECURE},
 #endif
@@ -294,8 +292,10 @@ static struct option longopts[] = {
 	{"right3-button",     required_argument, NULL, RIGHT3_BUTTON},
 	{"right3-exit-code",  required_argument, NULL, RIGHT3_EXIT_CODE},
 	{"save-theme",        required_argument, NULL, SAVE_THEME},
+#endif
 	{"separate-output",   no_argument,       NULL, SEPARATE_OUTPUT},
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
+#if 0
 	{"shadow",            no_argument,       NULL, SHADOW},
 #endif
 	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
@@ -890,6 +890,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case OUTPUT_FD:
 			opt->output_fd = strtol(optarg, NULL, 10);
 			break;
+		case OUTPUT_SEPARATOR:
+			opt->item_output_sep = optarg;
+			break;
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
 			/* obtain the default screen */
@@ -929,6 +932,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case QUOTED:
 			opt->item_always_quote = true;
+			break;
+		case SEPARATE_OUTPUT:
+			opt->item_output_sepnl = true;
 			break;
 		case SINGLE_QUOTED:
 			opt->item_singlequote = true;

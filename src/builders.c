@@ -401,7 +401,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	int i, j, n;
 	gboolean b, set, toquote;
 	char quotech;
-	char * p;
+	char * p, * sep = "";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__, rows, cols,
@@ -521,14 +521,19 @@ int builder_checklist(struct bsddialog_conf const * conf,
 						toquote = FALSE;
 					if(toquote)
 						dprintf(opt->output_fd,
-								"%c%s%c\n",
+								"%s%c%s%c", sep,
 								quotech, p,
 								quotech);
 					else
-						dprintf(opt->output_fd, "%s\n", p);
+						dprintf(opt->output_fd, "%s%s",
+								sep, p);
 				}
 				free(p);
+				sep = (opt->item_output_sep != NULL)
+					? opt->item_output_sep
+					: (opt->item_output_sepnl ? "\n" : " ");
 			}
+			dprintf(opt->output_fd, "\n");
 			break;
 	}
 	gtk_widget_destroy(dialog);
