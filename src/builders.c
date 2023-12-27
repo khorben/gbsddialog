@@ -131,6 +131,9 @@ static int _builder_dialog_error(GtkWidget * parent,
 static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
+static int _builder_dialog_menu_output(struct options const * opt,
+		GtkTreeSelection * treesel, GtkTreeModel * model,
+		unsigned int id, char const * prefix);
 static int _builder_dialog_run(struct bsddialog_conf const * conf,
 		GtkWidget * dialog);
 
@@ -482,23 +485,9 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
-			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
-					== FALSE)
-				break;
-			gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-					CLS_NAME, &p, -1);
-			if(opt->item_output_sepnl == FALSE)
-				toquote = TRUE;
-			else if(string_needs_quoting(p))
-				toquote = opt->item_always_quote;
-			else
-				toquote = FALSE;
-			if(toquote)
-				dprintf(opt->output_fd, "HELP %c%s%c\n",
-						quotech, p, quotech);
-			else
-				dprintf(opt->output_fd, "HELP %s\n", p);
-			free(p);
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), CLS_NAME,
+					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
@@ -1025,9 +1014,6 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, n;
-	char * p;
-	gboolean selected, toquote;
-	char quotech;
 
 	j = opt->item_bottomdesc ? 3 : 2;
 #ifdef DEBUG
@@ -1096,30 +1082,17 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
-	selected = gtk_tree_selection_get_selected(treesel, NULL, &iter);
-	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
-			if(selected == TRUE)
-				dprintf(opt->output_fd, "HELP ");
-			/* fallthrough */
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), MLS_NAME,
+					"HELP ");
+			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			if(selected)
-			{
-				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						MLS_NAME, &p, -1);
-				toquote = FALSE;
-				if(string_needs_quoting(p))
-					toquote = opt->item_always_quote;
-				if(toquote)
-					dprintf(opt->output_fd, "%c%s%c\n",
-							quotech, p, quotech);
-				else
-					dprintf(opt->output_fd, "%s\n", p);
-				free(p);
-			}
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), MLS_NAME, NULL);
 			break;
 	}
 	gtk_widget_destroy(dialog);
@@ -1531,20 +1504,9 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
-			if(gtk_tree_selection_get_selected(treesel, NULL, &iter)
-					== FALSE)
-				break;
-			gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-					RLS_NAME, &p, -1);
-			toquote = FALSE;
-			if(string_needs_quoting(p))
-				toquote = opt->item_always_quote;
-			if(toquote)
-				dprintf(opt->output_fd, "HELP %c%s%c\n",
-						quotech, p, quotech);
-			else
-				dprintf(opt->output_fd, "HELP %s\n", p);
-			free(p);
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), RLS_NAME,
+					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
@@ -2050,6 +2012,34 @@ static int _builder_dialog_help(GtkWidget * parent,
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+
+/* builder_dialog_menu_output */
+static int _builder_dialog_menu_output(struct options const * opt,
+		GtkTreeSelection * treesel, GtkTreeModel * model,
+		unsigned int id, char const * prefix)
+{
+	GtkTreeIter iter;
+	gchar * p;
+	gboolean toquote;
+	char quotech;
+
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) == FALSE)
+		return BSDDIALOG_HELP;
+	gtk_tree_model_get(model, &iter, id, &p, -1);
+	if(prefix != NULL)
+		dprintf(opt->output_fd, "%s", prefix);
+	toquote = string_needs_quoting(p) ? opt->item_always_quote : FALSE;
+	if(toquote)
+	{
+		quotech = opt->item_singlequote ? '\'' : '"';
+		dprintf(opt->output_fd, "%c%s%c\n", quotech, p, quotech);
+	}
+	else
+		dprintf(opt->output_fd, "%s\n", p);
+	free(p);
+	return BSDDIALOG_HELP;
 }
 
 
