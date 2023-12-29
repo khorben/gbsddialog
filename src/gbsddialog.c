@@ -413,6 +413,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	GdkScreen * screen;
 	GtkWidget * widget;
 	GtkWidget * separator;
+	GtkWidget * image;
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
 #else
@@ -427,6 +428,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 	GdkColor bg = { 0, 0, 0, 65535 };
 	GdkColor fg = { 0, 65535, 65535, 65535 };
 #endif
+	char const * logo = "/boot/images/freebsd-logo-rev.png";
 
 	if(gbd->label != NULL)
 	{
@@ -497,6 +499,12 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 #endif
 		_backtitle_apply_style(separator, &fg, &fg);
 		gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+	}
+	if(logo != NULL && access(logo, R_OK) == 0)
+	{
+		image = gtk_image_new_from_file(logo);
+		gtk_misc_set_alignment(GTK_MISC(image), 1.0, 0.5);
+		gtk_box_pack_end(GTK_BOX(widget), image, FALSE, TRUE, 0);
 	}
 	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
 	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
