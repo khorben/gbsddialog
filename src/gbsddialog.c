@@ -623,7 +623,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	gint scale = 1;
 	size_t i;
 	GtkWidget ** p;
-	GtkWidget * window, * separator, * widget;
+	GtkWidget * window, * separator, * widget, * image;
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
 #else
@@ -637,6 +637,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	GdkColor fg = { 0, 65535, 65535, 65535 };
 #endif
 	PangoFontDescription * fontdesc;
+	char const * logo = "/boot/images/freebsd-logo-rev.png";
 
 	/* XXX this will cause flickering */
 	for(i = 0; i < gbd->windows_cnt; i++)
@@ -744,6 +745,12 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 #endif
 			_backtitle_apply_style(separator, &fg, &fg);
 			gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+		}
+		if(logo != NULL && access(logo, R_OK) == 0)
+		{
+			image = gtk_image_new_from_file(logo);
+			gtk_misc_set_alignment(GTK_MISC(image), 1.0, 0.5);
+			gtk_box_pack_end(GTK_BOX(widget), image, FALSE, TRUE, 0);
 		}
 		gtk_container_add(GTK_CONTAINER(window), widget);
 		gtk_container_set_border_width(GTK_CONTAINER(window), 16);
