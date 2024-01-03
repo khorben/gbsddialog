@@ -1378,7 +1378,7 @@ static gboolean _pause_on_timeout(gpointer data)
 	}
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pd->widget),
 			fraction - pd->step);
-	snprintf(buf, sizeof(buf), "%u", --pd->secs);
+	snprintf(buf, sizeof(buf), "%u", (pd->secs > 0) ? --pd->secs : 0);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(pd->widget), buf);
 	return TRUE;
 }
