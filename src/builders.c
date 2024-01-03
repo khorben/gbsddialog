@@ -1325,7 +1325,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 	struct pause_data pd;
 	GtkWidget * container;
 
-	if(argc == 0)
+	if(argc <= 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
