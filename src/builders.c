@@ -438,7 +438,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 				CLS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0; i < n && (i + 1) * j < argc; i++)
+	for(i = 0; (i + 1) * j < argc; i++)
 	{
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
@@ -1035,7 +1035,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 				MLS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0; i < n && (i + 1) * j < argc; i++)
+	for(i = 0; (i + 1) * j < argc; i++)
 	{
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
@@ -1441,7 +1441,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 				RLS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0, set = FALSE; i < n && (i + 1) * j < argc; i++)
+	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
 	{
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
