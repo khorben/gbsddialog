@@ -1247,7 +1247,8 @@ static void _mixedgauge_set_percentage(GtkWidget * widget, int perc)
 		/* FIXME keep pulsing until closing */
 		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(widget));
 	else
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(widget), fraction);
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(widget),
+				fraction);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), buf);
 }
 
