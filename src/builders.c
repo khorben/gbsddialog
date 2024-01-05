@@ -1107,12 +1107,12 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * box;
 	GtkWidget * widget;
-	int i, perc;
+	int i, j = 2, perc;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
 #endif
-	if(argc > 1 && (argc % 2) == 0)
+	if(argc > 1 && (argc % j) == 0)
 	{
 		error_args(opt->name, argc - 1, argv + 1);
 		return BSDDIALOG_ERROR;
@@ -1120,14 +1120,14 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, opt, NULL, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* items */
-	for(i = 0; i * 2 + 2 < argc; i++)
+	for(i = 0; (i + 1) * j < argc; i++)
 	{
 #if GTK_CHECK_VERSION(3, 0, 0)
 		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 #else
 		box = gtk_hbox_new(FALSE, 4);
 #endif
-		widget = gtk_label_new(argv[i * 2 + 1]);
+		widget = gtk_label_new(argv[i * j + 1]);
 		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
@@ -1136,7 +1136,7 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 		gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(widget), TRUE);
 #endif
 		_mixedgauge_set_percentage(widget,
-				strtol(argv[i * 2 + 2], NULL, 10));
+				strtol(argv[i * j + 2], NULL, 10));
 		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(container), box);
 	}
