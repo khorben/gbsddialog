@@ -163,7 +163,11 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(argv[0]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -179,7 +183,11 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 2 */
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(argv[2]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -239,7 +247,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(argv[0]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -255,7 +267,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 2 */
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(argv[2]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -271,7 +287,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 3 */
+#if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	box = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(argv[4]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
