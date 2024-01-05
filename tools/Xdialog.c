@@ -35,6 +35,9 @@
 #ifndef PROGNAME_GBSDDIALOG
 # define PROGNAME_GBSDDIALOG	"Xdialog"
 #endif
+#ifndef PROGNAME
+# define PROGNAME		PROGNAME_GBSDDIALOG
+#endif
 #ifndef WITH_XDIALOG
 # define WITH_XDIALOG
 #endif
