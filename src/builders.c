@@ -721,6 +721,89 @@ static void _datebox_on_year_value_changed(GtkWidget * widget)
 }
 
 
+/* builder_form */
+static void _form_foreach_buffer(gpointer e, gpointer data);
+
+int builder_form(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget;
+	GtkEntryBuffer * buffer;
+	GtkSizeGroup * group;
+	int i, n, fieldlen, maxletters;
+	GSList * l = NULL;
+	const int j = 8;
+
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	else if(n == 0)
+		n = (argc - 1) / j;
+	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
+	dialog = _builder_dialog(conf, opt, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	for(i = 0; (i + 1) * j < argc; i++)
+	{
+#if GTK_CHECK_VERSION(3, 0, 0)
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
+#else
+		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
+#endif
+		widget = gtk_label_new(argv[i * j + 1]);
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+		gtk_size_group_add_widget(group, widget);
+		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		buffer = gtk_entry_buffer_new(argv[i * j + 4], -1);
+		l = g_slist_append(l, buffer);
+		widget = gtk_entry_new_with_buffer(buffer);
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+		fieldlen = strtol(argv[i * j + 7], NULL, 10);
+		maxletters = strtol(argv[i * j + 8], NULL, 10);
+		if(fieldlen != 0)
+			gtk_entry_set_width_chars(GTK_ENTRY(widget),
+					abs(fieldlen));
+		if(fieldlen < 0)
+			gtk_editable_set_editable(GTK_ENTRY(widget), FALSE);
+		if(maxletters == 0)
+			maxletters = abs(fieldlen);
+		if(maxletters > 0)
+			gtk_entry_set_max_length(GTK_ENTRY(widget), maxletters);
+		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(container), box);
+	}
+	gtk_widget_show_all(container);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			g_slist_foreach(l, _form_foreach_buffer, opt);
+			break;
+	}
+	g_slist_foreach(l, g_object_unref, NULL);
+	g_slist_free(l);
+	return ret;
+}
+
+static void _form_foreach_buffer(gpointer e, gpointer data)
+{
+	GtkEntryBuffer * buffer = e;
+	struct options const * opt = data;
+
+	dprintf(opt->output_fd, "%s\n", gtk_entry_buffer_get_text(buffer));
+}
+
+
 /* builder_gauge */
 static gboolean _gauge_on_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);

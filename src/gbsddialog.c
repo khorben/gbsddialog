@@ -324,9 +324,7 @@ static struct option longopts[] = {
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
 	{"datebox",      no_argument, NULL, DATEBOX},
-#if 0
 	{"form",         no_argument, NULL, FORM},
-#endif
 	{"gauge",        no_argument, NULL, GAUGE},
 	{"infobox",      no_argument, NULL, INFOBOX},
 	{"inputbox",     no_argument, NULL, INPUTBOX},
@@ -991,6 +989,15 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--datebox";
 			opt->dialogbuilder = builder_datebox;
+			break;
+		case FORM:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --form without "
+						"--and-dialog", opt->name);
+			opt->name = "--form";
+			opt->dialogbuilder = builder_form;
+			conf->auto_downmargin = 1;
 			break;
 		case GAUGE:
 			if(opt->dialogbuilder != NULL)
