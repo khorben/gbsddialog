@@ -765,6 +765,8 @@ int builder_form(struct bsddialog_conf const * conf,
 		l = g_slist_append(l, buffer);
 		widget = gtk_entry_new_with_buffer(buffer);
 		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+		if(conf->form.securech != '\0')
+			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 		fieldlen = strtol(argv[i * j + 7], NULL, 10);
 		maxletters = strtol(argv[i * j + 8], NULL, 10);
 		if(fieldlen != 0)
@@ -1432,6 +1434,19 @@ static void _passwordbox_on_toggled(GtkWidget * widget, gpointer data)
 
 	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	gtk_entry_set_visibility(GTK_ENTRY(entry), active);
+}
+
+
+/* builder_passwordform */
+int builder_passwordform(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	struct bsddialog_conf conf2 = *conf;
+
+	/* XXX hack */
+	conf2.form.securech = '*';
+	return builder_form(&conf2, text, rows, cols, argc, argv, opt);
 }
 
 

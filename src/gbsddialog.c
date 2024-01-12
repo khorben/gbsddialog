@@ -335,9 +335,7 @@ static struct option longopts[] = {
 	{"mixedgauge",   no_argument, NULL, MIXEDGAUGE},
 	{"msgbox",       no_argument, NULL, MSGBOX},
 	{"passwordbox",  no_argument, NULL, PASSWORDBOX},
-#if 0
 	{"passwordform", no_argument, NULL, PASSWORDFORM},
-#endif
 	{"pause",        no_argument, NULL, PAUSE},
 	{"radiolist",    no_argument, NULL, RADIOLIST},
 	{"rangebox",     no_argument, NULL, RANGEBOX},
@@ -1076,6 +1074,15 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--passwordbox";
 			opt->dialogbuilder = builder_passwordbox;
+			conf->auto_downmargin = 1;
+			break;
+		case PASSWORDFORM:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --passwordform without "
+						"--and-dialog", opt->name);
+			opt->name = "--passwordform";
+			opt->dialogbuilder = builder_passwordform;
 			conf->auto_downmargin = 1;
 			break;
 		case PAUSE:
