@@ -175,7 +175,11 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	/* input 1 */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
@@ -259,7 +263,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	/* input 1 */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
@@ -373,7 +381,11 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	widget = gtk_calendar_new();
 	if(argc == 3 && day <= 31 && month >= 1 && month <= 12 && year != 0)
 	{
@@ -456,7 +468,11 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	else if(n == 0)
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	store = gtk_list_store_new(CLS_COUNT, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
@@ -647,7 +663,11 @@ int builder_datebox(struct bsddialog_conf const * conf,
 		year = tm.tm_year + 1900;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
@@ -749,7 +769,11 @@ int builder_form(struct bsddialog_conf const * conf,
 		n = (argc - 1) / j;
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	gtk_box_set_spacing(GTK_BOX(container), BORDER_WIDTH);
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
@@ -836,7 +860,11 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		perc = strtoul(argv[0], NULL, 10);
 	gd.opt = opt;
 	gd.dialog = _builder_dialog(conf, opt, NULL, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(gd.dialog));
+#else
+	container = gd.dialog->vbox;
+#endif
 	if(text != NULL)
 	{
 		gd.label = gtk_label_new(text);
@@ -1078,7 +1106,11 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
@@ -1140,7 +1172,11 @@ int builder_menu(struct bsddialog_conf const * conf,
 	else if(n == 0)
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	store = gtk_list_store_new(j, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
@@ -1240,7 +1276,11 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, NULL, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	/* items */
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
@@ -1397,7 +1437,11 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
@@ -1475,7 +1519,11 @@ int builder_pause(struct bsddialog_conf const * conf,
 	}
 	pd.secs = strtoul(argv[0], NULL, 10);
 	pd.dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
+#else
+	container = pd.dialog->vbox;
+#endif
 	pd.widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(pd.widget), TRUE);
@@ -1562,7 +1610,11 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	else if(n == 0)
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	store = gtk_list_store_new(RLS_COUNT, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
@@ -1733,7 +1785,11 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 	min = strtol(argv[0], NULL, 10);
 	max = strtol(argv[1], NULL, 10);
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	box = dialog->vbox;
+#endif
 	widget = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
 	if(argc == 3)
@@ -1782,7 +1838,11 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	if((fp = fopen(text, "r")) == NULL)
 		return BSDDIALOG_ERROR;
 	dialog = _builder_dialog(conf, opt, NULL, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -1861,7 +1921,11 @@ int builder_timebox(struct bsddialog_conf const * conf,
 		second = tm.tm_sec;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 #if GTK_CHECK_VERSION(3, 0, 0)
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
@@ -1973,7 +2037,11 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	else if(n == 0)
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	store = gtk_tree_store_new(TTS_COUNT, G_TYPE_BOOLEAN, G_TYPE_INT,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
@@ -2214,7 +2282,11 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
 				conf->bottomtitle);
 #endif
+#if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
 	if(text != NULL)
 	{
 		widget = gtk_label_new(text);
