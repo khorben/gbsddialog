@@ -123,6 +123,7 @@ enum RADIOLIST_LIST_STORE
 enum TREEVIEW_TREE_STORE
 {
 	TTS_SET = 0,
+	TTS_DEPTH,
 	TTS_NAME,
 	TTS_DESCRIPTION,
 	TTS_TOOLTIP
@@ -1823,6 +1824,8 @@ static gboolean _timebox_on_output(GtkWidget * widget)
 
 
 /* builder_treeview */
+static GtkTreeIter * _treeview_get_parent(GtkTreeModel * model,
+		GtkTreeIter * iter, int depth);
 static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -1838,11 +1841,11 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	GtkWidget * window;
 	GtkWidget * widget;
 	GtkListStore * store;
-	GtkTreeIter iter;
+	GtkTreeIter iter, parent, * pparent;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, n;
+	int i, j, n, depth;
 	gboolean b, set, toquote;
 	char quotech;
 	char * p;
@@ -1863,7 +1866,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	store = gtk_tree_store_new(TTS_COUNT, G_TYPE_BOOLEAN,
+	store = gtk_tree_store_new(TTS_COUNT, G_TYPE_BOOLEAN, G_TYPE_INT,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -1881,11 +1884,18 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
 	{
-		gtk_tree_store_append(store, &iter, NULL);
+		depth = strtol(argv[i * j + 1], NULL, 10);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__, depth);
+#endif
+		pparent = _treeview_get_parent(GTK_TREE_MODEL(store), &parent,
+				depth);
+		gtk_tree_store_append(store, &iter, pparent);
 		gtk_tree_store_set(store, &iter,
 				TTS_SET, set == FALSE && (set = strcasecmp(
 						argv[i * j + 4], "on") == 0)
 				? TRUE : FALSE,
+				TTS_DEPTH, depth,
 				TTS_NAME, argv[i * j + 2],
 				TTS_DESCRIPTION, argv[i * j + 3],
 				(j == 5) ? TTS_TOOLTIP : -1,
@@ -1908,6 +1918,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 			NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
 	g_signal_connect(widget, "row-activated",
 			G_CALLBACK(_treeview_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
@@ -1953,6 +1964,29 @@ int builder_treeview(struct bsddialog_conf const * conf,
 			break;
 	}
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static GtkTreeIter * _treeview_get_parent(GtkTreeModel * model,
+		GtkTreeIter * parent, int depth)
+{
+	GtkTreeIter * ret = NULL;
+	GtkTreeIter iter;
+	gboolean b;
+	int d;
+
+	if(depth <= 0)
+		return NULL;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, TTS_DEPTH, &d, -1);
+		if(d < depth)
+		{
+			*parent = iter;
+			ret = parent;
+		}
+	}
 	return ret;
 }
 
