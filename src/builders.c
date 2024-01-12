@@ -94,34 +94,37 @@ struct timebox_data
 
 
 /* constants */
-enum CHECKLIST_LIST_STORE
+enum CHECKLIST_TREE_STORE
 {
-	CLS_SET = 0,
-	CLS_NAME,
-	CLS_DESCRIPTION,
-	CLS_TOOLTIP
+	CTS_SET = 0,
+	CTS_DEPTH,
+	CTS_NAME,
+	CTS_DESCRIPTION,
+	CTS_TOOLTIP
 };
-# define CLS_LAST CLS_TOOLTIP
-# define CLS_COUNT (CLS_LAST + 1)
+# define CTS_LAST CTS_TOOLTIP
+# define CTS_COUNT (CTS_LAST + 1)
 
-enum MENU_LIST_STORE
+enum MENU_TREE_STORE
 {
-	MLS_NAME = 0,
-	MLS_DESCRIPTION,
-	MLS_TOOLTIP
+	MTS_NAME = 0,
+	MTS_DEPTH,
+	MTS_DESCRIPTION,
+	MTS_TOOLTIP
 };
-# define MLS_LAST MLS_TOOLTIP
-# define MLS_COUNT (MLS_LAST + 1)
+# define MTS_LAST MTS_TOOLTIP
+# define MTS_COUNT (MTS_LAST + 1)
 
-enum RADIOLIST_LIST_STORE
+enum RADIOLIST_TREE_STORE
 {
-	RLS_SET = 0,
-	RLS_NAME,
-	RLS_DESCRIPTION,
-	RLS_TOOLTIP
+	RTS_SET = 0,
+	RTS_DEPTH,
+	RTS_NAME,
+	RTS_DESCRIPTION,
+	RTS_TOOLTIP
 };
-# define RLS_LAST RLS_TOOLTIP
-# define RLS_COUNT (RLS_LAST + 1)
+# define RTS_LAST RTS_TOOLTIP
+# define RTS_COUNT (RTS_LAST + 1)
 
 enum TREEVIEW_TREE_STORE
 {
@@ -429,6 +432,8 @@ static void _calendar_on_day_activated(gpointer data)
 
 
 /* builder_checklist */
+static GtkTreeIter * _checklist_get_parent(GtkTreeModel * model,
+		GtkTreeIter * iter, int depth);
 static void _checklist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -443,17 +448,20 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
-	GtkListStore * store;
-	GtkTreeIter iter;
+	GtkTreeStore * store;
+	GtkTreeIter iter, parent, * pparent = NULL;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, n;
+	int i, j, k, n, depth;
 	gboolean b, set, toquote;
 	char quotech;
+	char const * name, * desc, * tooltip;
 	char * p, * sep = "";
 
 	j = opt->item_bottomdesc ? 4 : 3;
+	if(opt->item_depth)
+		j++;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
 			rows, cols, argc, (argc - 1) / j,
@@ -473,7 +481,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 #else
 	container = dialog->vbox;
 #endif
-	store = gtk_list_store_new(CLS_COUNT, G_TYPE_BOOLEAN,
+	store = gtk_tree_store_new(CTS_COUNT, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -486,33 +494,46 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	if(opt->item_bottomdesc)
 		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
-				CLS_TOOLTIP);
+				CTS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-				CLS_SET, strcasecmp(argv[i * j + 3], "on") == 0,
-				CLS_NAME, argv[i * j + 1],
-				CLS_DESCRIPTION, argv[i * j + 2],
-				(j == 4) ? CLS_TOOLTIP : -1,
-				(j == 4) ? argv[i * j + 4] : NULL, -1);
-		if(opt->item_default != NULL && strcmp(argv[i * j + 1],
-					opt->item_default) == 0)
+		k = i * j + 1;
+		if(opt->item_depth)
+		{
+			depth = strtol(argv[k++], NULL, 10);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__,
+					depth);
+#endif
+			pparent = _checklist_get_parent(GTK_TREE_MODEL(store),
+					&parent, depth);
+		}
+		name = argv[k++];
+		desc = argv[k++];
+		set = (strcasecmp(argv[k++], "on") == 0) ? TRUE : FALSE;
+		tooltip = (k < j) ? argv[k++] : NULL;
+		gtk_tree_store_append(store, &iter, pparent);
+		gtk_tree_store_set(store, &iter, CTS_SET, set, CTS_DEPTH, depth,
+				CTS_NAME, name, CTS_DESCRIPTION, desc,
+				(tooltip != NULL) ? CTS_TOOLTIP : -1,
+				(tooltip != NULL) ? tooltip : NULL, -1);
+		if(opt->item_default != NULL
+				&& strcmp(name, opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(renderer, "toggled",
 			G_CALLBACK(_checklist_on_row_toggled), store);
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-			"active", CLS_SET, NULL);
+			"active", CTS_SET, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	if(conf->menu.no_name == false)
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
-				gtk_cell_renderer_text_new(), "text", CLS_NAME,
+				gtk_cell_renderer_text_new(), "text", CTS_NAME,
 				NULL);
 		gtk_tree_view_column_set_expand(column, FALSE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
@@ -521,10 +542,12 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
 				gtk_cell_renderer_text_new(), "text",
-				CLS_DESCRIPTION, NULL);
+				CTS_DESCRIPTION, NULL);
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
+	if(opt->item_depth)
+		gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
 	g_signal_connect(widget, "row-activated",
 			G_CALLBACK(_checklist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
@@ -537,7 +560,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_HELP:
 			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), CLS_NAME,
+					GTK_TREE_MODEL(store), CTS_NAME,
 					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
@@ -549,7 +572,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 						GTK_TREE_MODEL(store), &iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						CLS_SET, &set, CLS_NAME, &p,
+						CTS_SET, &set, CTS_NAME, &p,
 						-1);
 				if(set)
 				{
@@ -580,6 +603,29 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	return ret;
 }
 
+static GtkTreeIter * _checklist_get_parent(GtkTreeModel * model,
+		GtkTreeIter * parent, int depth)
+{
+	GtkTreeIter * ret = NULL;
+	GtkTreeIter iter;
+	gboolean b;
+	int d;
+
+	if(depth <= 0)
+		return NULL;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, CTS_DEPTH, &d, -1);
+		if(d < depth)
+		{
+			*parent = iter;
+			ret = parent;
+		}
+	}
+	return ret;
+}
+
 static void _checklist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
@@ -592,15 +638,15 @@ static void _checklist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
 		return;
-	gtk_tree_model_get(model, &iter, CLS_SET, &set, -1);
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-			CLS_SET, set ? FALSE : TRUE, -1);
+	gtk_tree_model_get(model, &iter, CTS_SET, &set, -1);
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+			CTS_SET, set ? FALSE : TRUE, -1);
 }
 
 static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data)
 {
-	GtkListStore * store = data;
+	GtkTreeStore * store = data;
 	GtkTreePath * tp;
 	GtkTreeIter iter;
 	gboolean b;
@@ -611,7 +657,7 @@ static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_list_store_set(store, &iter, CLS_SET,
+	gtk_tree_store_set(store, &iter, CTS_SET,
 			gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
@@ -1140,6 +1186,8 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 
 
 /* builder_menu */
+static GtkTreeIter * _menu_get_parent(GtkTreeModel * model,
+		GtkTreeIter * iter, int depth);
 static void _menu_on_row_activated(gpointer data);
 
 int builder_menu(struct bsddialog_conf const * conf,
@@ -1151,13 +1199,16 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
-	GtkListStore * store;
-	GtkTreeIter iter;
+	GtkTreeStore * store;
+	GtkTreeIter iter, parent, * pparent;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, n;
+	int i, j, k, n, depth = 0;
+	char const * name, * desc, * tooltip;
 
 	j = opt->item_bottomdesc ? 3 : 2;
+	if(opt->item_depth)
+		j++;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
 			rows, cols, argc, (argc - 1) / j,
@@ -1177,8 +1228,8 @@ int builder_menu(struct bsddialog_conf const * conf,
 #else
 	container = dialog->vbox;
 #endif
-	store = gtk_list_store_new(j, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING);
+	store = gtk_tree_store_new(MTS_COUNT, G_TYPE_STRING, G_TYPE_INT,
+			G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -1190,25 +1241,38 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	if(opt->item_bottomdesc)
 		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
-				MLS_TOOLTIP);
+				MTS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-				MLS_NAME, argv[i * j + 1],
-				MLS_DESCRIPTION, argv[i * j + 2],
-				(j == 3) ? MLS_TOOLTIP : -1,
-				(j == 3) ? argv[i * j + 3] : NULL, -1);
-		if(opt->item_default != NULL && strcmp(argv[i * j + 1],
-					opt->item_default) == 0)
+		k = i * j + 1;
+		if(opt->item_depth)
+		{
+			depth = strtol(argv[k++], NULL, 10);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__,
+					depth);
+#endif
+			pparent = _menu_get_parent(GTK_TREE_MODEL(store),
+					&parent, depth);
+		}
+		name = argv[k++];
+		desc = argv[k++];
+		tooltip = (k < j) ? argv[k++] : NULL;
+		gtk_tree_store_append(store, &iter, pparent);
+		gtk_tree_store_set(store, &iter, MTS_DEPTH, depth,
+				MTS_NAME, name, MTS_DESCRIPTION, desc,
+				(tooltip != NULL) ? MTS_TOOLTIP : -1,
+				(tooltip != NULL) ? tooltip : NULL, -1);
+		if(opt->item_default != NULL
+				&& strcmp(name, opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
 	if(conf->menu.no_name == false)
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
-				gtk_cell_renderer_text_new(), "text", MLS_NAME,
+				gtk_cell_renderer_text_new(), "text", MTS_NAME,
 				NULL);
 		gtk_tree_view_column_set_expand(column, FALSE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
@@ -1217,10 +1281,12 @@ int builder_menu(struct bsddialog_conf const * conf,
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
 				gtk_cell_renderer_text_new(), "text",
-				MLS_DESCRIPTION, NULL);
+				MTS_DESCRIPTION, NULL);
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
+	if(opt->item_depth)
+		gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
 	g_signal_connect_swapped(widget, "row-activated",
 			G_CALLBACK(_menu_on_row_activated), dialog);
 	gtk_container_add(GTK_CONTAINER(window), widget);
@@ -1232,16 +1298,39 @@ int builder_menu(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_HELP:
 			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), MLS_NAME,
+					GTK_TREE_MODEL(store), MTS_NAME,
 					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
 			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), MLS_NAME, NULL);
+					GTK_TREE_MODEL(store), MTS_NAME, NULL);
 			break;
 	}
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static GtkTreeIter * _menu_get_parent(GtkTreeModel * model,
+		GtkTreeIter * parent, int depth)
+{
+	GtkTreeIter * ret = NULL;
+	GtkTreeIter iter;
+	gboolean b;
+	int d;
+
+	if(depth <= 0)
+		return NULL;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, MTS_DEPTH, &d, -1);
+		if(d < depth)
+		{
+			*parent = iter;
+			ret = parent;
+		}
+	}
 	return ret;
 }
 
@@ -1571,6 +1660,8 @@ static gboolean _pause_on_timeout(gpointer data)
 
 
 /* builder_radiolist */
+static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
+		GtkTreeIter * iter, int depth);
 static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -1585,17 +1676,20 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
-	GtkListStore * store;
-	GtkTreeIter iter;
+	GtkTreeStore * store;
+	GtkTreeIter iter, parent, * pparent = NULL;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, n;
+	int i, j, k, n, depth = 0;
 	gboolean b, set, toquote;
 	char quotech;
+	char const * name, * desc, * tooltip;
 	char * p;
 
 	j = opt->item_bottomdesc ? 4 : 3;
+	if(opt->item_depth)
+		j++;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
 			rows, cols, argc, (argc - 1) / j,
@@ -1615,7 +1709,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 #else
 	container = dialog->vbox;
 #endif
-	store = gtk_list_store_new(RLS_COUNT, G_TYPE_BOOLEAN,
+	store = gtk_tree_store_new(RTS_COUNT, G_TYPE_BOOLEAN, G_TYPE_INT,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -1628,22 +1722,34 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	if(opt->item_bottomdesc)
 		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
-				RLS_TOOLTIP);
+				RTS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
 	{
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-				RLS_SET, set == FALSE && (set = strcasecmp(
-						argv[i * j + 3], "on") == 0)
-				? TRUE : FALSE,
-				RLS_NAME, argv[i * j + 1],
-				RLS_DESCRIPTION, argv[i * j + 2],
-				(j == 4) ? RLS_TOOLTIP : -1,
-				(j == 4) ? argv[i * j + 4] : NULL, -1);
-		if(opt->item_default != NULL && strcmp(argv[i * j + 1],
-					opt->item_default) == 0)
+		k = i * j + 1;
+		if(opt->item_depth)
+		{
+			depth = strtol(argv[k++], NULL, 10);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__,
+					depth);
+#endif
+			pparent = _radiolist_get_parent(GTK_TREE_MODEL(store),
+					&parent, depth);
+		}
+		name = argv[k++];
+		desc = argv[k++];
+		set = (set == FALSE && strcasecmp(argv[k++], "on") == 0)
+			? TRUE : FALSE;
+		tooltip = (k < j) ? argv[k++] : NULL;
+		gtk_tree_store_append(store, &iter, pparent);
+		gtk_tree_store_set(store, &iter, RTS_SET, set,
+				RTS_NAME, name, RTS_DESCRIPTION, desc,
+				(tooltip != NULL) ? RTS_TOOLTIP : -1,
+				(tooltip != NULL) ? tooltip : NULL, -1);
+		if(opt->item_default != NULL
+				&& strcmp(name, opt->item_default) == 0)
 			gtk_tree_selection_select_iter(treesel, &iter);
 	}
 	renderer = gtk_cell_renderer_toggle_new();
@@ -1652,13 +1758,13 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	g_signal_connect(renderer, "toggled",
 			G_CALLBACK(_radiolist_on_row_toggled), store);
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-			"active", RLS_SET, NULL);
+			"active", RTS_SET, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	if(conf->menu.no_name == false)
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
-				gtk_cell_renderer_text_new(), "text", RLS_NAME,
+				gtk_cell_renderer_text_new(), "text", RTS_NAME,
 				NULL);
 		gtk_tree_view_column_set_expand(column, FALSE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
@@ -1667,10 +1773,12 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	{
 		column = gtk_tree_view_column_new_with_attributes(NULL,
 				gtk_cell_renderer_text_new(), "text",
-				RLS_DESCRIPTION, NULL);
+				RTS_DESCRIPTION, NULL);
 		gtk_tree_view_column_set_expand(column, TRUE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	}
+	if(opt->item_depth)
+		gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
 	g_signal_connect(widget, "row-activated",
 			G_CALLBACK(_radiolist_on_row_activated), NULL);
 	gtk_container_add(GTK_CONTAINER(window), widget);
@@ -1683,7 +1791,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_HELP:
 			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), RLS_NAME,
+					GTK_TREE_MODEL(store), RTS_NAME,
 					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
@@ -1695,7 +1803,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 						GTK_TREE_MODEL(store), &iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						RLS_SET, &set, RLS_NAME, &p,
+						RTS_SET, &set, RTS_NAME, &p,
 						-1);
 				if(set)
 				{
@@ -1719,6 +1827,29 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	return ret;
 }
 
+static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
+		GtkTreeIter * parent, int depth)
+{
+	GtkTreeIter * ret = NULL;
+	GtkTreeIter iter;
+	gboolean b;
+	int d;
+
+	if(depth <= 0)
+		return NULL;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, RTS_DEPTH, &d, -1);
+		if(d < depth)
+		{
+			*parent = iter;
+			ret = parent;
+		}
+	}
+	return ret;
+}
+
 static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
@@ -1731,17 +1862,17 @@ static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
 			b = gtk_tree_model_iter_next(model, &iter))
-		gtk_list_store_set(GTK_LIST_STORE(model), &iter, RLS_SET, FALSE,
+		gtk_tree_store_set(GTK_LIST_STORE(model), &iter, RTS_SET, FALSE,
 				-1);
 	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
 		return;
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter, RLS_SET, TRUE, -1);
+	gtk_tree_store_set(GTK_LIST_STORE(model), &iter, RTS_SET, TRUE, -1);
 }
 
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data)
 {
-	GtkListStore * store = data;
+	GtkTreeStore * store = data;
 	GtkTreePath * tp;
 	GtkTreeIter iter;
 	gboolean b;
@@ -1750,12 +1881,12 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		return;
 	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
 			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
-		gtk_list_store_set(store, &iter, RLS_SET, FALSE, -1);
+		gtk_tree_store_set(store, &iter, RTS_SET, FALSE, -1);
 	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_list_store_set(store, &iter, RLS_SET,
+	gtk_tree_store_set(store, &iter, RTS_SET,
 			gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
@@ -1996,216 +2127,16 @@ static gboolean _timebox_on_output(GtkWidget * widget)
 
 
 /* builder_treeview */
-static GtkTreeIter * _treeview_get_parent(GtkTreeModel * model,
-		GtkTreeIter * iter, int depth);
-static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
-		GtkTreeViewColumn * column, gpointer data);
-static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
-		gpointer data);
-
 int builder_treeview(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	int ret;
-	GtkWidget * dialog;
-	GtkWidget * container;
-	GtkWidget * window;
-	GtkWidget * widget;
-	GtkTreeStore * store;
-	GtkTreeIter iter, parent, * pparent;
-	GtkCellRenderer * renderer;
-	GtkTreeViewColumn * column;
-	GtkTreeSelection * treesel;
-	int i, j, n, depth;
-	gboolean b, set, toquote;
-	char quotech;
-	char * p;
+	struct bsddialog_conf conf2 = *conf;
+	struct options opt2 = *opt;
 
-	j = opt->item_bottomdesc ? 5 : 4;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
-			rows, cols, argc, (argc - 1) / j,
-			(argv[0] != NULL) ? argv[0] : "(null)");
-#endif
-	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
-			|| ((argc - 1) % j) != 0)
-	{
-		error_args(opt->name, argc, argv);
-		return BSDDIALOG_ERROR;
-	}
-	else if(n == 0)
-		n = (argc - 1) / j;
-	dialog = _builder_dialog(conf, opt, text, rows);
-#if GTK_CHECK_VERSION(2, 14, 0)
-	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-#else
-	container = dialog->vbox;
-#endif
-	store = gtk_tree_store_new(TTS_COUNT, G_TYPE_BOOLEAN, G_TYPE_INT,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	if(conf->shadow == false)
-		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
-				GTK_SHADOW_NONE);
-	widget = gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
-	if(opt->item_bottomdesc)
-		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
-				TTS_TOOLTIP);
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
-	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
-	{
-		depth = strtol(argv[i * j + 1], NULL, 10);
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__, depth);
-#endif
-		pparent = _treeview_get_parent(GTK_TREE_MODEL(store), &parent,
-				depth);
-		gtk_tree_store_append(store, &iter, pparent);
-		gtk_tree_store_set(store, &iter,
-				TTS_SET, set == FALSE && (set = strcasecmp(
-						argv[i * j + 4], "on") == 0)
-				? TRUE : FALSE,
-				TTS_DEPTH, depth,
-				TTS_NAME, argv[i * j + 2],
-				TTS_DESCRIPTION, argv[i * j + 3],
-				(j == 5) ? TTS_TOOLTIP : -1,
-				(j == 5) ? argv[i * j + 5] : NULL, -1);
-		if(opt->item_default != NULL && strcmp(argv[i * j + 2],
-					opt->item_default) == 0)
-			gtk_tree_selection_select_iter(treesel, &iter);
-	}
-	renderer = gtk_cell_renderer_toggle_new();
-	gtk_cell_renderer_toggle_set_radio(GTK_CELL_RENDERER_TOGGLE(renderer),
-			TRUE);
-	g_signal_connect(renderer, "toggled",
-			G_CALLBACK(_treeview_on_row_toggled), store);
-	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-			"active", TTS_SET, NULL);
-	gtk_tree_view_column_set_expand(column, FALSE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", TTS_DESCRIPTION,
-			NULL);
-	gtk_tree_view_column_set_expand(column, TRUE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
-	g_signal_connect(widget, "row-activated",
-			G_CALLBACK(_treeview_on_row_activated), NULL);
-	gtk_container_add(GTK_CONTAINER(window), widget);
-	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
-	gtk_widget_show_all(window);
-	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(conf, dialog);
-	quotech = opt->item_singlequote ? '\'' : '"';
-	switch(ret)
-	{
-		case BSDDIALOG_HELP:
-			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), TTS_NAME,
-					"HELP ");
-			break;
-		case BSDDIALOG_EXTRA:
-		case BSDDIALOG_OK:
-			for(b = gtk_tree_model_get_iter_first(
-						GTK_TREE_MODEL(store), &iter);
-					b != FALSE;
-					b = gtk_tree_model_iter_next(
-						GTK_TREE_MODEL(store), &iter))
-			{
-				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						TTS_SET, &set, TTS_NAME, &p,
-						-1);
-				if(set)
-				{
-					toquote = FALSE;
-					if(string_needs_quoting(p))
-						toquote = opt->item_always_quote;
-					if(toquote)
-						dprintf(opt->output_fd,
-								"%c%s%c\n",
-								quotech, p,
-								quotech);
-					else
-						dprintf(opt->output_fd, "%s\n",
-								p);
-				}
-				free(p);
-			}
-			break;
-	}
-	gtk_widget_destroy(dialog);
-	return ret;
-}
-
-static GtkTreeIter * _treeview_get_parent(GtkTreeModel * model,
-		GtkTreeIter * parent, int depth)
-{
-	GtkTreeIter * ret = NULL;
-	GtkTreeIter iter;
-	gboolean b;
-	int d;
-
-	if(depth <= 0)
-		return NULL;
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
-			b = gtk_tree_model_iter_next(model, &iter))
-	{
-		gtk_tree_model_get(model, &iter, TTS_DEPTH, &d, -1);
-		if(d < depth)
-		{
-			*parent = iter;
-			ret = parent;
-		}
-	}
-	return ret;
-}
-
-static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
-		GtkTreeViewColumn * column, gpointer data)
-{
-	GtkTreeModel * model;
-	GtkTreeIter iter;
-	gboolean b;
-	(void) column;
-	(void) data;
-
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
-			b = gtk_tree_model_iter_next(model, &iter))
-		gtk_tree_store_set(GTK_TREE_STORE(model), &iter, TTS_SET, FALSE,
-				-1);
-	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
-		return;
-	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, TTS_SET, TRUE, -1);
-}
-
-static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
-		gpointer data)
-{
-	GtkListStore * store = data;
-	GtkTreePath * tp;
-	GtkTreeIter iter;
-	gboolean b;
-
-	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
-		return;
-	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
-			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
-		gtk_tree_store_set(store, &iter, TTS_SET, FALSE, -1);
-	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
-	gtk_tree_path_free(tp);
-	if(b == FALSE)
-		return;
-	gtk_tree_store_set(store, &iter, TTS_SET,
-			gtk_cell_renderer_toggle_get_active(
-				GTK_CELL_RENDERER_TOGGLE(renderer))
-			? FALSE : TRUE, -1);
+	conf2.menu.no_name = true;
+	opt2.item_depth = true;
+	return builder_radiolist(&conf2, text, rows, cols, argc, argv, &opt2);
 }
 
 

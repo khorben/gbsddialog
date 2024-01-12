@@ -237,9 +237,7 @@ static struct option longopts[] = {
 #endif
 	{"insecure",          no_argument,       NULL, INSECURE},
 	{"item-bottom-desc",  no_argument,       NULL, ITEM_BOTTOM_DESC},
-#if 0
 	{"item-depth",        no_argument,       NULL, ITEM_DEPTH},
-#endif
 	{"item-help",         no_argument,       NULL, ITEM_BOTTOM_DESC},
 #if 0
 	{"item-prefix",       no_argument,       NULL, ITEM_PREFIX},
@@ -846,6 +844,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case ITEM_BOTTOM_DESC:
 			opt->item_bottomdesc = true;
+			break;
+		case ITEM_DEPTH:
+			opt->item_depth = true;
 			break;
 		case MAX_INPUT:
 			opt->max_input_form = strtoul(optarg, NULL, 10);
