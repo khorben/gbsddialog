@@ -773,7 +773,7 @@ int builder_form(struct bsddialog_conf const * conf,
 			gtk_entry_set_width_chars(GTK_ENTRY(widget),
 					abs(fieldlen));
 		if(fieldlen < 0)
-			gtk_editable_set_editable(GTK_ENTRY(widget), FALSE);
+			gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
 		if(maxletters == 0)
 			maxletters = abs(fieldlen);
 		if(maxletters > 0)
@@ -1946,7 +1946,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
-	GtkListStore * store;
+	GtkTreeStore * store;
 	GtkTreeIter iter, parent, * pparent;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
