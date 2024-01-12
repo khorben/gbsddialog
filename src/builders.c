@@ -120,15 +120,15 @@ enum RADIOLIST_LIST_STORE
 # define RLS_LAST RLS_TOOLTIP
 # define RLS_COUNT (RLS_LAST + 1)
 
-enum TREEVIEW_LIST_STORE
+enum TREEVIEW_TREE_STORE
 {
-	TLS_SET = 0,
-	TLS_NAME,
-	TLS_DESCRIPTION,
-	TLS_TOOLTIP
+	TTS_SET = 0,
+	TTS_NAME,
+	TTS_DESCRIPTION,
+	TTS_TOOLTIP
 };
-# define TLS_LAST TLS_TOOLTIP
-# define TLS_COUNT (TLS_LAST + 1)
+# define TTS_LAST TTS_TOOLTIP
+# define TTS_COUNT (TTS_LAST + 1)
 
 
 /* prototypes */
@@ -1863,7 +1863,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 		n = (argc - 1) / j;
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-	store = gtk_list_store_new(TLS_COUNT, G_TYPE_BOOLEAN,
+	store = gtk_tree_store_new(TTS_COUNT, G_TYPE_BOOLEAN,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -1876,19 +1876,19 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
 	if(opt->item_bottomdesc)
 		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
-				TLS_TOOLTIP);
+				TTS_TOOLTIP);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
 	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
 	{
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-				TLS_SET, set == FALSE && (set = strcasecmp(
+		gtk_tree_store_append(store, &iter, NULL);
+		gtk_tree_store_set(store, &iter,
+				TTS_SET, set == FALSE && (set = strcasecmp(
 						argv[i * j + 4], "on") == 0)
 				? TRUE : FALSE,
-				TLS_NAME, argv[i * j + 2],
-				TLS_DESCRIPTION, argv[i * j + 3],
-				(j == 5) ? TLS_TOOLTIP : -1,
+				TTS_NAME, argv[i * j + 2],
+				TTS_DESCRIPTION, argv[i * j + 3],
+				(j == 5) ? TTS_TOOLTIP : -1,
 				(j == 5) ? argv[i * j + 5] : NULL, -1);
 		if(opt->item_default != NULL && strcmp(argv[i * j + 2],
 					opt->item_default) == 0)
@@ -1900,11 +1900,11 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	g_signal_connect(renderer, "toggled",
 			G_CALLBACK(_treeview_on_row_toggled), store);
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-			"active", TLS_SET, NULL);
+			"active", TTS_SET, NULL);
 	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_text_new(), "text", TLS_DESCRIPTION,
+			gtk_cell_renderer_text_new(), "text", TTS_DESCRIPTION,
 			NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
@@ -1920,7 +1920,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_HELP:
 			_builder_dialog_menu_output(opt, treesel,
-					GTK_TREE_MODEL(store), TLS_NAME,
+					GTK_TREE_MODEL(store), TTS_NAME,
 					"HELP ");
 			break;
 		case BSDDIALOG_EXTRA:
@@ -1932,7 +1932,7 @@ int builder_treeview(struct bsddialog_conf const * conf,
 						GTK_TREE_MODEL(store), &iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						TLS_SET, &set, TLS_NAME, &p,
+						TTS_SET, &set, TTS_NAME, &p,
 						-1);
 				if(set)
 				{
@@ -1968,11 +1968,11 @@ static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
 			b = gtk_tree_model_iter_next(model, &iter))
-		gtk_list_store_set(GTK_LIST_STORE(model), &iter, TLS_SET, FALSE,
+		gtk_tree_store_set(GTK_TREE_STORE(model), &iter, TTS_SET, FALSE,
 				-1);
 	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
 		return;
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter, TLS_SET, TRUE, -1);
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, TTS_SET, TRUE, -1);
 }
 
 static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -1987,12 +1987,12 @@ static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		return;
 	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
 			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
-		gtk_list_store_set(store, &iter, TLS_SET, FALSE, -1);
+		gtk_tree_store_set(store, &iter, TTS_SET, FALSE, -1);
 	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_list_store_set(store, &iter, TLS_SET,
+	gtk_tree_store_set(store, &iter, TTS_SET,
 			gtk_cell_renderer_toggle_get_active(
 				GTK_CELL_RENDERER_TOGGLE(renderer))
 			? FALSE : TRUE, -1);
