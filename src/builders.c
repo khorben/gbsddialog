@@ -792,7 +792,7 @@ int builder_form(struct bsddialog_conf const * conf,
 			g_slist_foreach(l, _form_foreach_buffer, opt);
 			break;
 	}
-	g_slist_foreach(l, g_object_unref, NULL);
+	g_slist_foreach(l, (GFunc)g_object_unref, NULL);
 	g_slist_free(l);
 	return ret;
 }
