@@ -37,6 +37,9 @@
 #include "callbacks.h"
 #include "builders.h"
 
+#ifndef BORDER_WIDTH
+# define BORDER_WIDTH	4
+#endif
 #ifndef MIN
 # define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #endif
@@ -175,9 +178,9 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[0]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -195,9 +198,9 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 2 */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[2]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -259,9 +262,9 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	/* input 1 */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[0]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -279,9 +282,9 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 2 */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[2]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -299,9 +302,9 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(container), box);
 	/* input 3 */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[4]);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -380,7 +383,8 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	}
 	g_signal_connect_swapped(widget, "day-selected-double-click",
 			G_CALLBACK(_calendar_on_day_activated), dialog);
-	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE,
+			BORDER_WIDTH);
 	gtk_widget_show(widget);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
@@ -645,9 +649,9 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	gtk_box_pack_start(GTK_BOX(box),
 		       	gtk_label_new("Day: "), FALSE, TRUE, 0);
@@ -760,7 +764,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		gtk_misc_set_alignment(GTK_MISC(gd.label), 0.0, 0.5);
 		gtk_widget_show(gd.label);
 		gtk_box_pack_start(GTK_BOX(container), gd.label, FALSE, TRUE,
-				4);
+				BORDER_WIDTH);
 	}
 	gd.widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -1154,9 +1158,9 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
 #if GTK_CHECK_VERSION(3, 0, 0)
-		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-		box = gtk_hbox_new(FALSE, 4);
+		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 		widget = gtk_label_new(argv[i * j + 1]);
 		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
@@ -1184,7 +1188,8 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
+				BORDER_WIDTH);
 	}
 	/* global progress bar */
 	widget = gtk_progress_bar_new();
@@ -1315,7 +1320,8 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
-	gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
+			BORDER_WIDTH);
 	checkbox = gtk_check_button_new_with_label("Show password");
 	g_signal_connect(checkbox, "toggled",
 			G_CALLBACK(_passwordbox_on_toggled), widget);
@@ -1635,7 +1641,7 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 				(gdouble)value);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
-	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf);
 	ret = _builder_dialog_run(conf, dialog);
 	value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
@@ -1757,9 +1763,9 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #if GTK_CHECK_VERSION(3, 0, 0)
-	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
-	box = gtk_hbox_new(FALSE, 4);
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	td.hour = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
@@ -1769,7 +1775,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	g_signal_connect(td.hour, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE,
+			BORDER_WIDTH);
 	td.minute = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.minute), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.minute), (gdouble)minute);
@@ -1778,7 +1785,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	g_signal_connect(td.minute, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE,
+			BORDER_WIDTH);
 	td.second = gtk_spin_button_new_with_range(0.0, 60.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.second), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.second), (gdouble)second);
@@ -2120,7 +2128,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 #endif
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_widget_show(widget);
-		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
+				BORDER_WIDTH);
 	}
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(dialog));
