@@ -90,6 +90,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 int builder_timebox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+int builder_treeview(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
 int builder_yesno(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);

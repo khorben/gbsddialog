@@ -345,9 +345,7 @@ static struct option longopts[] = {
 	{"rangebox",     no_argument, NULL, RANGEBOX},
 	{"textbox",      no_argument, NULL, TEXTBOX},
 	{"timebox",      no_argument, NULL, TIMEBOX},
-#if 0
 	{"treeview",     no_argument, NULL, TREEVIEW},
-#endif
 	{"yesno",        no_argument, NULL, YESNO},
 	/* END */
 	{ NULL, 0, NULL, 0}
@@ -1113,6 +1111,15 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						"--and-dialog", opt->name);
 			opt->name = "--timebox";
 			opt->dialogbuilder = builder_timebox;
+			break;
+		case TREEVIEW:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --treeview without "
+						"--and-dialog", opt->name);
+			opt->name = "--treeview";
+			opt->dialogbuilder = builder_treeview;
+			conf->auto_downmargin = 1;
 			break;
 		case YESNO:
 			if(opt->dialogbuilder != NULL)

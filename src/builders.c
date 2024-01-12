@@ -120,6 +120,16 @@ enum RADIOLIST_LIST_STORE
 # define RLS_LAST RLS_TOOLTIP
 # define RLS_COUNT (RLS_LAST + 1)
 
+enum TREEVIEW_LIST_STORE
+{
+	TLS_SET = 0,
+	TLS_NAME,
+	TLS_DESCRIPTION,
+	TLS_TOOLTIP
+};
+# define TLS_LAST TLS_TOOLTIP
+# define TLS_COUNT (TLS_LAST + 1)
+
 
 /* prototypes */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
@@ -1809,6 +1819,178 @@ static gboolean _timebox_on_output(GtkWidget * widget)
 				GTK_SPIN_BUTTON(widget)));
 	gtk_entry_set_text(GTK_ENTRY(widget), buf);
 	return TRUE;
+}
+
+
+/* builder_treeview */
+static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
+static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data);
+
+int builder_treeview(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkWidget * widget;
+	GtkListStore * store;
+	GtkTreeIter iter;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+	GtkTreeSelection * treesel;
+	int i, j, n;
+	gboolean b, set, toquote;
+	char quotech;
+	char * p;
+
+	j = opt->item_bottomdesc ? 5 : 4;
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	else if(n == 0)
+		n = (argc - 1) / j;
+	dialog = _builder_dialog(conf, opt, text, rows);
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	store = gtk_list_store_new(TLS_COUNT, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
+	if(opt->item_bottomdesc)
+		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
+				TLS_TOOLTIP);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
+	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
+	{
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter,
+				TLS_SET, set == FALSE && (set = strcasecmp(
+						argv[i * j + 4], "on") == 0)
+				? TRUE : FALSE,
+				TLS_NAME, argv[i * j + 2],
+				TLS_DESCRIPTION, argv[i * j + 3],
+				(j == 5) ? TLS_TOOLTIP : -1,
+				(j == 5) ? argv[i * j + 5] : NULL, -1);
+		if(opt->item_default != NULL && strcmp(argv[i * j + 2],
+					opt->item_default) == 0)
+			gtk_tree_selection_select_iter(treesel, &iter);
+	}
+	renderer = gtk_cell_renderer_toggle_new();
+	gtk_cell_renderer_toggle_set_radio(GTK_CELL_RENDERER_TOGGLE(renderer),
+			TRUE);
+	g_signal_connect(renderer, "toggled",
+			G_CALLBACK(_treeview_on_row_toggled), store);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"active", TLS_SET, NULL);
+	gtk_tree_view_column_set_expand(column, FALSE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+			gtk_cell_renderer_text_new(), "text", TLS_DESCRIPTION,
+			NULL);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	g_signal_connect(widget, "row-activated",
+			G_CALLBACK(_treeview_on_row_activated), NULL);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
+	gtk_widget_show_all(window);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	quotech = opt->item_singlequote ? '\'' : '"';
+	switch(ret)
+	{
+		case BSDDIALOG_HELP:
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), TLS_NAME,
+					"HELP ");
+			break;
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			for(b = gtk_tree_model_get_iter_first(
+						GTK_TREE_MODEL(store), &iter);
+					b != FALSE;
+					b = gtk_tree_model_iter_next(
+						GTK_TREE_MODEL(store), &iter))
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						TLS_SET, &set, TLS_NAME, &p,
+						-1);
+				if(set)
+				{
+					toquote = FALSE;
+					if(string_needs_quoting(p))
+						toquote = opt->item_always_quote;
+					if(toquote)
+						dprintf(opt->output_fd,
+								"%c%s%c\n",
+								quotech, p,
+								quotech);
+					else
+						dprintf(opt->output_fd, "%s\n",
+								p);
+				}
+				free(p);
+			}
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static void _treeview_on_row_activated(GtkWidget * widget, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean b;
+	(void) column;
+	(void) data;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+			b = gtk_tree_model_iter_next(model, &iter))
+		gtk_list_store_set(GTK_LIST_STORE(model), &iter, TLS_SET, FALSE,
+				-1);
+	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
+		return;
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, TLS_SET, TRUE, -1);
+}
+
+static void _treeview_on_row_toggled(GtkCellRenderer * renderer, char * path,
+		gpointer data)
+{
+	GtkListStore * store = data;
+	GtkTreePath * tp;
+	GtkTreeIter iter;
+	gboolean b;
+
+	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
+		return;
+	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
+			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
+		gtk_list_store_set(store, &iter, TLS_SET, FALSE, -1);
+	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
+	gtk_tree_path_free(tp);
+	if(b == FALSE)
+		return;
+	gtk_list_store_set(store, &iter, TLS_SET,
+			gtk_cell_renderer_toggle_get_active(
+				GTK_CELL_RENDERER_TOGGLE(renderer))
+			? FALSE : TRUE, -1);
 }
 
 
