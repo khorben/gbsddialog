@@ -778,7 +778,8 @@ int builder_form(struct bsddialog_conf const * conf,
 			maxletters = abs(fieldlen);
 		if(maxletters > 0)
 			gtk_entry_set_max_length(GTK_ENTRY(widget), maxletters);
-		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(box), widget,
+				(maxletters != 0) ? FALSE : TRUE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(container), box);
 	}
 	gtk_widget_show_all(container);
