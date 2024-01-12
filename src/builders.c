@@ -750,6 +750,7 @@ int builder_form(struct bsddialog_conf const * conf,
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	dialog = _builder_dialog(conf, opt, text, rows);
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	gtk_box_set_spacing(GTK_BOX(container), BORDER_WIDTH);
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
 #if GTK_CHECK_VERSION(3, 0, 0)
