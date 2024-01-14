@@ -62,9 +62,8 @@ implemented. However:
 
 - Support for multiple monitors and changes in monitors or resolutions has not
   been tested yet;
-- A few features of `bsdinstall(1)` are still missing, such as `--form`,
-  `--mixedform`, `--passwordform`, `--treeview`, highlights for text, initial
-  window sizing, and generic buttons.
+- A few features of `bsdinstall(1)` are still missing, such as `--mixedform`,
+  highlights for text, initial window sizing, and generic buttons.
 - Many features of `Xdialog(1)` are still missing.
 - Depending on the version of Gtk+ installed, some of the API calls used may be
   considered obsolete during the build. (Triggering many compilation warnings)
