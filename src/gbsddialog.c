@@ -765,15 +765,15 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case CANCEL_LABEL:
 			conf->button.cancel_label = optarg;
 			break;
-		case CR_WRAP:
-			opt->cr_wrap = true;
-			break;
 		case CLEAR_DIALOG:
 			conf->clear = true;
 			break;
 		case CLEAR_SCREEN:
 			opt->mandatory_dialog = false;
 			opt->clearscreen = true;
+			break;
+		case CR_WRAP:
+			opt->cr_wrap = true;
 			break;
 		case DEFAULT_ITEM:
 			opt->item_default = optarg;
@@ -905,7 +905,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			fontdesc = gtk_style_context_get_font(style,
 					GTK_STATE_FLAG_NORMAL);
 			fontsize = pango_font_description_get_size(fontdesc);
-			if(pango_font_description_get_size_is_absolute(fontdesc))
+			if(pango_font_description_get_size_is_absolute(
+						fontdesc))
 				ex = fontsize;
 			else
 			{
