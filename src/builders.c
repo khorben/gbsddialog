@@ -129,17 +129,6 @@ enum RADIOLIST_TREE_STORE
 # define RTS_LAST RTS_TOOLTIP
 # define RTS_COUNT (RTS_LAST + 1)
 
-enum TREEVIEW_TREE_STORE
-{
-	TTS_SET = 0,
-	TTS_DEPTH,
-	TTS_NAME,
-	TTS_DESCRIPTION,
-	TTS_TOOLTIP
-};
-# define TTS_LAST TTS_TOOLTIP
-# define TTS_COUNT (TTS_LAST + 1)
-
 
 /* prototypes */
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
@@ -877,7 +866,7 @@ int builder_form(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			g_slist_foreach(l, _form_foreach_buffer, opt);
+			g_slist_foreach(l, _form_foreach_buffer, (void *)opt);
 			break;
 	}
 	g_slist_foreach(l, (GFunc)g_object_unref, NULL);
@@ -1905,11 +1894,11 @@ static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
 			b = gtk_tree_model_iter_next(model, &iter))
-		gtk_tree_store_set(GTK_LIST_STORE(model), &iter, RTS_SET, FALSE,
+		gtk_tree_store_set(GTK_TREE_STORE(model), &iter, RTS_SET, FALSE,
 				-1);
 	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
 		return;
-	gtk_tree_store_set(GTK_LIST_STORE(model), &iter, RTS_SET, TRUE, -1);
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, RTS_SET, TRUE, -1);
 }
 
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
