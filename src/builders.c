@@ -1200,7 +1200,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	GtkWidget * window;
 	GtkWidget * widget;
 	GtkTreeStore * store;
-	GtkTreeIter iter, parent, * pparent;
+	GtkTreeIter iter, parent, * pparent = NULL;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, k, n, depth = 0;
