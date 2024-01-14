@@ -192,8 +192,8 @@ static struct option longopts[] = {
 	{"clear-dialog",      no_argument,       NULL, CLEAR_DIALOG},
 #endif
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
-#if 0
 	{"colors",            no_argument,       NULL, TEXT_ESCAPE},
+#if 0
 	{"columns-per-row",   required_argument, NULL, COLUMNS_PER_ROW},
 #endif
 	{"cr-wrap",           no_argument,       NULL, CR_WRAP},
@@ -304,8 +304,8 @@ static struct option longopts[] = {
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
 #if 0
 	{"tab-len",           required_argument, NULL, TAB_LEN},
-	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 #endif
+	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
 	{"theme",             required_argument, NULL, THEME},
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
@@ -603,6 +603,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 
 		if(opt.dialogbuilder != builder_textbox)
 			custom_text(&opt, argv[0], text);
+
+		/* FIXME implement conf->text.escape */
 
 		res = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, argv + 3, &opt);
@@ -944,6 +946,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case TAB_ESCAPE:
 			opt->tab_escape = true;
+			break;
+		case TEXT_ESCAPE:
+			conf->text.escape = true;
 			break;
 		case TEXT_UNCHANGED:
 			opt->text_unchanged = true;
