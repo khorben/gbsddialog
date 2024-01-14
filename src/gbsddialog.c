@@ -604,7 +604,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		if(opt.dialogbuilder != builder_textbox)
 			custom_text(&opt, argv[0], text);
 
-		/* FIXME implement conf->text.escape */
+		/* FIXME implement conf->text.escape/highlight */
 
 		res = opt.dialogbuilder(&conf, text, rows, cols,
 				argc - 3, argv + 3, &opt);
@@ -948,7 +948,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->tab_escape = true;
 			break;
 		case TEXT_ESCAPE:
+#ifdef __FreeBSD__
+			/* XXX ugly compatibility fix for now */
+			conf->text.highlight = true;
+#else
 			conf->text.escape = true;
+#endif
 			break;
 		case TEXT_UNCHANGED:
 			opt->text_unchanged = true;
