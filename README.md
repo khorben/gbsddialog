@@ -5,8 +5,8 @@ This is an implementation of [bsddialog](https://gitlab.com/alfix/bsddialog), a
 text-based user interface to be used in scripts and tools, such as in the
 official [FreeBSD](https://www.FreeBSD.org) installer, `bsdinstall(8)`.
 
-However, gbsddialog uses Gtk+ dialogs and widgets instead of console-based
-equivalents.
+However, gbsddialog uses [Gtk+](https://gtk.org/) dialogs and widgets instead of
+console-based equivalents.
 
 The objective is to reproduce the same behaviour as the original tool,
 respecting the exact command-line parameters and output. gbsddialog can then be
@@ -22,9 +22,8 @@ This project is sponsored by the FreeBSD Foundation.
 Dependencies
 ------------
 
-gbsdinstall only depends on [Gtk+](https://gtk.org/). While it is meant to be
-used with version 3 of Gtk+, it can also be built with version 2. (Ideally
-version 2.10 or later)
+gbsdinstall only depends on Gtk+. While it is meant to be used with version 3
+of Gtk+, it can also be built with version 2. (Ideally version 2.10 or later)
 
 To switch between version 2 or 3, modify `src/Makefile` and `tools/Makefile`
 where indicated.
