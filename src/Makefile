@@ -2,18 +2,18 @@ TARGETS	= gbsddialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
-#for Gtk+ 2
-#CFLAGSF= `pkg-config --cflags gtk+-2.0`
-#LDFLAGSF= `pkg-config --libs gtk+-2.0`
-#for Gtk+ 3
 CFLAGSF	= `pkg-config --cflags gtk+-3.0`
-LDFLAGSF= `pkg-config --libs gtk+-3.0`
 CFLAGS	= -W -Wall -g -O2 -fstack-protector
+LDFLAGSF= `pkg-config --libs gtk+-3.0`
 LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p
 RM	= rm -f
 OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
+
+#uncomment the following two lines to build with Gtk+ 2:
+#CFLAGSF= `pkg-config --cflags gtk+-2.0`
+#LDFLAGSF= `pkg-config --libs gtk+-2.0`
 
 all: $(TARGETS)
 
