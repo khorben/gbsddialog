@@ -287,9 +287,7 @@ static struct option longopts[] = {
 #endif
 	{"separate-output",   no_argument,       NULL, SEPARATE_OUTPUT},
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
-#if 0
 	{"shadow",            no_argument,       NULL, SHADOW},
-#endif
 	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
 	{"sleep",             required_argument, NULL, SLEEP},
 	{"stderr",            no_argument,       NULL, STDERR},
@@ -932,6 +930,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case SEPARATE_OUTPUT:
 			opt->item_output_sepnl = true;
+			break;
+		case SHADOW:
+			conf->shadow = true;
 			break;
 		case SINGLE_QUOTED:
 			opt->item_singlequote = true;
