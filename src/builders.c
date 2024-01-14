@@ -187,7 +187,8 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
 	widget = gtk_entry_new_with_buffer(buffer1);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -207,7 +208,8 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
 	widget = gtk_entry_new_with_buffer(buffer2);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -275,7 +277,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
 	widget = gtk_entry_new_with_buffer(buffer1);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -295,7 +298,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
 	widget = gtk_entry_new_with_buffer(buffer2);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -315,7 +319,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer3 = gtk_entry_buffer_new(argv[5], -1);
 	widget = gtk_entry_new_with_buffer(buffer3);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -388,8 +393,9 @@ int builder_calendar(struct bsddialog_conf const * conf,
 		gtk_calendar_select_month(GTK_CALENDAR(widget), month - 1,
 				year);
 	}
-	g_signal_connect_swapped(widget, "day-selected-double-click",
-			G_CALLBACK(_calendar_on_day_activated), dialog);
+	if(conf->button.always_active == true)
+		g_signal_connect_swapped(widget, "day-selected-double-click",
+				G_CALLBACK(_calendar_on_day_activated), dialog);
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE,
 			BORDER_WIDTH);
 	gtk_widget_show(widget);
@@ -729,7 +735,8 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.day), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.day), (gdouble)day);
-	gtk_entry_set_activates_default(GTK_ENTRY(dd.day), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(dd.day), TRUE);
 	gtk_box_pack_start(GTK_BOX(box), dd.day, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box),
 			gtk_label_new("Month: "), FALSE, TRUE, 0);
@@ -753,7 +760,8 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	dd.year = gtk_spin_button_new_with_range(-9999.0, 9999.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.year), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.year), (gdouble)year);
-	gtk_entry_set_activates_default(GTK_ENTRY(dd.year), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(dd.year), TRUE);
 	g_signal_connect(dd.year, "value-changed",
 		       	G_CALLBACK(_datebox_on_year_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), dd.year, TRUE, TRUE, 0);
@@ -840,7 +848,8 @@ int builder_form(struct bsddialog_conf const * conf,
 		buffer = gtk_entry_buffer_new(argv[i * j + 4], -1);
 		l = g_slist_append(l, buffer);
 		widget = gtk_entry_new_with_buffer(buffer);
-		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+		if(conf->button.always_active == true)
+			gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 		if(conf->form.securech != '\0')
 			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 		fieldlen = strtol(argv[i * j + 7], NULL, 10);
@@ -1164,7 +1173,8 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 #endif
 	buffer = gtk_entry_buffer_new(argc == 1 ? argv[0] : NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -1551,7 +1561,8 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 #endif
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	widget = gtk_entry_new_with_buffer(buffer);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
@@ -2098,7 +2109,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.hour), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.hour), (gdouble)hour);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.hour), TRUE);
-	gtk_entry_set_activates_default(GTK_ENTRY(td.hour), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(td.hour), TRUE);
 	g_signal_connect(td.hour, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
@@ -2108,7 +2120,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.minute), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.minute), (gdouble)minute);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.minute), TRUE);
-	gtk_entry_set_activates_default(GTK_ENTRY(td.minute), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(td.minute), TRUE);
 	g_signal_connect(td.minute, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
@@ -2118,7 +2131,8 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(td.second), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(td.second), (gdouble)second);
 	gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(td.second), TRUE);
-	gtk_entry_set_activates_default(GTK_ENTRY(td.second), TRUE);
+	if(conf->button.always_active == true)
+		gtk_entry_set_activates_default(GTK_ENTRY(td.second), TRUE);
 	g_signal_connect(td.second, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
 	gtk_box_pack_start(GTK_BOX(box), td.second, TRUE, TRUE, 0);

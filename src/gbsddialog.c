@@ -294,9 +294,7 @@ static struct option longopts[] = {
 	{"sleep",             required_argument, NULL, SLEEP},
 	{"stderr",            no_argument,       NULL, STDERR},
 	{"stdout",            no_argument,       NULL, STDOUT},
-#if 0
 	{"switch-buttons",    no_argument,       NULL, SWITCH_BUTTONS},
-#endif
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
 #if 0
 	{"tab-len",           required_argument, NULL, TAB_LEN},
@@ -946,6 +944,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case STDOUT:
 			opt->output_fd = STDOUT_FILENO;
+			break;
+		case SWITCH_BUTTONS:
+			conf->button.always_active = false;
 			break;
 		case TAB_ESCAPE:
 			opt->tab_escape = true;
