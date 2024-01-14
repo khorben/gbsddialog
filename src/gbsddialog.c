@@ -706,6 +706,7 @@ static int _parseargs(int argc, char const ** argv,
 static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		int arg)
 {
+	GdkDisplay * display;
 	GdkScreen * screen;
 	GtkStyleContext * style;
 	gdouble ex, fontsize, resolution;
@@ -890,13 +891,20 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
 			/* obtain the default screen */
-			if((screen = gdk_screen_get_default()) == NULL)
+			if((display = gdk_display_get_default()) == NULL)
 				return -error(BSDDIALOG_ERROR, "Could not"
 						" obtain the screen size");
+			screen = gdk_display_get_default_screen(display);
 			/* obtain the workarea */
+#if GTK_CHECK_VERSION(3, 22, 0)
+			gdk_monitor_get_workarea(
+					gdk_display_get_primary_monitor(
+						display), &workarea);
+#else
 			gdk_screen_get_monitor_workarea(screen,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
+#endif
 			/* obtain the default font size */
 			style = gtk_style_context_new();
 			fontdesc = gtk_style_context_get_font(style,
