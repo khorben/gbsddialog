@@ -188,9 +188,7 @@ static struct option longopts[] = {
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
 	{"clear",             no_argument,       NULL, CLEAR_SCREEN},
-#if 0
 	{"clear-dialog",      no_argument,       NULL, CLEAR_DIALOG},
-#endif
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
 	{"colors",            no_argument,       NULL, TEXT_ESCAPE},
 #if 0
@@ -769,6 +767,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case CR_WRAP:
 			opt->cr_wrap = true;
+			break;
+		case CLEAR_DIALOG:
+			conf->clear = true;
 			break;
 		case CLEAR_SCREEN:
 			opt->mandatory_dialog = false;
