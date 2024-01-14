@@ -180,9 +180,7 @@ static struct option longopts[] = {
 	{"alternate-screen",  no_argument,       NULL, ALTERNATE_SCREEN},
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
-#if 0
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
-#endif
 	{"backtitle",         required_argument, NULL, BACKTITLE},
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
@@ -729,6 +727,7 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 #endif
 		case ALTERNATE_SCREEN:
+		case ASCII_LINES:
 		case NORMAL_SCREEN:
 			/* no-op */
 			break;
