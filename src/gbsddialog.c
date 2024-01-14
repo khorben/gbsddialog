@@ -708,7 +708,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 {
 	GdkDisplay * display;
 	GdkScreen * screen;
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
+#endif
 	gdouble ex, fontsize, resolution;
 	GdkRectangle workarea;
 	PangoFontDescription const * fontdesc;
@@ -900,12 +902,17 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			gdk_monitor_get_workarea(
 					gdk_display_get_primary_monitor(
 						display), &workarea);
-#else
+#elif GTK_CHECK_VERSION(3, 4, 0)
 			gdk_screen_get_monitor_workarea(screen,
+					gdk_screen_get_primary_monitor(screen),
+					&workarea);
+#else
+			gdk_screen_get_monitor_geometry(screen,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
 #endif
 			/* obtain the default font size */
+#if GTK_CHECK_VERSION(3, 0, 0)
 			style = gtk_style_context_new();
 			fontdesc = gtk_style_context_get_font(style,
 					GTK_STATE_FLAG_NORMAL);
@@ -914,6 +921,10 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 						fontdesc))
 				ex = fontsize;
 			else
+#else
+				/* FIXME obtain the default font size */
+				fontsize = 9.0;
+#endif
 			{
 				resolution = gdk_screen_get_resolution(screen);
 				ex = (fontsize * resolution)
