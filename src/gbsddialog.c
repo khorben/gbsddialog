@@ -576,6 +576,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, gbd->argc,
 			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
+	init_exitcodes();
+
 	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
 	{
 		*gbd->ret = EXITCODE(BSDDIALOG_ERROR);

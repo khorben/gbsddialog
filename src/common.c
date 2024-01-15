@@ -32,8 +32,11 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 #include "common.h"
 
 
@@ -126,6 +129,25 @@ int error(int ret, char const * format, ...)
 	fputc('\n', stderr);
 	va_end(ap);
 	return ret;
+}
+
+
+/* init_exitcodes */
+void init_exitcodes(void)
+{
+	size_t i;
+	char const * p;
+	int v;
+
+	for(i = 0; i < sizeof(exitcodes) / sizeof(*exitcodes); i++)
+	{
+		if((p = getenv(exitcodes[i].name)) == NULL)
+			continue;
+		errno = 0;
+		v = strtol(p, NULL, 10);
+		if(errno == 0)
+			exitcodes[i].value = v;
+	}
 }
 
 

@@ -136,6 +136,8 @@ void custom_text(struct options * opt, char const * text, char * buf);
 
 int error(int ret, char const * format, ...);
 
+void init_exitcodes(void);
+
 int string_needs_quoting(char const * str);
 
 #endif /* !GBSDDIALOG_COMMON_H */
