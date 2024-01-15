@@ -3,7 +3,7 @@
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * Copyright (c) 2023 The FreeBSD Foundation
+ * Copyright (c) 2023-2024 The FreeBSD Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
