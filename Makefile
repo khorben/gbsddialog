@@ -6,10 +6,10 @@ RM	= rm -f
 TAR	= tar
 
 all:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE)) || break; done
+	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE)) || exit $$?; done
 
 clean:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) clean) || break; done
+	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) clean) || exit $$?; done
 
 dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
@@ -33,12 +33,12 @@ dist:
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
 distclean:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) distclean) || break; done
+	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) distclean) || exit $$?; done
 
 install:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) install) || break; done
+	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) install) || exit $$?; done
 
 uninstall:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || break; done
+	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || exit $$?; done
 
 .PHONY: all clean dist distclean install uninstall
