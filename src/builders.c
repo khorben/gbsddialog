@@ -675,8 +675,8 @@ static void _checklist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 }
 
 
-/* colorsel */
 # ifdef WITH_XDIALOG
+/* colorsel */
 int builder_colorsel(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -769,6 +769,64 @@ int builder_colorsel(struct bsddialog_conf const * conf,
 					color.green / 256,
 					color.blue / 256);
 #endif
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
+/* fontsel */
+int builder_fontsel(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	gchar * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc != 0 && argc != 1)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, opt, text, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+#if GTK_CHECK_VERSION(3, 2, 0)
+	widget = gtk_font_chooser_widget_new();
+	if(argc == 1)
+		gtk_font_chooser_set_font(GTK_FONT_CHOOSER(widget), argv[0]);
+#else
+	widget = gtk_font_selection_new();
+	if(argc == 1)
+		gtk_font_selection_set_font_name(
+				GTK_FONT_SELECTION(widget), argv[0]);
+#endif
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+#if GTK_CHECK_VERSION(3, 2, 0)
+			p = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
+#else
+			p = gtk_font_selection_get_font_name(
+					GTK_FONT_SELECTION(widget));
+#endif
+			dprintf(opt->output_fd, "%s\n", p);
+			g_free(p);
 			break;
 	}
 	gtk_widget_destroy(dialog);

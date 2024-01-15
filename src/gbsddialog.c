@@ -152,6 +152,9 @@ enum OPTS {
 	COLORSEL,
 #endif
 	DATEBOX,
+#ifdef WITH_XDIALOG
+	FONTSEL,
+#endif
 	FORM,
 	GAUGE,
 	INFOBOX,
@@ -319,6 +322,9 @@ static struct option longopts[] = {
 #endif
 	{"datebox",      no_argument, NULL, DATEBOX},
 	{"form",         no_argument, NULL, FORM},
+#ifdef WITH_XDIALOG
+	{"fontsel",      no_argument, NULL, FONTSEL},
+#endif
 	{"gauge",        no_argument, NULL, GAUGE},
 	{"infobox",      no_argument, NULL, INFOBOX},
 	{"inputbox",     no_argument, NULL, INPUTBOX},
@@ -1039,6 +1045,17 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->name = "--datebox";
 			opt->dialogbuilder = builder_datebox;
 			break;
+#ifdef WITH_XDIALOG
+		case FONTSEL:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --fontsel without "
+						"--and-dialog", opt->name);
+			opt->name = "--fontsel";
+			opt->dialogbuilder = builder_fontsel;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case FORM:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
