@@ -790,12 +790,12 @@ int builder_fontsel(struct bsddialog_conf const * conf,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
 #endif
-	if(argc != 0 && argc != 1)
+	if(argc != 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, NULL, rows);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -803,13 +803,10 @@ int builder_fontsel(struct bsddialog_conf const * conf,
 #endif
 #if GTK_CHECK_VERSION(3, 2, 0)
 	widget = gtk_font_chooser_widget_new();
-	if(argc == 1)
-		gtk_font_chooser_set_font(GTK_FONT_CHOOSER(widget), argv[0]);
+	gtk_font_chooser_set_font(GTK_FONT_CHOOSER(widget), text);
 #else
 	widget = gtk_font_selection_new();
-	if(argc == 1)
-		gtk_font_selection_set_font_name(
-				GTK_FONT_SELECTION(widget), argv[0]);
+	gtk_font_selection_set_font_name(GTK_FONT_SELECTION(widget), text);
 #endif
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
