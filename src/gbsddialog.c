@@ -148,6 +148,9 @@ enum OPTS {
 	/* Dialogs */
 	CALENDAR,
 	CHECKLIST,
+#ifdef WITH_XDIALOG
+	COLORSEL,
+#endif
 	DATEBOX,
 	FORM,
 	GAUGE,
@@ -311,6 +314,9 @@ static struct option longopts[] = {
 #endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
+#ifdef WITH_XDIALOG
+	{"colorsel",     no_argument, NULL, COLORSEL},
+#endif
 	{"datebox",      no_argument, NULL, DATEBOX},
 	{"form",         no_argument, NULL, FORM},
 	{"gauge",        no_argument, NULL, GAUGE},
@@ -1014,6 +1020,17 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->dialogbuilder = builder_checklist;
 			conf->auto_downmargin = 1;
 			break;
+#ifdef WITH_XDIALOG
+		case COLORSEL:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --colorsel without "
+						"--and-dialog", opt->name);
+			opt->name = "--colorsel";
+			opt->dialogbuilder = builder_colorsel;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case DATEBOX:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
