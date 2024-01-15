@@ -137,6 +137,12 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf);
 static int _builder_dialog_error(GtkWidget * parent,
 		struct bsddialog_conf const * conf, char const * error);
+#ifdef WITH_XDIALOG
+static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt,
+		GtkFileChooserAction action);
+#endif
 static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
@@ -902,6 +908,18 @@ static void _datebox_on_year_value_changed(GtkWidget * widget)
 }
 
 
+# ifdef WITH_XDIALOG
+/* builder_dselect */
+int builder_dselect(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
+			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+}
+#endif
+
+
 /* builder_fontsel */
 int builder_fontsel(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -1055,44 +1073,8 @@ int builder_fselect(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	int ret;
-	GtkWidget * dialog;
-	GtkWidget * container;
-	GtkWidget * widget;
-	gchar * p;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
-#endif
-	if(argc != 0)
-	{
-		error_args(opt->name, argc, argv);
-		return BSDDIALOG_ERROR;
-	}
-	dialog = _builder_dialog(conf, opt, NULL, rows);
-#if GTK_CHECK_VERSION(2, 14, 0)
-	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-#else
-	container = dialog->vbox;
-#endif
-	widget = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), text);
-	gtk_widget_show(widget);
-	gtk_container_add(GTK_CONTAINER(container), widget);
-	_builder_dialog_buttons(dialog, conf);
-	ret = _builder_dialog_run(conf, dialog);
-	switch(ret)
-	{
-		case BSDDIALOG_EXTRA:
-		case BSDDIALOG_OK:
-			p = gtk_file_chooser_get_filename(
-					GTK_FILE_CHOOSER(widget));
-			dprintf(opt->output_fd, "%s\n", (p != NULL) ? p : "");
-			g_free(p);
-			break;
-	}
-	gtk_widget_destroy(dialog);
-	return ret;
+	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
+			GTK_FILE_CHOOSER_ACTION_SAVE);
 }
 #endif
 
@@ -2565,6 +2547,53 @@ static int _builder_dialog_error(GtkWidget * parent,
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return BSDDIALOG_ERROR;
+}
+
+
+/* builder_dialog_fselect */
+static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt,
+		GtkFileChooserAction action)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	gchar * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, opt, NULL, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+	widget = gtk_file_chooser_widget_new(action);
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), text);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			p = gtk_file_chooser_get_filename(
+					GTK_FILE_CHOOSER(widget));
+			dprintf(opt->output_fd, "%s\n", (p != NULL) ? p : "");
+			g_free(p);
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
