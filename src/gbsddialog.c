@@ -156,6 +156,9 @@ enum OPTS {
 	FONTSEL,
 #endif
 	FORM,
+#ifdef WITH_XDIALOG
+	FSELECT,
+#endif
 	GAUGE,
 	INFOBOX,
 	INPUTBOX,
@@ -324,6 +327,7 @@ static struct option longopts[] = {
 	{"form",         no_argument, NULL, FORM},
 #ifdef WITH_XDIALOG
 	{"fontsel",      no_argument, NULL, FONTSEL},
+	{"fselect",      no_argument, NULL, FSELECT},
 #endif
 	{"gauge",        no_argument, NULL, GAUGE},
 	{"infobox",      no_argument, NULL, INFOBOX},
@@ -1065,6 +1069,17 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->dialogbuilder = builder_form;
 			conf->auto_downmargin = 1;
 			break;
+#ifdef WITH_XDIALOG
+		case FSELECT:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --fselect without "
+						"--and-dialog", opt->name);
+			opt->name = "--fselect";
+			opt->dialogbuilder = builder_fselect;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case GAUGE:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,

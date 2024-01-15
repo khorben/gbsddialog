@@ -1049,6 +1049,54 @@ static void _form_foreach_buffer(gpointer e, gpointer data)
 }
 
 
+# ifdef WITH_XDIALOG
+/* builder_fselect */
+int builder_fselect(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	gchar * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, opt, NULL, rows);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+	widget = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_OPEN);
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), text);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	_builder_dialog_buttons(dialog, conf);
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			p = gtk_file_chooser_get_filename(
+					GTK_FILE_CHOOSER(widget));
+			dprintf(opt->output_fd, "%s\n", (p != NULL) ? p : "");
+			g_free(p);
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+#endif
+
+
 /* builder_gauge */
 static gboolean _gauge_on_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
