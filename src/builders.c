@@ -915,7 +915,7 @@ int builder_dselect(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
-			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+			GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER);
 }
 #endif
 
