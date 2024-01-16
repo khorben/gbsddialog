@@ -118,6 +118,7 @@ struct options
 	/* Dialog */
 	bool mandatory_dialog;
 #ifdef WITH_XDIALOG
+	bool fixed_font;
 	bool without_buttons;
 #endif
 	const char *name;

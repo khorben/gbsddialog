@@ -1795,6 +1795,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	GtkTextBuffer * buffer;
 	GtkTextIter iter;
+#ifdef WITH_XDIALOG
+	PangoFontDescription * desc = NULL;
+#endif
 	FILE * fp;
 	char buf[4096];
 	size_t size;
@@ -1823,6 +1826,17 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(widget), FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(widget), GTK_WRAP_WORD_CHAR);
+#ifdef WITH_XDIALOG
+	if(opt->fixed_font)
+	{
+		desc = pango_font_description_from_string("Monospace");
+# if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_widget_override_font(widget, desc);
+# else
+		gtk_widget_modify_font(widget, desc);
+# endif
+	}
+#endif
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 	while((size = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
@@ -1843,6 +1857,10 @@ int builder_textbox(struct bsddialog_conf const * conf,
 #endif
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
+#ifdef WITH_XDIALOG
+	if(desc != NULL)
+		pango_font_description_free(desc);
+#endif
 	return ret;
 }
 
