@@ -176,6 +176,9 @@ enum OPTS {
 	PAUSE,
 	RADIOLIST,
 	RANGEBOX,
+#ifdef WITH_XDIALOG
+	RANGESBOX2,
+#endif
 	TEXTBOX,
 	TIMEBOX,
 	TREEVIEW,
@@ -318,6 +321,9 @@ static struct option longopts[] = {
 #ifdef WITH_XDIALOG
 	{ "2inputsbox",  no_argument, NULL, INPUTSBOX2},
 	{ "3inputsbox",  no_argument, NULL, INPUTSBOX3},
+#endif
+#ifdef WITH_XDIALOG
+	{ "2rangesbox",  no_argument, NULL, RANGESBOX2},
 #endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
@@ -1208,6 +1214,16 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			opt->name = "--rangebox";
 			opt->dialogbuilder = builder_rangebox;
 			break;
+#ifdef WITH_XDIALOG
+		case RANGESBOX2:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --2rangesbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--2rangesbox";
+			opt->dialogbuilder = builder_2rangesbox;
+			break;
+#endif
 		case TEXTBOX:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
