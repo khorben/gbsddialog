@@ -60,6 +60,8 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	GtkEntryBuffer * buffer1;
 	GtkEntryBuffer * buffer2;
 	GtkSizeGroup * group;
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
 
 	if(argc != 4)
 	{
@@ -125,8 +127,8 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%s/%s\n",
-					gtk_entry_buffer_get_text(buffer1),
+			dprintf(opt->output_fd, "%s%s%s\n",
+					gtk_entry_buffer_get_text(buffer1), sep,
 					gtk_entry_buffer_get_text(buffer2));
 			break;
 	}
@@ -146,7 +148,8 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	GtkWidget * box;
 	GtkWidget * widget1, * widget2;
 	int min, max, value1, value2;
-	const char sep = '/';
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
 
 	if(argc != 8)
 	{
@@ -195,7 +198,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%d%c%d\n",
+			dprintf(opt->output_fd, "%d%s%d\n",
 					value1, sep, value2);
 			break;
 	}
@@ -217,6 +220,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	GtkEntryBuffer * buffer2;
 	GtkEntryBuffer * buffer3;
 	GtkSizeGroup * group;
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
 
 	if(argc != 6)
 	{
@@ -303,9 +308,9 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%s/%s/%s\n",
-					gtk_entry_buffer_get_text(buffer1),
-					gtk_entry_buffer_get_text(buffer2),
+			dprintf(opt->output_fd, "%s%s%s%s%s\n",
+					gtk_entry_buffer_get_text(buffer1), sep,
+					gtk_entry_buffer_get_text(buffer2), sep,
 					gtk_entry_buffer_get_text(buffer3));
 			break;
 	}
@@ -326,7 +331,8 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	GtkWidget * box;
 	GtkWidget * widget1, * widget2, * widget3;
 	int min, max, value1, value2, value3;
-	const char sep = '/';
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
 
 	if(argc != 12)
 	{
@@ -389,7 +395,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%d%c%d%c%d\n",
+			dprintf(opt->output_fd, "%d%s%d%s%d\n",
 					value1, sep, value2, sep, value3);
 			break;
 	}
