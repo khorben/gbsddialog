@@ -146,6 +146,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	GtkWidget * box;
 	GtkWidget * widget1, * widget2;
 	int min, max, value1, value2;
+	const char sep = '/';
 
 	if(argc != 8)
 	{
@@ -194,7 +195,8 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			dprintf(opt->output_fd, "%d\n%d\n", value1, value2);
+			dprintf(opt->output_fd, "%d%c%d\n",
+					value1, sep, value2);
 			break;
 	}
 	return ret;
