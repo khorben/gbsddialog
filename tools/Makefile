@@ -9,7 +9,7 @@ LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p
 RM	= rm -f
-OBJS	= Xdialog.o
+OBJS	= builders.o Xdialog.o
 
 #uncomment the following two lines to build with Gtk+ 2:
 #CFLAGSF= `pkg-config --cflags gtk+-2.0`
@@ -20,7 +20,10 @@ all: $(TARGETS)
 Xdialog: $(OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Xdialog $(OBJS)
 
-Xdialog.o: Xdialog.c ../src/gbsddialog
+builders.o: builders.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/common.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o builders.o -c builders.c
+
+Xdialog.o: Xdialog.c ../src/builders.h ../src/common.c ../src/common.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o Xdialog.o -c Xdialog.c
 
 clean:
