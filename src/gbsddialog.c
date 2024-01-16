@@ -32,6 +32,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <limits.h>
 #include <string.h>
 #include <time.h>
@@ -297,8 +298,8 @@ static struct option longopts[] = {
 	{"right2-exit-code",  required_argument, NULL, RIGHT2_EXIT_CODE},
 	{"right3-button",     required_argument, NULL, RIGHT3_BUTTON},
 	{"right3-exit-code",  required_argument, NULL, RIGHT3_EXIT_CODE},
-	{"save-theme",        required_argument, NULL, SAVE_THEME},
 #endif
+	{"save-theme",        required_argument, NULL, SAVE_THEME},
 	{"separate-output",   no_argument,       NULL, SEPARATE_OUTPUT},
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
 	{"shadow",            no_argument,       NULL, SHADOW},
@@ -378,6 +379,7 @@ typedef struct _GBSDDialog
 static int _parseargs(int argc, char const ** argv,
 		struct bsddialog_conf * conf, struct options * opt);
 static gboolean _theme_load(char const * theme);
+static gboolean _theme_save(char const * filename);
 
 
 /* gbsddialog */
@@ -599,6 +601,11 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, argc, optind, parsed);
 #endif
 
+	if(opt.savethemefile != NULL)
+	{
+		_theme_save(opt.savethemefile);
+		opt.savethemefile = NULL;
+	}
 	if(opt.mandatory_dialog && opt.dialogbuilder == NULL)
 	{
 		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
@@ -986,6 +993,10 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case QUOTED:
 			opt->item_always_quote = true;
 			break;
+		case SAVE_THEME:
+			opt->mandatory_dialog = false;
+			opt->savethemefile = optarg;
+			break;
 		case SEPARATE_OUTPUT:
 			opt->item_output_sepnl = true;
 			break;
@@ -1312,5 +1323,72 @@ static gboolean _theme_load(char const * theme)
 #else
 	gtk_rc_parse(theme);
 	return TRUE;
+#endif
+}
+
+
+/* theme_save */
+static gboolean _theme_save(char const * filename)
+{
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkCssProvider * css;
+	FILE * fp;
+	char * p;
+
+	css = gtk_css_provider_get_default();
+	if((fp = fopen(filename, "w")) == NULL)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", filename, strerror(errno));
+		return FALSE;
+	}
+	p = gtk_css_provider_to_string(css);
+	fwrite(p, sizeof(*p), strlen(p), fp);
+	free(p);
+	if(fclose(fp) != 0)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", filename, strerror(errno));
+		return FALSE;
+	}
+	return TRUE;
+#else
+	gboolean ret = TRUE;
+	gchar ** f;
+	FILE * fp1;
+	FILE * fp2;
+	char buf[BUFSIZ];
+	size_t n;
+
+	if((fp1 = fopen(filename, "w")) == NULL)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", filename, strerror(errno));
+		return FALSE;
+	}
+	for(f = gtk_rc_get_default_files(); f != NULL && *f != NULL; f++)
+	{
+		if((fp2 = fopen(*f, "r")) == NULL)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s", *f, strerror(errno));
+			ret = FALSE;
+			continue;
+		}
+		while((n = fread(buf, sizeof(*buf), sizeof(buf), fp2)) > 0)
+			if(fwrite(buf, sizeof(*buf), n, fp1) != n)
+			{
+				error(BSDDIALOG_ERROR, "%s: %s", *f,
+						strerror(errno));
+				ret = FALSE;
+			}
+		if(fclose(fp2) != 0)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s", *f, strerror(errno));
+			ret = FALSE;
+		}
+	}
+	if(fclose(fp1) != 0)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", filename, strerror(errno));
+		return FALSE;
+	}
+	return ret;
 #endif
 }
