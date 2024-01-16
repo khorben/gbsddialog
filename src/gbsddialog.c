@@ -258,8 +258,8 @@ static struct option longopts[] = {
 	{"left2-exit-code",   required_argument, NULL, LEFT2_EXIT_CODE},
 	{"left3-button",      required_argument, NULL, LEFT3_BUTTON},
 	{"left3-exit-code",   required_argument, NULL, LEFT3_EXIT_CODE},
-	{"load-theme",        required_argument, NULL, LOAD_THEME},
 #endif
+	{"load-theme",        required_argument, NULL, LOAD_THEME},
 	{"max-input",         required_argument, NULL, MAX_INPUT},
 #ifdef WITH_XDIALOG
 	{"no-buttons",        no_argument,       NULL, NO_BUTTONS},
@@ -377,6 +377,7 @@ typedef struct _GBSDDialog
 /* prototypes */
 static int _parseargs(int argc, char const ** argv,
 		struct bsddialog_conf * conf, struct options * opt);
+static gboolean _theme_load(char const * theme);
 
 
 /* gbsddialog */
@@ -603,6 +604,11 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
 					"expected a --<dialog>"));
 		return _gbsddialog_on_idle_quit(gbd);
+	}
+	if(opt.loadthemefile != NULL)
+	{
+		_theme_load(opt.loadthemefile);
+		opt.loadthemefile = NULL;
 	}
 	if(opt.backtitle != NULL && gbd->window == NULL)
 		_gbsddialog_backtitle(gbd, &conf, &opt);
@@ -879,6 +885,9 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case ITEM_PREFIX:
 			opt->item_prefix = true;
+			break;
+		case LOAD_THEME:
+			opt->loadthemefile = optarg;
 			break;
 		case MAX_INPUT:
 			opt->max_input_form = strtoul(optarg, NULL, 10);
@@ -1273,4 +1282,35 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			return -error(BSDDIALOG_ERROR, "--ignore to continue");
 	}
 	return 0;
+}
+
+
+/* theme_load */
+static gboolean _theme_load(char const * theme)
+{
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkCssProvider * css;
+	GError * e = NULL;
+	GdkScreen * screen;
+
+	css = gtk_css_provider_new();
+	if(gtk_css_provider_load_from_path(css, theme, &e) != TRUE)
+	{
+		error(BSDDIALOG_ERROR, e->message);
+		g_error_free(e);
+		return FALSE;
+	}
+	if((screen = gdk_screen_get_default()) == NULL)
+	{
+		error(BSDDIALOG_ERROR, "Could not load the theme");
+		return FALSE;
+	}
+	gtk_style_context_add_provider_for_screen(screen,
+			GTK_STYLE_PROVIDER(css),
+			GTK_STYLE_PROVIDER_PRIORITY_USER);
+	return TRUE;
+#else
+	gtk_rc_parse(theme);
+	return TRUE;
+#endif
 }
