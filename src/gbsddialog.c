@@ -323,8 +323,6 @@ static struct option longopts[] = {
 #ifdef WITH_XDIALOG
 	{ "2inputsbox",  no_argument, NULL, INPUTSBOX2},
 	{ "3inputsbox",  no_argument, NULL, INPUTSBOX3},
-#endif
-#ifdef WITH_XDIALOG
 	{ "2rangesbox",  no_argument, NULL, RANGESBOX2},
 	{ "3rangesbox",  no_argument, NULL, RANGESBOX3},
 #endif
