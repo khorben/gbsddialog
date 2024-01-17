@@ -913,7 +913,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #endif
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(id.dialog));
-	else if(conf->x > 0 && conf->y > 0)
+	else if(conf->x != BSDDIALOG_AUTOSIZE && conf->y != BSDDIALOG_AUTOSIZE)
 		gtk_window_move(GTK_WINDOW(id.dialog), conf->x, conf->y);
 	else
 		gtk_window_set_position(GTK_WINDOW(id.dialog),
@@ -2096,7 +2096,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	}
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(dialog));
-	else if(conf->x > 0 && conf->y > 0)
+	else if(conf->x != BSDDIALOG_AUTOSIZE && conf->y != BSDDIALOG_AUTOSIZE)
 		gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
 	else
 		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
