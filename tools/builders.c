@@ -82,7 +82,11 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[0]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
@@ -103,7 +107,11 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[2]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
@@ -164,7 +172,11 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 #endif
 	/* range 1 */
 	widget1 = gtk_label_new(argv[0]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget1, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget1), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* XXX detect and report errors */
 	min = strtol(argv[1], NULL, 10);
@@ -177,7 +189,11 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* range 2 */
 	widget2 = gtk_label_new(argv[4]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget2, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget2), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	/* XXX detect and report errors */
 	min = strtol(argv[5], NULL, 10);
@@ -242,7 +258,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[0]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
@@ -263,7 +283,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[2]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
@@ -284,7 +308,11 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	widget = gtk_label_new(argv[4]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer3 = gtk_entry_buffer_new(argv[5], -1);
@@ -347,7 +375,11 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 #endif
 	/* range 1 */
 	widget1 = gtk_label_new(argv[0]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget1, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget1), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* XXX detect and report errors */
 	min = strtol(argv[1], NULL, 10);
@@ -360,7 +392,11 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* range 2 */
 	widget2 = gtk_label_new(argv[4]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget2, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget2), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	/* XXX detect and report errors */
 	min = strtol(argv[5], NULL, 10);
@@ -373,7 +409,11 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	/* range 3 */
 	widget3 = gtk_label_new(argv[8]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget3, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget3), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
 	/* XXX detect and report errors */
 	min = strtol(argv[9], NULL, 10);

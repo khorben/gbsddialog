@@ -638,7 +638,11 @@ int builder_form(struct bsddialog_conf const * conf,
 		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 		widget = gtk_label_new(argv[i * j + 1]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 		buffer = gtk_entry_buffer_new(argv[i * j + 4], -1);
@@ -732,7 +736,11 @@ int builder_gauge(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(gd.label), rows);
 #endif
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(gd.label, GTK_ALIGN_START);
+#else
 		gtk_misc_set_alignment(GTK_MISC(gd.label), 0.0, 0.5);
+#endif
 		gtk_widget_show(gd.label);
 		gtk_box_pack_start(GTK_BOX(container), gd.label, FALSE, TRUE,
 				BORDER_WIDTH);
@@ -1204,7 +1212,11 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 #endif
 		widget = gtk_label_new(argv[i * j + 1]);
 		gtk_label_set_single_line_mode(GTK_LABEL(widget), TRUE);
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 		widget = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -1227,7 +1239,11 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
 				BORDER_WIDTH);
 	}
@@ -2089,7 +2105,11 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		if(rows > 0)
 			gtk_label_set_lines(GTK_LABEL(widget), rows);
 #endif
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_widget_show(widget);
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
 				BORDER_WIDTH);
