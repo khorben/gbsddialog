@@ -111,6 +111,9 @@ enum OPTS {
 	MAX_INPUT,
 	NO_BUTTONS,
 	NO_CANCEL,
+#ifdef WITH_XDIALOG
+	NO_CR_WRAP,
+#endif
 	NO_DESCRIPTIONS,
 	NO_LINES,
 	NO_NAMES,
@@ -271,6 +274,7 @@ static struct option longopts[] = {
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
 #ifdef WITH_XDIALOG
 	{"no-close",	      no_argument,	 NULL, DISABLE_ESC},
+	{"no-cr-wrap",	      no_argument,	 NULL, NO_CR_WRAP},
 #endif
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
@@ -911,6 +915,11 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		case NO_CANCEL:
 			conf->button.without_cancel = true;
 			break;
+#ifdef WITH_XDIALOG
+		case NO_CR_WRAP:
+			opt->cr_wrap = false;
+			break;
+#endif
 		case NO_DESCRIPTIONS:
 			conf->menu.no_desc = true;
 			break;
