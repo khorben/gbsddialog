@@ -491,7 +491,11 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 			GDK_WINDOW_TYPE_HINT_DESKTOP);
 	gbd->label = gtk_label_new(opt->backtitle);
 	gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(gbd->label, GTK_ALIGN_START);
+#else
 	gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
+#endif
 	fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_override_font(gbd->label, fontdesc);
