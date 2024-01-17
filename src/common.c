@@ -132,6 +132,44 @@ int error(int ret, char const * format, ...)
 }
 
 
+/* get_font_size */
+gdouble get_font_size(void)
+{
+	GdkDisplay * display;
+	GdkScreen * screen;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkStyleContext * style;
+#endif
+	PangoFontDescription const * fontdesc;
+	gdouble ex, fontsize, resolution;
+
+	/* obtain the default screen */
+	if((display = gdk_display_get_default()) == NULL)
+	{
+		error(BSDDIALOG_ERROR, "Could not obtain the screen size");
+		return 12.0;
+	}
+	screen = gdk_display_get_default_screen(display);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	style = gtk_style_context_new();
+	fontdesc = gtk_style_context_get_font(style,
+			GTK_STATE_FLAG_NORMAL);
+	g_object_unref(style);
+	fontsize = pango_font_description_get_size(fontdesc);
+	if(pango_font_description_get_size_is_absolute(
+				fontdesc))
+		ex = fontsize;
+	else
+#else
+		/* FIXME obtain the default font size */
+		fontsize = 9.0;
+#endif
+	resolution = gdk_screen_get_resolution(screen);
+	ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
+	return ex;
+}
+
+
 /* init_exitcodes */
 void init_exitcodes(void)
 {

@@ -69,7 +69,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -164,7 +164,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -245,7 +245,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -367,7 +367,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -483,7 +483,7 @@ int builder_colorsel(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, text, rows);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -572,7 +572,7 @@ int builder_fontsel(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, NULL, rows);
+	dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -640,7 +640,7 @@ static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	dialog = _builder_dialog(conf, opt, NULL, rows);
+	dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else

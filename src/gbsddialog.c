@@ -637,8 +637,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 						"cannot allocate <text>"));
 			return _gbsddialog_on_idle_quit(gbd);
 		}
-		rows = (int)strtol(gbd->argv[1], NULL, 10);
-		cols = (int)strtol(gbd->argv[2], NULL, 10);
+		rows = (int)strtol(argv[1], NULL, 10);
+		cols = (int)strtol(argv[2], NULL, 10);
 
 		if(opt.dialogbuilder != builder_textbox)
 			custom_text(&opt, argv[0], text);
@@ -754,13 +754,11 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 		int arg)
 {
 	GdkDisplay * display;
+#if !GTK_CHECK_VERSION(3, 5, 0)
 	GdkScreen * screen;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	GtkStyleContext * style;
 #endif
-	gdouble ex, fontsize, resolution;
+	gdouble ex;
 	GdkRectangle workarea;
-	PangoFontDescription const * fontdesc;
 
 	switch(arg)
 	{
@@ -954,13 +952,13 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			if((display = gdk_display_get_default()) == NULL)
 				return -error(BSDDIALOG_ERROR, "Could not"
 						" obtain the screen size");
-			screen = gdk_display_get_default_screen(display);
 			/* obtain the workarea */
 #if GTK_CHECK_VERSION(3, 22, 0)
 			gdk_monitor_get_workarea(
 					gdk_display_get_primary_monitor(
 						display), &workarea);
 #elif GTK_CHECK_VERSION(3, 4, 0)
+			screen = gdk_display_get_default_screen(display);
 			gdk_screen_get_monitor_workarea(screen,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
@@ -969,25 +967,8 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
 #endif
-			/* obtain the default font size */
-#if GTK_CHECK_VERSION(3, 0, 0)
-			style = gtk_style_context_new();
-			fontdesc = gtk_style_context_get_font(style,
-					GTK_STATE_FLAG_NORMAL);
-			fontsize = pango_font_description_get_size(fontdesc);
-			if(pango_font_description_get_size_is_absolute(
-						fontdesc))
-				ex = fontsize;
-			else
-#else
-				/* FIXME obtain the default font size */
-				fontsize = 9.0;
-#endif
-			{
-				resolution = gdk_screen_get_resolution(screen);
-				ex = (fontsize * resolution)
-					/ (72.0 * PANGO_SCALE);
-			}
+			/* obtain the default font size in pixels */
+			ex = get_font_size();
 			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
 					(int)(workarea.height / ex / 2),
 					(int)(workarea.width / ex));

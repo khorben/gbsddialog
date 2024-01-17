@@ -34,6 +34,7 @@
 
 # include <stdbool.h>
 # include <bsddialog.h>
+# include <gtk/gtk.h>
 
 
 /* common */
@@ -136,6 +137,8 @@ extern struct exitcode exitcodes[];
 void custom_text(struct options * opt, char const * text, char * buf);
 
 int error(int ret, char const * format, ...);
+
+gdouble get_font_size(void);
 
 void init_exitcodes(void);
 
