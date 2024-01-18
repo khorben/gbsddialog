@@ -751,7 +751,11 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 		if(logo != NULL && access(logo, R_OK) == 0)
 		{
 			widget = gtk_image_new_from_file(logo);
+#if GTK_CHECK_VERSION(3, 14, 0)
+			gtk_widget_set_halign(widget, GTK_ALIGN_END);
+#else
 			gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.5);
+#endif
 			gtk_box_pack_end(GTK_BOX(container), widget, FALSE,
 					TRUE, 0);
 		}
