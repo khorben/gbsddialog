@@ -29,6 +29,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/gbsddialog.h \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/builders.c \
 		$(PACKAGE)-$(VERSION)/tools/Xdialog.c
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
