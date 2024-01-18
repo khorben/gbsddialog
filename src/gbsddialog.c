@@ -42,6 +42,9 @@
 #include "common.h"
 #include "gbsddialog.h"
 
+#ifndef BORDER_WIDTH
+# define BORDER_WIDTH	4
+#endif
 /* FIXME conflicts with <sys/syslimits.h> */
 #ifdef MAX_INPUT
 # undef MAX_INPUT
@@ -732,9 +735,9 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 #endif
 		pango_font_description_free(fontdesc);
 #if GTK_CHECK_VERSION(3, 0, 0)
-		container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+		container = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
 #else
-		container = gtk_vbox_new(FALSE, 4);
+		container = gtk_vbox_new(FALSE, BORDER_WIDTH);
 #endif
 		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 		if(gbd->conf.no_lines != true)
@@ -746,7 +749,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 #endif
 			_backtitle_apply_style(separator, &fg, &fg);
 			gtk_box_pack_start(GTK_BOX(container), separator, FALSE,
-					TRUE, 4);
+					TRUE, BORDER_WIDTH);
 		}
 		if(logo != NULL && access(logo, R_OK) == 0)
 		{
