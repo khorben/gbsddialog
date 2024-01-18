@@ -640,7 +640,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	GdkColor fg = { 0, 65535, 65535, 65535 };
 #endif
 	PangoFontDescription * fontdesc;
-	char const * logo = "/boot/images/freebsd-logo-rev.png";
+	char const * logo;
 
 	/* XXX this will cause flickering */
 	for(i = 0; i < gbd->windows_cnt; i++)
@@ -683,6 +683,9 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 #endif
 		gtk_widget_destroy(widget);
 	}
+
+	/* obtain the logo location if set */
+	logo = getenv("GBSDDIALOG_BACKTITLE_LOGO");
 
 	for(i = 0; i < gbd->windows_cnt; i++)
 	{
