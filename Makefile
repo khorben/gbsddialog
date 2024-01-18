@@ -1,12 +1,15 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.0.1
-SUBDIRS	= src tools
+SUBDIRS	= src tests tools
 LN	= ln -f
 RM	= rm -f
 TAR	= tar
 
 all:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE)) || exit $$?; done
+
+tests: all
+	cd tests && $(MAKE) tests
 
 clean:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) clean) || exit $$?; done
@@ -28,6 +31,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/gbsddialog.h \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/gbsddialog.c \
+		$(PACKAGE)-$(VERSION)/tests/Xdialog.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/builders.c \
 		$(PACKAGE)-$(VERSION)/tools/Xdialog.c
@@ -46,4 +52,4 @@ install:
 uninstall:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || exit $$?; done
 
-.PHONY: all clean dist distcheck distclean install uninstall
+.PHONY: all tests clean dist distcheck distclean install uninstall
