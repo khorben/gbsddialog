@@ -1010,6 +1010,7 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
 #else
+			screen = gdk_display_get_default_screen(display);
 			gdk_screen_get_monitor_geometry(screen,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
