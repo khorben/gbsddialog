@@ -59,7 +59,7 @@ The current status according to the development plan above is at step 2.
 "Implementation with a desktop window", whereas support for a desktop window is
 implemented. However:
 
-- A few features of `bsdinstall(1)` are still missing, such as `--mixedform`,
+- A few features of `bsddialog(1)` are still missing, such as `--mixedform`,
   highlights for text, initial window sizing, and generic buttons.
 - Many features of `Xdialog(1)` are still missing.
 - Depending on the version of Gtk+ installed, some of the API calls used may be
