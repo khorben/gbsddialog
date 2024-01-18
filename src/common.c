@@ -164,8 +164,10 @@ gdouble get_font_size(void)
 		/* FIXME obtain the default font size */
 		fontsize = 9.0;
 #endif
-	resolution = gdk_screen_get_resolution(screen);
-	ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
+	{
+		resolution = gdk_screen_get_resolution(screen);
+		ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
+	}
 	return ex;
 }
 
