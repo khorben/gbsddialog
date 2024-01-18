@@ -152,12 +152,10 @@ gdouble get_font_size(void)
 	screen = gdk_display_get_default_screen(display);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	style = gtk_style_context_new();
-	fontdesc = gtk_style_context_get_font(style,
-			GTK_STATE_FLAG_NORMAL);
+	fontdesc = gtk_style_context_get_font(style, GTK_STATE_FLAG_NORMAL);
 	g_object_unref(style);
 	fontsize = pango_font_description_get_size(fontdesc);
-	if(pango_font_description_get_size_is_absolute(
-				fontdesc))
+	if(pango_font_description_get_size_is_absolute(fontdesc))
 		ex = fontsize;
 	else
 #else
