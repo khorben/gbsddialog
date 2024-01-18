@@ -30,6 +30,7 @@
 
 
 
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -167,6 +168,13 @@ gdouble get_font_size(void)
 		ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
 	}
 	return ex;
+}
+
+
+/* init_entropy */
+void init_entropy(void)
+{
+	srandom(time(NULL) ^ getpid() ^ getuid());
 }
 
 

@@ -372,10 +372,17 @@ static struct option longopts[] = {
 /* types */
 typedef struct _GBSDDialog
 {
+	struct bsddialog_conf conf;
+	struct options opt;
+
 	int * ret;
 	int argc;
 	char const ** argv;
-	GtkWidget * window;	/* for backtitle */
+
+	/* for backtitle */
+	char const * backtitle;
+	GtkWidget ** windows;
+	size_t windows_cnt;
 	GtkWidget * label;
 } GBSDDialog;
 
@@ -387,8 +394,7 @@ static gboolean _theme_save(char const * filename);
 
 
 /* gbsddialog */
-static void _gbsddialog_backtitle(GBSDDialog * gbd,
-		struct bsddialog_conf const * conf, struct options * opt);
+static void _gbsddialog_backtitle(GBSDDialog * gbd);
 #if GTK_CHECK_VERSION(3, 0, 0)
 static void _backtitle_apply_style(GtkWidget * widget,
 		GdkRGBA * bg, GdkRGBA * fg);
@@ -424,104 +430,17 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	return 0;
 }
 
-static void _gbsddialog_backtitle(GBSDDialog * gbd,
-		struct bsddialog_conf const * conf, struct options * opt)
+static void _gbsddialog_backtitle(GBSDDialog * gbd)
 {
 	GdkScreen * screen;
-	GtkWidget * widget;
-	GtkWidget * separator;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	GtkStyleContext * style;
-#else
-	GtkStyle * style;
-#endif
-	gint scale = 1;
-	PangoFontDescription * fontdesc;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	GdkRGBA bg = { 0.0, 0.0, 0.0, 1.0 };
-	GdkRGBA fg = { 0.0, 0.0, 0.0, 1.0 };
-#else
-	GdkColor bg = { 0, 0, 0, 65535 };
-	GdkColor fg = { 0, 65535, 65535, 65535 };
-#endif
 
-	if(gbd->label != NULL)
-	{
-		gtk_label_set_text(GTK_LABEL(gbd->label), opt->backtitle);
-		return;
-	}
 	if((screen = gdk_screen_get_default()) == NULL)
 		return;
-	if(opt->bikeshed)
-	{
-		srandom(time(NULL) ^ getpid() ^ getuid());
-		_backtitle_bikeshed_color(&bg);
-		_backtitle_bikeshed_color(&fg);
-	}
-	else
-	{
-		widget = gtk_tree_view_new();
-#if GTK_CHECK_VERSION(3, 0, 0)
-		style = gtk_widget_get_style_context(widget);
-		gtk_style_context_get_background_color(style,
-				GTK_STATE_FLAG_SELECTED, &bg);
-		gtk_style_context_get_color(style, GTK_STATE_FLAG_SELECTED,
-				&fg);
-#else
-		style = gtk_widget_get_style(widget);
-		/* FIXME obtain the colors */
-#endif
-		gtk_widget_destroy(widget);
-	}
-	gbd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	_backtitle_apply_style(gbd->window, &bg, &fg);
-	/* FIXME:
-	 * - draw a desktop window on each monitor instead? */
-#if GTK_CHECK_VERSION(3, 10, 0)
-	scale = gtk_widget_get_scale_factor(gbd->window);
-#endif
-	gtk_window_set_default_size(GTK_WINDOW(gbd->window),
-			gdk_screen_get_width(screen) * scale,
-			gdk_screen_get_height(screen) * scale);
 #if GTK_CHECK_VERSION(2, 2, 0)
 	g_signal_connect(screen, "size-changed",
 			G_CALLBACK(_backtitle_on_size_changed), gbd);
 #endif
-	gtk_window_set_type_hint(GTK_WINDOW(gbd->window),
-			GDK_WINDOW_TYPE_HINT_DESKTOP);
-	gbd->label = gtk_label_new(opt->backtitle);
-	gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
-#if GTK_CHECK_VERSION(3, 14, 0)
-	gtk_widget_set_halign(gbd->label, GTK_ALIGN_START);
-#else
-	gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
-#endif
-	fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
-#if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_widget_override_font(gbd->label, fontdesc);
-#else
-	gtk_widget_modify_font(gbd->label, fontdesc);
-#endif
-	pango_font_description_free(fontdesc);
-#if GTK_CHECK_VERSION(3, 0, 0)
-	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
-#else
-	widget = gtk_vbox_new(FALSE, 4);
-#endif
-	gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
-	if(conf->no_lines != true)
-	{
-#if GTK_CHECK_VERSION(3, 0, 0)
-		separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-#else
-		separator = gtk_hseparator_new();
-#endif
-		_backtitle_apply_style(separator, &fg, &fg);
-		gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
-	}
-	gtk_container_add(GTK_CONTAINER(gbd->window), widget);
-	gtk_container_set_border_width(GTK_CONTAINER(gbd->window), 16);
-	gtk_widget_show_all(gbd->window);
+	_backtitle_on_size_changed(screen, gbd);
 }
 
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -582,10 +501,10 @@ static void _backtitle_bikeshed_color(GdkColor * color)
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
 	GBSDDialog * gbd = data;
+	struct bsddialog_conf * conf = &gbd->conf;
+	struct options * opt = &gbd->opt;
 	int parsed, argc, oi = optind;
 	char const ** argv;
-	struct bsddialog_conf conf;
-	struct options opt;
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
 	int res;
@@ -595,9 +514,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, gbd->argc,
 			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
-	init_exitcodes();
-
-	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
+	if((parsed = _parseargs(gbd->argc, gbd->argv, conf, opt)) <= 0)
 	{
 		*gbd->ret = EXITCODE(BSDDIALOG_ERROR);
 		return _gbsddialog_on_idle_quit(gbd);
@@ -609,25 +526,25 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, argc, optind, parsed);
 #endif
 
-	if(opt.savethemefile != NULL)
+	if(opt->savethemefile != NULL)
 	{
-		_theme_save(opt.savethemefile);
-		opt.savethemefile = NULL;
+		_theme_save(opt->savethemefile);
+		opt->savethemefile = NULL;
 	}
-	if(opt.mandatory_dialog && opt.dialogbuilder == NULL)
+	if(opt->mandatory_dialog && opt->dialogbuilder == NULL)
 	{
 		*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
 					"expected a --<dialog>"));
 		return _gbsddialog_on_idle_quit(gbd);
 	}
-	if(opt.loadthemefile != NULL)
+	if(opt->loadthemefile != NULL)
 	{
-		_theme_load(opt.loadthemefile);
-		opt.loadthemefile = NULL;
+		_theme_load(opt->loadthemefile);
+		opt->loadthemefile = NULL;
 	}
-	if(opt.backtitle != NULL && gbd->window == NULL)
-		_gbsddialog_backtitle(gbd, &conf, &opt);
-	if(opt.dialogbuilder != NULL)
+	if(opt->backtitle != NULL && gbd->windows == NULL)
+		_gbsddialog_backtitle(gbd);
+	if(opt->dialogbuilder != NULL)
 	{
 		if(argc < 3)
 		{
@@ -644,20 +561,20 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		rows = (int)strtol(argv[1], NULL, 10);
 		cols = (int)strtol(argv[2], NULL, 10);
 
-		if(opt.dialogbuilder != builder_textbox)
-			custom_text(&opt, argv[0], text);
+		if(opt->dialogbuilder != builder_textbox)
+			custom_text(opt, argv[0], text);
 
 		/* FIXME implement conf->text.escape/highlight */
 
-		res = opt.dialogbuilder(&conf, text, rows, cols,
-				argc - 3, argv + 3, &opt);
+		res = opt->dialogbuilder(conf, text, rows, cols,
+				argc - 3, argv + 3, opt);
 		*gbd->ret = EXITCODE(res);
 		free(text);
 		if(res == BSDDIALOG_ERROR)
 			return _gbsddialog_on_idle_quit(gbd);
-		if(conf.get_height != NULL && conf.get_width != NULL)
-			dprintf(opt.output_fd, "DialogSize: %d, %d\n",
-					*conf.get_height, *conf.get_width);
+		if(conf->get_height != NULL && conf->get_width != NULL)
+			dprintf(opt->output_fd, "DialogSize: %d, %d\n",
+					*conf->get_height, *conf->get_width);
 		if(res == BSDDIALOG_CANCEL || res == BSDDIALOG_ESC)
 			return _gbsddialog_on_idle_quit(gbd);
 	}
@@ -698,14 +615,140 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 {
 	GBSDDialog * gbd = data;
-	gint scale = 1;
-
-#if GTK_CHECK_VERSION(3, 10, 0)
-	scale = gtk_widget_get_scale_factor(gbd->window);
+#if GTK_CHECK_VERSION(3, 22, 0)
+	GdkDisplay * display;
+	GdkMonitor * monitor;
 #endif
-	gtk_window_resize(GTK_WINDOW(gbd->window),
-			gdk_screen_get_width(screen) * scale,
-			gdk_screen_get_height(screen) * scale);
+	GdkRectangle geometry;
+	gint scale = 1;
+	size_t i;
+	GtkWidget ** p;
+	GtkWidget * window, * separator, * widget;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkStyleContext * style;
+#else
+	GtkStyle * style;
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GdkRGBA bg = { 0.0, 0.0, 0.0, 1.0 };
+	GdkRGBA fg = { 0.0, 0.0, 0.0, 1.0 };
+#else
+	GdkColor bg = { 0, 0, 0, 65535 };
+	GdkColor fg = { 0, 65535, 65535, 65535 };
+#endif
+	PangoFontDescription * fontdesc;
+
+	/* XXX this will cause flickering */
+	for(i = 0; i < gbd->windows_cnt; i++)
+		gtk_widget_destroy(gbd->windows[i]);
+	gbd->label = NULL;
+#if GTK_CHECK_VERSION(3, 22, 0)
+	display = gdk_screen_get_display(screen);
+	i = gdk_display_get_n_monitors(display);
+#else
+	i = 1;
+#endif
+	if((p = realloc(gbd->windows, (sizeof(*gbd->windows) * i))) == NULL)
+	{
+		/* FIXME report the error */
+		free(gbd->windows);
+		gbd->windows_cnt = 0;
+		return;
+	}
+	gbd->windows = p;
+	gbd->windows_cnt = i;
+
+	/* obtain background and foreground colors */
+	if(gbd->opt.bikeshed)
+	{
+		_backtitle_bikeshed_color(&bg);
+		_backtitle_bikeshed_color(&fg);
+	}
+	else
+	{
+		widget = gtk_tree_view_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+		style = gtk_widget_get_style_context(widget);
+		gtk_style_context_get_background_color(style,
+				GTK_STATE_FLAG_SELECTED, &bg);
+		gtk_style_context_get_color(style, GTK_STATE_FLAG_SELECTED,
+				&fg);
+#else
+		style = gtk_widget_get_style(widget);
+		/* FIXME obtain the colors */
+#endif
+		gtk_widget_destroy(widget);
+	}
+
+	for(i = 0; i < gbd->windows_cnt; i++)
+	{
+		gbd->windows[i] = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		window = gbd->windows[i];
+		_backtitle_apply_style(window, &bg, &fg);
+#if GTK_CHECK_VERSION(3, 10, 0)
+		scale = gtk_widget_get_scale_factor(window);
+#endif
+		gtk_window_set_default_size(GTK_WINDOW(window),
+				gdk_screen_get_width(screen) * scale,
+				gdk_screen_get_height(screen) * scale);
+		gtk_window_set_type_hint(GTK_WINDOW(window),
+				GDK_WINDOW_TYPE_HINT_DESKTOP);
+#if GTK_CHECK_VERSION(3, 22, 0)
+		monitor = gdk_display_get_monitor(display, i);
+		gdk_monitor_get_geometry(monitor, &geometry);
+		geometry.x = geometry.x * scale;
+		geometry.y = geometry.y * scale;
+#else
+		geometry.x = 0;
+		geometry.y = 0;
+		geometry.width = gdk_screen_get_width(screen);
+		geometry.height = gdk_screen_get_height(screen);
+#endif
+		gtk_window_move(GTK_WINDOW(window), geometry.x, geometry.y);
+		gtk_window_resize(GTK_WINDOW(window),
+				geometry.width * scale,
+				geometry.height * scale);
+#if GTK_CHECK_VERSION(3, 22, 0)
+		if(!gdk_monitor_is_primary(monitor))
+		{
+			gtk_widget_show(window);
+			continue;
+		}
+#endif
+		gbd->label = gtk_label_new(gbd->opt.backtitle);
+		gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(gbd->label, GTK_ALIGN_START);
+#else
+		gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
+#endif
+		fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_widget_override_font(gbd->label, fontdesc);
+#else
+		gtk_widget_modify_font(gbd->label, fontdesc);
+#endif
+		pango_font_description_free(fontdesc);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
+		widget = gtk_vbox_new(FALSE, 4);
+#endif
+		gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
+		if(gbd->conf.no_lines != true)
+		{
+#if GTK_CHECK_VERSION(3, 0, 0)
+			separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
+			separator = gtk_hseparator_new();
+#endif
+			_backtitle_apply_style(separator, &fg, &fg);
+			gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+		}
+		gtk_container_add(GTK_CONTAINER(window), widget);
+		gtk_container_set_border_width(GTK_CONTAINER(window), 16);
+		gtk_widget_show_all(window);
+	}
 }
 #endif
 
@@ -967,6 +1010,7 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
 #else
+			screen = gdk_display_get_default_screen(display);
 			gdk_screen_get_monitor_geometry(screen,
 					gdk_screen_get_primary_monitor(screen),
 					&workarea);
