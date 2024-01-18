@@ -42,6 +42,9 @@
 #include "common.h"
 #include "gbsddialog.h"
 
+#ifndef BORDER_WIDTH
+# define BORDER_WIDTH	4
+#endif
 /* FIXME conflicts with <sys/syslimits.h> */
 #ifdef MAX_INPUT
 # undef MAX_INPUT
@@ -623,7 +626,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	gint scale = 1;
 	size_t i;
 	GtkWidget ** p;
-	GtkWidget * window, * separator, * widget;
+	GtkWidget * window, * container, * separator, * widget;
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
 #else
@@ -637,6 +640,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	GdkColor fg = { 0, 65535, 65535, 65535 };
 #endif
 	PangoFontDescription * fontdesc;
+	char const * logo;
 
 	/* XXX this will cause flickering */
 	for(i = 0; i < gbd->windows_cnt; i++)
@@ -680,6 +684,9 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 		gtk_widget_destroy(widget);
 	}
 
+	/* obtain the logo location if set */
+	logo = getenv("GBSDDIALOG_BACKTITLE_LOGO");
+
 	for(i = 0; i < gbd->windows_cnt; i++)
 	{
 		gbd->windows[i] = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -709,32 +716,33 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 				geometry.width * scale,
 				geometry.height * scale);
 #if GTK_CHECK_VERSION(3, 22, 0)
-		if(!gdk_monitor_is_primary(monitor))
+		if(gdk_monitor_is_primary(monitor))
 		{
-			gtk_widget_show(window);
-			continue;
+			gbd->label = gtk_label_new(gbd->opt.backtitle);
+			widget = gbd->label;
 		}
+		else
 #endif
-		gbd->label = gtk_label_new(gbd->opt.backtitle);
-		gtk_label_set_justify(GTK_LABEL(gbd->label), GTK_JUSTIFY_LEFT);
+			widget = gtk_label_new(" ");
+		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 #if GTK_CHECK_VERSION(3, 14, 0)
-		gtk_widget_set_halign(gbd->label, GTK_ALIGN_START);
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
 #else
-		gtk_misc_set_alignment(GTK_MISC(gbd->label), 0.0, 0.5);
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 #endif
 		fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
 #if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_widget_override_font(gbd->label, fontdesc);
+		gtk_widget_override_font(widget, fontdesc);
 #else
-		gtk_widget_modify_font(gbd->label, fontdesc);
+		gtk_widget_modify_font(widget, fontdesc);
 #endif
 		pango_font_description_free(fontdesc);
 #if GTK_CHECK_VERSION(3, 0, 0)
-		widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+		container = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
 #else
-		widget = gtk_vbox_new(FALSE, 4);
+		container = gtk_vbox_new(FALSE, BORDER_WIDTH);
 #endif
-		gtk_box_pack_start(GTK_BOX(widget), gbd->label, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 		if(gbd->conf.no_lines != true)
 		{
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -743,9 +751,21 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 			separator = gtk_hseparator_new();
 #endif
 			_backtitle_apply_style(separator, &fg, &fg);
-			gtk_box_pack_start(GTK_BOX(widget), separator, FALSE, TRUE, 4);
+			gtk_box_pack_start(GTK_BOX(container), separator, FALSE,
+					TRUE, BORDER_WIDTH);
 		}
-		gtk_container_add(GTK_CONTAINER(window), widget);
+		if(logo != NULL && access(logo, R_OK) == 0)
+		{
+			widget = gtk_image_new_from_file(logo);
+#if GTK_CHECK_VERSION(3, 14, 0)
+			gtk_widget_set_halign(widget, GTK_ALIGN_END);
+#else
+			gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.5);
+#endif
+			gtk_box_pack_end(GTK_BOX(container), widget, FALSE,
+					TRUE, 0);
+		}
+		gtk_container_add(GTK_CONTAINER(window), container);
 		gtk_container_set_border_width(GTK_CONTAINER(window), 16);
 		gtk_widget_show_all(window);
 	}
