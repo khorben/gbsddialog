@@ -93,6 +93,9 @@ int main(int argc, char * argv[])
 		}
 	}
 
+	init_entropy();
+	init_exitcodes();
+
 	if((r = gbsddialog(&ret, argc, (char const **)argv)) != 0)
 		return r;
 

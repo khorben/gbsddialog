@@ -454,7 +454,6 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd,
 		return;
 	if(opt->bikeshed)
 	{
-		srandom(time(NULL) ^ getpid() ^ getuid());
 		_backtitle_bikeshed_color(&bg);
 		_backtitle_bikeshed_color(&fg);
 	}
@@ -595,8 +594,6 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, gbd->argc,
 			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
-	init_exitcodes();
-
 	if((parsed = _parseargs(gbd->argc, gbd->argv, &conf, &opt)) <= 0)
 	{
 		*gbd->ret = EXITCODE(BSDDIALOG_ERROR);
