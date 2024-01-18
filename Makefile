@@ -33,6 +33,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/Xdialog.c
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
+distcheck: dist
+	$(TAR) -xzf $(PACKAGE)-$(VERSION).tar.gz
+	cd $(PACKAGE)-$(VERSION) && $(MAKE) dist all
+
 distclean:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) distclean) || exit $$?; done
 
@@ -42,4 +46,4 @@ install:
 uninstall:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || exit $$?; done
 
-.PHONY: all clean dist distclean install uninstall
+.PHONY: all clean dist distcheck distclean install uninstall
