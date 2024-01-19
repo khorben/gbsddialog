@@ -140,6 +140,7 @@ int error(int ret, char const * format, ...);
 
 gdouble get_font_size(void);
 
+void init_entropy(void);
 void init_exitcodes(void);
 
 int string_needs_quoting(char const * str);
