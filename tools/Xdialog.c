@@ -1,5 +1,5 @@
 /* Xdialog */
-/* main.c */
+/* Xdialog.c */
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
