@@ -138,31 +138,34 @@ gdouble get_font_size(GdkScreen * screen)
 {
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
-#endif
 	PangoFontDescription const * fontdesc;
-	gdouble ex, fontsize, resolution;
+	PangoFontMask mask;
+#endif
+	int fontsize;
+	gdouble ex, resolution;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	style = gtk_style_context_new();
 	fontdesc = gtk_style_context_get_font(style, GTK_STATE_FLAG_NORMAL);
 	g_object_unref(style);
-	fontsize = pango_font_description_get_size(fontdesc);
-	if(pango_font_description_get_size_is_absolute(fontdesc))
-		ex = fontsize;
-	else
+	mask = pango_font_description_get_set_fields(fontdesc);
+	if((mask & PANGO_FONT_MASK_SIZE) == 0
+			|| (fontsize = pango_font_description_get_size(
+					fontdesc)) == 0)
+		fontsize = 9 * PANGO_SCALE;
+	else if(pango_font_description_get_size_is_absolute(fontdesc))
+		return fontsize;
 #else
-		/* FIXME obtain the default font size */
-		fontsize = 9.0 * PANGO_SCALE;
+	/* FIXME implement for Gtk+ 2 */
+	fontsize = 9 * PANGO_SCALE;
 #endif
-	{
-		if((resolution = gdk_screen_get_resolution(screen)) < 0.0)
-			resolution = 96.0;
-		ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
+	if((resolution = gdk_screen_get_resolution(screen)) < 0.0)
+		resolution = 96.0;
+	ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() fontsize=%f resolution=%f ex=%f\n",
-				__func__, fontsize, resolution, ex);
+	fprintf(stderr, "DEBUG: %s() fontsize=%d resolution=%f ex=%f\n",
+			__func__, fontsize, resolution, ex);
 #endif
-	}
 	return ex;
 }
 
