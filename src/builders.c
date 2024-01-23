@@ -908,7 +908,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #endif
 	if(rows != BSDDIALOG_AUTOSIZE && cols != BSDDIALOG_AUTOSIZE)
 	{
-		ex = get_font_size();
+		/* XXX gdk_screen_get_default() may fail */
+		ex = get_font_size(gdk_screen_get_default());
 		gtk_widget_set_size_request(container, cols * ex,
 				rows * ex * 2);
 	}
@@ -2111,7 +2112,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 #endif
 	if(rows != BSDDIALOG_AUTOSIZE && cols != BSDDIALOG_AUTOSIZE)
 	{
-		ex = get_font_size();
+		/* XXX gdk_screen_get_default() may fail */
+		ex = get_font_size(gdk_screen_get_default());
 		gtk_widget_set_size_request(container, cols * ex,
 				rows * ex * 2);
 	}

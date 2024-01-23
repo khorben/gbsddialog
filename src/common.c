@@ -134,23 +134,14 @@ int error(int ret, char const * format, ...)
 
 
 /* get_font_size */
-gdouble get_font_size(void)
+gdouble get_font_size(GdkScreen * screen)
 {
-	GdkDisplay * display;
-	GdkScreen * screen;
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkStyleContext * style;
 #endif
 	PangoFontDescription const * fontdesc;
 	gdouble ex, fontsize, resolution;
 
-	/* obtain the default screen */
-	if((display = gdk_display_get_default()) == NULL)
-	{
-		error(BSDDIALOG_ERROR, "Could not obtain the screen size");
-		return 12.0;
-	}
-	screen = gdk_display_get_default_screen(display);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	style = gtk_style_context_new();
 	fontdesc = gtk_style_context_get_font(style, GTK_STATE_FLAG_NORMAL);
@@ -168,6 +159,26 @@ gdouble get_font_size(void)
 		ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
 	}
 	return ex;
+}
+
+
+/* get_workarea */
+void get_workarea(GdkScreen * screen, GdkRectangle * workarea)
+{
+#if GTK_CHECK_VERSION(3, 22, 0)
+	GdkDisplay * display;
+
+	display = gdk_screen_get_display(screen);
+	gdk_monitor_get_workarea(gdk_display_get_primary_monitor(display),
+			workarea);
+#elif GTK_CHECK_VERSION(3, 4, 0)
+	gdk_screen_get_monitor_workarea(screen, gdk_screen_get_primary_monitor(
+				screen), workarea);
+#else
+	/* XXX this ignores window hints from any panels */
+	gdk_screen_get_monitor_geometry(screen, gdk_screen_get_primary_monitor(
+				screen), workarea);
+#endif
 }
 
 

@@ -872,11 +872,8 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		struct options * opt, int arg)
 {
-#if GTK_CHECK_VERSION(3, 22, 0)
-	GdkDisplay * display;
-#endif
-	gdouble ex;
 	GdkRectangle workarea;
+	gdouble ex;
 
 	switch(arg)
 	{
@@ -1066,25 +1063,8 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			break;
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
-			/* obtain the workarea */
-#if GTK_CHECK_VERSION(3, 22, 0)
-			display = gdk_screen_get_display(gbd->screen);
-			gdk_monitor_get_workarea(
-					gdk_display_get_primary_monitor(
-						display), &workarea);
-#elif GTK_CHECK_VERSION(3, 4, 0)
-			gdk_screen_get_monitor_workarea(gbd->screen,
-					gdk_screen_get_primary_monitor(
-						gbd->screen),
-					&workarea);
-#else
-			gdk_screen_get_monitor_geometry(gbd->screen,
-					gdk_screen_get_primary_monitor(
-						gbd->screen),
-					&workarea);
-#endif
-			/* obtain the default font size in pixels */
-			ex = get_font_size();
+			get_workarea(gbd->screen, &workarea);
+			ex = get_font_size(gbd->screen);
 			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
 					(int)(workarea.height / ex / 2),
 					(int)(workarea.width / ex));

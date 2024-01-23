@@ -138,7 +138,8 @@ void custom_text(struct options * opt, char const * text, char * buf);
 
 int error(int ret, char const * format, ...);
 
-gdouble get_font_size(void);
+gdouble get_font_size(GdkScreen * screen);
+void get_workarea(GdkScreen * screen, GdkRectangle * workarea);
 
 void init_entropy(void);
 void init_exitcodes(void);
