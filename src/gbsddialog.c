@@ -715,22 +715,21 @@ static void _backtitle_on_size_changed(gpointer data)
 #if GTK_CHECK_VERSION(3, 10, 0)
 		scale = gtk_widget_get_scale_factor(window);
 #endif
-		gtk_window_set_default_size(GTK_WINDOW(window),
-				gdk_screen_get_width(gbd->screen) * scale,
-				gdk_screen_get_height(gbd->screen) * scale);
-		gtk_window_set_type_hint(GTK_WINDOW(window),
-				GDK_WINDOW_TYPE_HINT_DESKTOP);
 #if GTK_CHECK_VERSION(3, 22, 0)
 		monitor = gdk_display_get_monitor(display, i);
 		gdk_monitor_get_geometry(monitor, &geometry);
-		geometry.x = geometry.x * scale;
-		geometry.y = geometry.y * scale;
 #else
 		geometry.x = 0;
 		geometry.y = 0;
 		geometry.width = gdk_screen_get_width(gbd->screen);
 		geometry.height = gdk_screen_get_height(gbd->screen);
 #endif
+		geometry.width = geometry.width * scale;
+		geometry.height = geometry.height * scale;
+		gtk_window_set_default_size(GTK_WINDOW(window),
+				geometry.width, geometry.height);
+		gtk_window_set_type_hint(GTK_WINDOW(window),
+				GDK_WINDOW_TYPE_HINT_DESKTOP);
 		gtk_window_move(GTK_WINDOW(window), geometry.x, geometry.y);
 		gtk_window_resize(GTK_WINDOW(window),
 				geometry.width * scale,

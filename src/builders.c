@@ -911,8 +911,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	{
 		/* XXX gdk_screen_get_default() may fail */
 		ex = get_font_size(gdk_screen_get_default());
-		gtk_widget_set_size_request(container, cols * ex,
-				rows * ex * 2);
+		gtk_widget_set_size_request(container, (int)(cols * ex),
+				(int)(rows * ex * 2.0));
 	}
 #ifdef WITH_XDIALOG
 	if(opt->without_buttons)
