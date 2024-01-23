@@ -749,7 +749,8 @@ static void _backtitle_on_size_changed(gpointer data)
 #else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 #endif
-		fontdesc = pango_font_description_from_string("Sans Bold Italic 32");
+		fontdesc = pango_font_description_from_string(
+				"Sans Bold Italic 32");
 #if GTK_CHECK_VERSION(3, 0, 0)
 		gtk_widget_override_font(widget, fontdesc);
 #else
