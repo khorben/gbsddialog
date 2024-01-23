@@ -395,6 +395,8 @@ static struct option longopts[] = {
 /* prototypes */
 static void _gbsddialog_backtitle(GBSDDialog * gbd);
 
+static void _gbsddialog_clear_screen(GBSDDialog * gbd);
+
 static int _parseargs(int argc, char const ** argv,
 		struct bsddialog_conf * conf, struct options * opt);
 static gboolean _theme_load(char const * theme);
@@ -474,6 +476,8 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		_theme_load(opt->loadthemefile);
 		opt->loadthemefile = NULL;
 	}
+	if(opt->clearscreen)
+		_gbsddialog_clear_screen(gbd);
 	if(opt->backtitle != NULL && gbd->windows == NULL)
 		_gbsddialog_backtitle(gbd);
 	if(opt->dialogbuilder != NULL)
@@ -781,6 +785,37 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 	}
 }
 #endif
+
+
+/* gbsddialog_clear_screen */
+static void _gbsddialog_clear_screen(GBSDDialog * gbd)
+{
+	GdkWindow * root;
+	GtkWidget * widget;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkStyleContext * style;
+	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
+#else
+	GtkStyle * style;
+#endif
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	root = gdk_get_default_root_window();
+	widget = gtk_tree_view_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+	style = gtk_widget_get_style_context(widget);
+	gtk_style_context_get_background_color(style,
+			GTK_STATE_FLAG_SELECTED, &color);
+	gdk_window_set_background_rgba(root, &color);
+#else
+	style = gtk_widget_get_style(widget);
+	/* FIXME this does not seem to work */
+	gtk_style_set_background(style, root, GTK_STATE_NORMAL);
+#endif
+	gtk_widget_destroy(widget);
+}
 
 
 /* parseargs */
