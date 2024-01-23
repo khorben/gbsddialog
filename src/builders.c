@@ -869,8 +869,9 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	GtkWidget * container, * widget;
+	GtkWidget * container;
 #if GTK_CHECK_VERSION(3, 12, 0)
+	GtkWidget * widget;
 	const GtkDialogFlags flags = GTK_DIALOG_USE_HEADER_BAR;
 #else
 	const GtkDialogFlags flags = 0;
