@@ -158,6 +158,10 @@ gdouble get_font_size(GdkScreen * screen)
 		if((resolution = gdk_screen_get_resolution(screen)) < 0.0)
 			resolution = 96.0;
 		ex = (fontsize * resolution) / (72.0 * PANGO_SCALE);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() fontsize=%f resolution=%f ex=%f\n",
+				__func__, fontsize, resolution, ex);
+#endif
 	}
 	return ex;
 }

@@ -911,6 +911,10 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	{
 		/* XXX gdk_screen_get_default() may fail */
 		ex = get_font_size(gdk_screen_get_default());
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
+				ex, cols, rows);
+#endif
 		gtk_widget_set_size_request(container, (int)(cols * ex),
 				(int)(rows * ex * 2.0));
 	}
@@ -2115,6 +2119,10 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	{
 		/* XXX gdk_screen_get_default() may fail */
 		ex = get_font_size(gdk_screen_get_default());
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
+				ex, cols, rows);
+#endif
 		gtk_widget_set_size_request(container, cols * ex,
 				rows * ex * 2);
 	}

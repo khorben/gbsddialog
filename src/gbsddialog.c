@@ -726,6 +726,10 @@ static void _backtitle_on_size_changed(gpointer data)
 #endif
 		geometry.width = geometry.width * scale;
 		geometry.height = geometry.height * scale;
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() %dx%d\n", __func__,
+				geometry.width, geometry.height);
+#endif
 		gtk_window_set_default_size(GTK_WINDOW(window),
 				geometry.width, geometry.height);
 		gtk_window_set_type_hint(GTK_WINDOW(window),
