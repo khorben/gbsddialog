@@ -51,7 +51,25 @@
 #endif
 
 
-/* getopt_long */
+/* private */
+/* types */
+typedef struct _GBSDDialog
+{
+	struct bsddialog_conf conf;
+	struct options opt;
+
+	int * ret;
+	int argc;
+	char const ** argv;
+
+	/* for backtitle */
+	char const * backtitle;
+	GtkWidget ** windows;
+	size_t windows_cnt;
+	GtkWidget * label;
+} GBSDDialog;
+
+/* for getopt_long() */
 enum OPTS {
 	/* Options */
 #ifdef WITH_XDIALOG
@@ -194,6 +212,8 @@ enum OPTS {
 	YESNO
 };
 
+
+/* variables */
 static struct option longopts[] = {
 	/* Options */
 #ifdef WITH_XDIALOG
@@ -372,41 +392,18 @@ static struct option longopts[] = {
 };
 
 
-/* types */
-typedef struct _GBSDDialog
-{
-	struct bsddialog_conf conf;
-	struct options opt;
-
-	int * ret;
-	int argc;
-	char const ** argv;
-
-	/* for backtitle */
-	char const * backtitle;
-	GtkWidget ** windows;
-	size_t windows_cnt;
-	GtkWidget * label;
-} GBSDDialog;
-
 /* prototypes */
+static void _gbsddialog_backtitle(GBSDDialog * gbd);
+
 static int _parseargs(int argc, char const ** argv,
 		struct bsddialog_conf * conf, struct options * opt);
 static gboolean _theme_load(char const * theme);
 static gboolean _theme_save(char const * filename);
 
 
+/* public */
+/* functions */
 /* gbsddialog */
-static void _gbsddialog_backtitle(GBSDDialog * gbd);
-#if GTK_CHECK_VERSION(3, 0, 0)
-static void _backtitle_apply_style(GtkWidget * widget,
-		GdkRGBA * bg, GdkRGBA * fg);
-static void _backtitle_bikeshed_color(GdkRGBA * color);
-#else
-static void _backtitle_apply_style(GtkWidget * widget,
-		GdkColor * bg, GdkColor * fg);
-static void _backtitle_bikeshed_color(GdkColor * color);
-#endif
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 #if GTK_CHECK_VERSION(2, 2, 0)
@@ -432,74 +429,6 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 #endif
 	return 0;
 }
-
-static void _gbsddialog_backtitle(GBSDDialog * gbd)
-{
-	GdkScreen * screen;
-
-	if((screen = gdk_screen_get_default()) == NULL)
-		return;
-#if GTK_CHECK_VERSION(2, 2, 0)
-	g_signal_connect(screen, "size-changed",
-			G_CALLBACK(_backtitle_on_size_changed), gbd);
-#endif
-	_backtitle_on_size_changed(screen, gbd);
-}
-
-#if GTK_CHECK_VERSION(3, 0, 0)
-static void _backtitle_apply_style(GtkWidget * widget, GdkRGBA * bg,
-		GdkRGBA * fg)
-#else
-static void _backtitle_apply_style(GtkWidget * widget, GdkColor * bg,
-		GdkColor * fg)
-#endif
-{
-#if GTK_CHECK_VERSION(3, 0, 0)
-	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
-#else
-	GdkColor color = { 0, 0, 0, 0 };
-#endif
-
-	if(bg == NULL)
-	{
-		bg = &color;
-		_backtitle_bikeshed_color(bg);
-	}
-#if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, bg);
-#else
-	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, bg);
-#endif
-	if(fg == NULL)
-	{
-		fg = &color;
-		_backtitle_bikeshed_color(fg);
-	}
-#if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, fg);
-#else
-	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, fg);
-#endif
-}
-
-#if GTK_CHECK_VERSION(3, 0, 0)
-static void _backtitle_bikeshed_color(GdkRGBA * color)
-{
-	color->red = random();
-	color->red /= RAND_MAX;
-	color->green = random();
-	color->green /= RAND_MAX;
-	color->blue = random();
-	color->blue /= RAND_MAX;
-}
-#else
-static void _backtitle_bikeshed_color(GdkColor * color)
-{
-	color->red = random();
-	color->green = random();
-	color->blue = random();
-}
-#endif
 
 static gboolean _gbsddialog_on_idle(gpointer data)
 {
@@ -613,6 +542,87 @@ static gboolean _gbsddialog_on_idle_quit(gpointer data)
 	free(gbd);
 	return FALSE;
 }
+
+
+/* private */
+/* gbsddialog_backtitle */
+#if GTK_CHECK_VERSION(3, 0, 0)
+static void _backtitle_apply_style(GtkWidget * widget,
+		GdkRGBA * bg, GdkRGBA * fg);
+static void _backtitle_bikeshed_color(GdkRGBA * color);
+#else
+static void _backtitle_apply_style(GtkWidget * widget,
+		GdkColor * bg, GdkColor * fg);
+static void _backtitle_bikeshed_color(GdkColor * color);
+#endif
+
+static void _gbsddialog_backtitle(GBSDDialog * gbd)
+{
+	GdkScreen * screen;
+
+	if((screen = gdk_screen_get_default()) == NULL)
+		return;
+#if GTK_CHECK_VERSION(2, 2, 0)
+	g_signal_connect(screen, "size-changed",
+			G_CALLBACK(_backtitle_on_size_changed), gbd);
+#endif
+	_backtitle_on_size_changed(screen, gbd);
+}
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+static void _backtitle_apply_style(GtkWidget * widget, GdkRGBA * bg,
+		GdkRGBA * fg)
+#else
+static void _backtitle_apply_style(GtkWidget * widget, GdkColor * bg,
+		GdkColor * fg)
+#endif
+{
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
+#else
+	GdkColor color = { 0, 0, 0, 0 };
+#endif
+
+	if(bg == NULL)
+	{
+		bg = &color;
+		_backtitle_bikeshed_color(bg);
+	}
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, bg);
+#else
+	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, bg);
+#endif
+	if(fg == NULL)
+	{
+		fg = &color;
+		_backtitle_bikeshed_color(fg);
+	}
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_widget_override_color(widget, GTK_STATE_FLAG_NORMAL, fg);
+#else
+	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, fg);
+#endif
+}
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+static void _backtitle_bikeshed_color(GdkRGBA * color)
+{
+	color->red = random();
+	color->red /= RAND_MAX;
+	color->green = random();
+	color->green /= RAND_MAX;
+	color->blue = random();
+	color->blue /= RAND_MAX;
+}
+#else
+static void _backtitle_bikeshed_color(GdkColor * color)
+{
+	color->red = random();
+	color->green = random();
+	color->blue = random();
+}
+#endif
 
 #if GTK_CHECK_VERSION(2, 2, 0)
 static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
