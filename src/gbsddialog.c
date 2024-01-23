@@ -62,6 +62,9 @@ typedef struct _GBSDDialog
 	int argc;
 	char const ** argv;
 
+	/* for Gtk+ */
+	GdkScreen * screen;
+
 	/* for backtitle */
 	char const * backtitle;
 	GtkWidget ** windows;
@@ -397,10 +400,11 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd);
 
 static void _gbsddialog_clear_screen(GBSDDialog * gbd);
 
-static int _parseargs(int argc, char const ** argv,
-		struct bsddialog_conf * conf, struct options * opt);
-static gboolean _theme_load(char const * theme);
-static gboolean _theme_save(char const * filename);
+static int _gbsddialog_parseargs(GBSDDialog * gbd,
+		int argc, char const ** argv);
+
+static gboolean _gbsddialog_theme_load(GBSDDialog * gbd, char const * theme);
+static gboolean _gbsddialog_theme_save(GBSDDialog * gbd, char const * filename);
 
 
 /* public */
@@ -409,7 +413,7 @@ static gboolean _theme_save(char const * filename);
 static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 #if GTK_CHECK_VERSION(2, 2, 0)
-static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data);
+static void _backtitle_on_size_changed(gpointer data);
 #endif
 
 int gbsddialog(int * ret, int argc, char const ** argv)
@@ -425,6 +429,12 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	gbd->ret = ret;
 	gbd->argc = argc;
 	gbd->argv = argv;
+	if((gbd->screen = gdk_screen_get_default()) == NULL)
+	{
+		error(BSDDIALOG_ERROR, "Could not get the default screen");
+		free(gbd);
+		return -1;
+	}
 	g_idle_add(_gbsddialog_on_idle, gbd);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => 0\n", __func__);
@@ -448,7 +458,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			__func__, gbd->argc,
 			(gbd->argc > 0) ? gbd->argv[0] : "(null)");
 #endif
-	if((parsed = _parseargs(gbd->argc, gbd->argv, conf, opt)) <= 0)
+	if((parsed = _gbsddialog_parseargs(gbd, gbd->argc, gbd->argv)) <= 0)
 	{
 		*gbd->ret = EXITCODE(BSDDIALOG_ERROR);
 		return _gbsddialog_on_idle_quit(gbd);
@@ -462,7 +472,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 
 	if(opt->savethemefile != NULL)
 	{
-		_theme_save(opt->savethemefile);
+		_gbsddialog_theme_save(gbd, opt->savethemefile);
 		opt->savethemefile = NULL;
 	}
 	if(opt->mandatory_dialog && opt->dialogbuilder == NULL)
@@ -473,7 +483,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	}
 	if(opt->loadthemefile != NULL)
 	{
-		_theme_load(opt->loadthemefile);
+		_gbsddialog_theme_load(gbd, opt->loadthemefile);
 		opt->loadthemefile = NULL;
 	}
 	if(opt->clearscreen)
@@ -562,15 +572,11 @@ static void _backtitle_bikeshed_color(GdkColor * color);
 
 static void _gbsddialog_backtitle(GBSDDialog * gbd)
 {
-	GdkScreen * screen;
-
-	if((screen = gdk_screen_get_default()) == NULL)
-		return;
 #if GTK_CHECK_VERSION(2, 2, 0)
-	g_signal_connect(screen, "size-changed",
+	g_signal_connect_swapped(gbd->screen, "size-changed",
 			G_CALLBACK(_backtitle_on_size_changed), gbd);
 #endif
-	_backtitle_on_size_changed(screen, gbd);
+	_backtitle_on_size_changed(gbd);
 }
 
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -629,7 +635,7 @@ static void _backtitle_bikeshed_color(GdkColor * color)
 #endif
 
 #if GTK_CHECK_VERSION(2, 2, 0)
-static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
+static void _backtitle_on_size_changed(gpointer data)
 {
 	GBSDDialog * gbd = data;
 #if GTK_CHECK_VERSION(3, 22, 0)
@@ -661,7 +667,7 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 		gtk_widget_destroy(gbd->windows[i]);
 	gbd->label = NULL;
 #if GTK_CHECK_VERSION(3, 22, 0)
-	display = gdk_screen_get_display(screen);
+	display = gdk_screen_get_display(gbd->screen);
 	i = gdk_display_get_n_monitors(display);
 #else
 	i = 1;
@@ -710,8 +716,8 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 		scale = gtk_widget_get_scale_factor(window);
 #endif
 		gtk_window_set_default_size(GTK_WINDOW(window),
-				gdk_screen_get_width(screen) * scale,
-				gdk_screen_get_height(screen) * scale);
+				gdk_screen_get_width(gbd->screen) * scale,
+				gdk_screen_get_height(gbd->screen) * scale);
 		gtk_window_set_type_hint(GTK_WINDOW(window),
 				GDK_WINDOW_TYPE_HINT_DESKTOP);
 #if GTK_CHECK_VERSION(3, 22, 0)
@@ -722,8 +728,8 @@ static void _backtitle_on_size_changed(GdkScreen * screen, gpointer data)
 #else
 		geometry.x = 0;
 		geometry.y = 0;
-		geometry.width = gdk_screen_get_width(screen);
-		geometry.height = gdk_screen_get_height(screen);
+		geometry.width = gdk_screen_get_width(gbd->screen);
+		geometry.height = gdk_screen_get_height(gbd->screen);
 #endif
 		gtk_window_move(GTK_WINDOW(window), geometry.x, geometry.y);
 		gtk_window_resize(GTK_WINDOW(window),
@@ -802,7 +808,7 @@ static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	root = gdk_get_default_root_window();
+	root = gdk_screen_get_root_window(gbd->screen);
 	widget = gtk_tree_view_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
 	style = gtk_widget_get_style_context(widget);
@@ -818,15 +824,16 @@ static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 }
 
 
-/* parseargs */
-static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
-		int arg);
+/* gbsddialog_parseargs */
+static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
+		struct options * opt, int arg);
 
-static int _parseargs(int argc, char const ** argv,
-		struct bsddialog_conf * conf, struct options * opt)
+static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 {
 	int ret;
 	int arg, i;
+	struct bsddialog_conf * conf = &gbd->conf;
+	struct options * opt = &gbd->opt;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
@@ -854,7 +861,7 @@ static int _parseargs(int argc, char const ** argv,
 			break;
 		}
 	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
-		if((ret = _parsearg(conf, opt, arg)) != 0)
+		if((ret = _parseargs_arg(gbd, conf, opt, arg)) != 0)
 			return ret;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, argc);
@@ -862,12 +869,11 @@ static int _parseargs(int argc, char const ** argv,
 	return argc;
 }
 
-static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
-		int arg)
+static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
+		struct options * opt, int arg)
 {
+#if GTK_CHECK_VERSION(3, 22, 0)
 	GdkDisplay * display;
-#if !GTK_CHECK_VERSION(3, 5, 0)
-	GdkScreen * screen;
 #endif
 	gdouble ex;
 	GdkRectangle workarea;
@@ -1060,24 +1066,21 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 			break;
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
-			/* obtain the default screen */
-			if((display = gdk_display_get_default()) == NULL)
-				return -error(BSDDIALOG_ERROR, "Could not"
-						" obtain the screen size");
 			/* obtain the workarea */
 #if GTK_CHECK_VERSION(3, 22, 0)
+			display = gdk_screen_get_display(gbd->screen);
 			gdk_monitor_get_workarea(
 					gdk_display_get_primary_monitor(
 						display), &workarea);
 #elif GTK_CHECK_VERSION(3, 4, 0)
-			screen = gdk_display_get_default_screen(display);
-			gdk_screen_get_monitor_workarea(screen,
-					gdk_screen_get_primary_monitor(screen),
+			gdk_screen_get_monitor_workarea(gbd->screen,
+					gdk_screen_get_primary_monitor(
+						gbd->screen),
 					&workarea);
 #else
-			screen = gdk_display_get_default_screen(display);
-			gdk_screen_get_monitor_geometry(screen,
-					gdk_screen_get_primary_monitor(screen),
+			gdk_screen_get_monitor_geometry(gbd->screen,
+					gdk_screen_get_primary_monitor(
+						gbd->screen),
 					&workarea);
 #endif
 			/* obtain the default font size in pixels */
@@ -1402,13 +1405,12 @@ static int _parsearg(struct bsddialog_conf * conf, struct options * opt,
 }
 
 
-/* theme_load */
-static gboolean _theme_load(char const * theme)
+/* gbsddialog_theme_load */
+static gboolean _gbsddialog_theme_load(GBSDDialog * gbd, char const * theme)
 {
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkCssProvider * css;
 	GError * e = NULL;
-	GdkScreen * screen;
 
 	css = gtk_css_provider_new();
 	if(gtk_css_provider_load_from_path(css, theme, &e) != TRUE)
@@ -1417,29 +1419,27 @@ static gboolean _theme_load(char const * theme)
 		g_error_free(e);
 		return FALSE;
 	}
-	if((screen = gdk_screen_get_default()) == NULL)
-	{
-		error(BSDDIALOG_ERROR, "Could not load the theme");
-		return FALSE;
-	}
-	gtk_style_context_add_provider_for_screen(screen,
+	gtk_style_context_add_provider_for_screen(gbd->screen,
 			GTK_STYLE_PROVIDER(css),
 			GTK_STYLE_PROVIDER_PRIORITY_USER);
 	return TRUE;
 #else
+	(void) gbd;
+
 	gtk_rc_parse(theme);
 	return TRUE;
 #endif
 }
 
 
-/* theme_save */
-static gboolean _theme_save(char const * filename)
+/* gbsddialog_theme_save */
+static gboolean _gbsddialog_theme_save(GBSDDialog * gbd, char const * filename)
 {
 #if GTK_CHECK_VERSION(3, 0, 0)
 	GtkCssProvider * css;
 	FILE * fp;
 	char * p;
+	(void) gbd;
 
 	css = gtk_css_provider_get_default();
 	if((fp = fopen(filename, "w")) == NULL)
@@ -1463,6 +1463,7 @@ static gboolean _theme_save(char const * filename)
 	FILE * fp2;
 	char buf[BUFSIZ];
 	size_t n;
+	(void) gbd;
 
 	if((fp1 = fopen(filename, "w")) == NULL)
 	{
