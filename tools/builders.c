@@ -187,10 +187,13 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	value1 = strtol(argv[3], NULL, 10);
-	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget1), (gdouble)value1);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget1), TRUE);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget1 = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget1 = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
+	gtk_range_set_value(GTK_RANGE(widget1), (gdouble)value1);
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* range 2 */
 	widget2 = gtk_label_new(argv[4]);
@@ -209,16 +212,19 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	value2 = strtol(argv[7], NULL, 10);
-	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget2), (gdouble)value2);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget2), TRUE);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget2 = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget2 = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
+	gtk_range_set_value(GTK_RANGE(widget2), (gdouble)value2);
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
 	gtk_widget_show_all(box);
 	ret = _builder_dialog_run(conf, dialog);
-	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
-	value2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget2));
+	value1 = gtk_range_get_value(GTK_RANGE(widget1));
+	value2 = gtk_range_get_value(GTK_RANGE(widget2));
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
@@ -493,10 +499,13 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	value1 = strtol(argv[3], NULL, 10);
-	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget1), (gdouble)value1);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget1), TRUE);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget1 = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget1 = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
+	gtk_range_set_value(GTK_RANGE(widget1), (gdouble)value1);
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	/* range 2 */
 	widget2 = gtk_label_new(argv[4]);
@@ -515,10 +524,13 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	value2 = strtol(argv[7], NULL, 10);
-	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget2), (gdouble)value2);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget2), TRUE);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget2 = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget2 = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
+	gtk_range_set_value(GTK_RANGE(widget2), (gdouble)value2);
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	/* range 3 */
 	widget3 = gtk_label_new(argv[8]);
@@ -537,17 +549,20 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	value3 = strtol(argv[11], NULL, 10);
-	widget3 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget3), (gdouble)value3);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget3), TRUE);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget3 = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget3 = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
+	gtk_range_set_value(GTK_RANGE(widget3), (gdouble)value3);
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
 	gtk_widget_show_all(box);
 	ret = _builder_dialog_run(conf, dialog);
-	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
-	value2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget2));
-	value3 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget3));
+	value1 = gtk_range_get_value(GTK_RANGE(widget1));
+	value2 = gtk_range_get_value(GTK_RANGE(widget2));
+	value3 = gtk_range_get_value(GTK_RANGE(widget3));
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
