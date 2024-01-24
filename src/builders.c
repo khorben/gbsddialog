@@ -35,11 +35,9 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
+#include "common.h"
 #include "builders.h"
 
-#ifndef BORDER_WIDTH
-# define BORDER_WIDTH	4
-#endif
 #ifndef MIN
 # define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #endif

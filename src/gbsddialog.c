@@ -42,9 +42,6 @@
 #include "common.h"
 #include "gbsddialog.h"
 
-#ifndef BORDER_WIDTH
-# define BORDER_WIDTH	4
-#endif
 /* FIXME conflicts with <sys/syslimits.h> */
 #ifdef MAX_INPUT
 # undef MAX_INPUT

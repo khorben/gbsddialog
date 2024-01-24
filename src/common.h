@@ -132,6 +132,12 @@ struct options
 };
 
 
+/* constants */
+#ifndef BORDER_WIDTH
+# define BORDER_WIDTH	4
+#endif
+
+
 /* variables */
 extern struct exitcode exitcodes[];
 
