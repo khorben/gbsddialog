@@ -178,9 +178,14 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	gtk_misc_set_alignment(GTK_MISC(widget1), 0.0, 0.5);
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
-	/* XXX detect and report errors */
 	min = strtol(argv[1], NULL, 10);
 	max = strtol(argv[2], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min1 > max1\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value1 = strtol(argv[3], NULL, 10);
 	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -195,9 +200,14 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	gtk_misc_set_alignment(GTK_MISC(widget2), 0.0, 0.5);
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
-	/* XXX detect and report errors */
 	min = strtol(argv[5], NULL, 10);
 	max = strtol(argv[6], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min2 > max2\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value2 = strtol(argv[7], NULL, 10);
 	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -253,9 +263,14 @@ int builder_2spinsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	/* spin 1 */
-	/* XXX detect and report errors */
 	min = strtol(argv[0], NULL, 10);
 	max = strtol(argv[1], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min1 > max1\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value1 = strtol(argv[2], NULL, 10);
 	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -270,9 +285,14 @@ int builder_2spinsbox(struct bsddialog_conf const * conf,
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 2 */
-	/* XXX detect and report errors */
 	min = strtol(argv[4], NULL, 10);
 	max = strtol(argv[5], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min2 > max2\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value2 = strtol(argv[6], NULL, 10);
 	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -464,9 +484,14 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_misc_set_alignment(GTK_MISC(widget1), 0.0, 0.5);
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
-	/* XXX detect and report errors */
 	min = strtol(argv[1], NULL, 10);
 	max = strtol(argv[2], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min1 > max1\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value1 = strtol(argv[3], NULL, 10);
 	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -481,9 +506,14 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_misc_set_alignment(GTK_MISC(widget2), 0.0, 0.5);
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
-	/* XXX detect and report errors */
 	min = strtol(argv[5], NULL, 10);
 	max = strtol(argv[6], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min2 > max2\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value2 = strtol(argv[7], NULL, 10);
 	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -498,9 +528,14 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_misc_set_alignment(GTK_MISC(widget3), 0.0, 0.5);
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
-	/* XXX detect and report errors */
 	min = strtol(argv[9], NULL, 10);
 	max = strtol(argv[10], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min3 > max3\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value3 = strtol(argv[11], NULL, 10);
 	widget3 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -557,9 +592,14 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	/* spin 1 */
-	/* XXX detect and report errors */
 	min = strtol(argv[0], NULL, 10);
 	max = strtol(argv[1], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min1 > max1\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value1 = strtol(argv[2], NULL, 10);
 	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -574,9 +614,14 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 2 */
-	/* XXX detect and report errors */
 	min = strtol(argv[4], NULL, 10);
 	max = strtol(argv[5], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min2 > max2\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value2 = strtol(argv[6], NULL, 10);
 	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
@@ -591,9 +636,14 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 #endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 3 */
-	/* XXX detect and report errors */
 	min = strtol(argv[8], NULL, 10);
 	max = strtol(argv[9], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min3 > max3\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	value3 = strtol(argv[10], NULL, 10);
 	widget3 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
 			1.0);
