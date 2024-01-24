@@ -2208,7 +2208,7 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct options const * opt)
 {
 	char const * label;
-#ifdef WITH_XDIALOG
+#ifndef WITH_XDIALOG
 	(void) opt;
 #endif
 
