@@ -2220,7 +2220,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 	if(conf->button.without_ok != true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.ok_label != NULL)
-				? conf->button.ok_label : "OK", GTK_RESPONSE_OK);
+				? conf->button.ok_label : "OK",
+				GTK_RESPONSE_OK);
 	if(conf->button.with_help == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.help_label != NULL)
