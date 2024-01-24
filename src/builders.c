@@ -876,6 +876,9 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #else
 	const GtkDialogFlags flags = 0;
 #endif
+#if defined(WITH_XDIALOG)
+	GtkWidget * image;
+#endif
 	GtkButtonsType buttons = GTK_BUTTONS_NONE;
 	gdouble ex;
 	struct confopt_data confopt = { conf, opt };
@@ -902,6 +905,15 @@ int builder_infobox(struct bsddialog_conf const * conf,
 			buttons, "%s", "Information");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(id.dialog),
 			"%s", text);
+#ifdef WITH_XDIALOG
+	if(opt->icon != NULL)
+	{
+		image = gtk_image_new_from_file(opt->icon);
+		gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(id.dialog),
+				image);
+		gtk_widget_show(image);
+	}
+#endif
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(id.dialog));
 #else
@@ -2093,6 +2105,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	const GtkDialogFlags flags = 0;
 #endif
 	GtkWidget * container;
+	GtkWidget * box;
 	GtkWidget * widget;
 	gdouble ex;
 	struct confopt_data confopt = { conf, opt };
@@ -2128,6 +2141,20 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	}
 	if(text != NULL)
 	{
+#if GTK_CHECK_VERSION(3, 0, 0)
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+		box = gtk_hbox_new(FALSE, 0);
+#endif
+#ifdef WITH_XDIALOG
+		if(opt->icon != NULL)
+		{
+			widget = gtk_image_new_from_file(opt->icon);
+			gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE,
+					0);
+			gtk_widget_show(widget);
+		}
+#endif
 		widget = gtk_label_new(text);
 		gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
 		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
@@ -2143,8 +2170,10 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 #endif
 		gtk_widget_show(widget);
-		gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE,
+		gtk_widget_show(box);
+		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE,
 				BORDER_WIDTH);
+		gtk_box_pack_start(GTK_BOX(container), box, FALSE, TRUE, 0);
 	}
 	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
 		gtk_window_fullscreen(GTK_WINDOW(dialog));

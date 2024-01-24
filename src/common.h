@@ -123,6 +123,7 @@ struct options
 #ifdef WITH_XDIALOG
 	bool fixed_font;
 	bool without_buttons;
+	const char *icon;
 #endif
 	const char *name;
 	int (*dialogbuilder)(struct bsddialog_conf const * conf,

@@ -120,6 +120,9 @@ enum OPTS {
 	HFILE,
 	HLINE,
 	HMSG,
+#ifdef WITH_XDIALOG
+	ICON,
+#endif
 	IGNORE,
 #ifdef WITH_XDIALOG
 	IGNORE_EOF,
@@ -280,6 +283,9 @@ static struct option longopts[] = {
 	{"hfile",             required_argument, NULL, HFILE},
 	{"hline",             required_argument, NULL, HLINE},
 	{"hmsg",              required_argument, NULL, HMSG},
+#ifdef WITH_XDIALOG
+	{"icon",              required_argument, NULL, ICON},
+#endif
 	{"ignore",            no_argument,       NULL, IGNORE},
 #ifdef WITH_XDIALOG
 	{"ignore-eof",        no_argument,       NULL, IGNORE_EOF},
@@ -1010,6 +1016,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case HMSG:
 			conf->key.f1_message = optarg;
 			break;
+#ifdef WITH_XDIALOG
+		case ICON:
+			opt->icon = optarg;
+			break;
+#endif
 		case IGNORE:
 			opt->ignore = true;
 			break;
