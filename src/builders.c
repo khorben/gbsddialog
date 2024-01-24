@@ -1797,26 +1797,33 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	/* XXX detect and report errors */
 	min = strtol(argv[0], NULL, 10);
 	max = strtol(argv[1], NULL, 10);
+	if(min > max)
+	{
+		printf("Error: min > max\n");
+		exit(EXITCODE(BSDDIALOG_ERROR));
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	box = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
 	box = dialog->vbox;
 #endif
-	widget = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
-			1.0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			(gdouble)min, (gdouble)max, 1.0);
+#else
+	widget = gtk_hscale_new_with_range((gdouble)min, (gdouble)max, 1.0);
+#endif
 	if(argc == 3)
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
-				(gdouble)value);
-	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+		gtk_range_set_value(GTK_RANGE(widget), (gdouble)value);
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
-	value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	value = gtk_range_get_value(GTK_RANGE(widget));
 	gtk_widget_destroy(dialog);
 	switch(ret)
 	{
