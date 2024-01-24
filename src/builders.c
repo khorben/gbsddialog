@@ -1895,8 +1895,8 @@ int builder_textbox(struct bsddialog_conf const * conf,
 #ifdef WITH_XDIALOG
 	if(!opt->without_buttons)
 #endif
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				"Exit", GTK_RESPONSE_OK);
+		gtk_dialog_add_button(GTK_DIALOG(dialog), "Exit",
+				GTK_RESPONSE_OK);
 #if GTK_CHECK_VERSION(3, 12, 0)
 	if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(dialog))) != NULL)
 		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(widget),
@@ -2112,7 +2112,15 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
 	if(conf->key.enable_esc == false)
+	{
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
+#if GTK_CHECK_VERSION(3, 12, 0)
+		if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(dialog)))
+				!= NULL)
+			gtk_header_bar_set_show_close_button(
+					GTK_HEADER_BAR(widget), FALSE);
+#endif
+	}
 	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
 		g_signal_connect(dialog, "key-press-event",
 				G_CALLBACK(_dialog_on_key_press), &confopt);
