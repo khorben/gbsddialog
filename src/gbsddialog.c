@@ -215,6 +215,8 @@ enum OPTS {
 #ifdef WITH_XDIALOG
 	RANGESBOX2,
 	RANGESBOX3,
+	SPINSBOX2,
+	SPINSBOX3,
 #endif
 	TEXTBOX,
 	TIMEBOX,
@@ -373,6 +375,8 @@ static struct option longopts[] = {
 	{ "3inputsbox",  no_argument, NULL, INPUTSBOX3},
 	{ "2rangesbox",  no_argument, NULL, RANGESBOX2},
 	{ "3rangesbox",  no_argument, NULL, RANGESBOX3},
+	{ "2spinsbox",   no_argument, NULL, SPINSBOX2},
+	{ "3spinsbox",   no_argument, NULL, SPINSBOX3},
 #endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
@@ -1386,6 +1390,22 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog", opt->name);
 			opt->name = "--3rangesbox";
 			opt->dialogbuilder = builder_3rangesbox;
+			break;
+		case SPINSBOX2:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --2spinsbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--2spinsbox";
+			opt->dialogbuilder = builder_2spinsbox;
+			break;
+		case SPINSBOX3:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --3spinsbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--3spinsbox";
+			opt->dialogbuilder = builder_3spinsbox;
 			break;
 #endif
 		case TEXTBOX:

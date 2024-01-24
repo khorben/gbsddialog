@@ -222,6 +222,89 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 }
 
 
+/* builder_2spinsbox */
+int builder_2spinsbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget, * widget1, * widget2;
+	int min, max, value1, value2;
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
+
+	if(argc != 8)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
+#else
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
+#endif
+	/* spin 1 */
+	/* XXX detect and report errors */
+	min = strtol(argv[0], NULL, 10);
+	max = strtol(argv[1], NULL, 10);
+	value1 = strtol(argv[2], NULL, 10);
+	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget1), (gdouble)value1);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget1), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
+	widget = gtk_label_new(argv[3]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
+	/* spin 2 */
+	/* XXX detect and report errors */
+	min = strtol(argv[4], NULL, 10);
+	max = strtol(argv[5], NULL, 10);
+	value2 = strtol(argv[6], NULL, 10);
+	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget2), (gdouble)value2);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget2), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
+	widget = gtk_label_new(argv[7]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
+	gtk_box_pack_start(GTK_BOX(container), box, FALSE, TRUE, BORDER_WIDTH);
+	_builder_dialog_buttons(dialog, conf, opt);
+	gtk_widget_show_all(box);
+	ret = _builder_dialog_run(conf, dialog);
+	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
+	value2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget2));
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			dprintf(opt->output_fd, "%d%s%d\n",
+					value1, sep, value2);
+			break;
+	}
+	return ret;
+}
+
+
 /* builder_3inputsbox */
 int builder_3inputsbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -424,6 +507,107 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget3), (gdouble)value3);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget3), TRUE);
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
+	_builder_dialog_buttons(dialog, conf, opt);
+	gtk_widget_show_all(box);
+	ret = _builder_dialog_run(conf, dialog);
+	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
+	value2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget2));
+	value3 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget3));
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			dprintf(opt->output_fd, "%d%s%d%s%d\n",
+					value1, sep, value2, sep, value3);
+			break;
+	}
+	return ret;
+}
+
+
+/* builder_3spinsbox */
+int builder_3spinsbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget, * widget1, * widget2, * widget3;
+	int min, max, value1, value2, value3;
+	char const * sep = (opt->item_output_sep != NULL)
+		? opt->item_output_sep : "/";
+
+	if(argc != 12)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
+#else
+	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
+#endif
+	/* spin 1 */
+	/* XXX detect and report errors */
+	min = strtol(argv[0], NULL, 10);
+	max = strtol(argv[1], NULL, 10);
+	value1 = strtol(argv[2], NULL, 10);
+	widget1 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget1), (gdouble)value1);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget1), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
+	widget = gtk_label_new(argv[3]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
+	/* spin 2 */
+	/* XXX detect and report errors */
+	min = strtol(argv[4], NULL, 10);
+	max = strtol(argv[5], NULL, 10);
+	value2 = strtol(argv[6], NULL, 10);
+	widget2 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget2), (gdouble)value2);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget2), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
+	widget = gtk_label_new(argv[7]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
+	/* spin 3 */
+	/* XXX detect and report errors */
+	min = strtol(argv[8], NULL, 10);
+	max = strtol(argv[9], NULL, 10);
+	value3 = strtol(argv[10], NULL, 10);
+	widget3 = gtk_spin_button_new_with_range((gdouble)min, (gdouble)max,
+			1.0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget3), (gdouble)value3);
+	gtk_entry_set_activates_default(GTK_ENTRY(widget3), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
+	widget = gtk_label_new(argv[11]);
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
+	gtk_box_pack_start(GTK_BOX(container), box, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
 	gtk_widget_show_all(box);
 	ret = _builder_dialog_run(conf, dialog);
