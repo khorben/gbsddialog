@@ -99,6 +99,9 @@ enum OPTS {
 	DEFAULT_ITEM,
 	DEFAULT_NO,
 	DISABLE_ESC,
+#ifdef WITH_XDIALOG
+	EDITABLE,
+#endif
 	ERROR_EXIT_CODE,
 	ESC_EXIT_CODE,
 	EXIT_LABEL,
@@ -179,6 +182,7 @@ enum OPTS {
 	CHECKLIST,
 #ifdef WITH_XDIALOG
 	COLORSEL,
+	COMBOBOX,
 #endif
 	DATEBOX,
 #ifdef WITH_XDIALOG
@@ -251,6 +255,9 @@ static struct option longopts[] = {
 	{"default-item",      required_argument, NULL, DEFAULT_ITEM},
 	{"default-no",        no_argument,       NULL, DEFAULT_NO},
 	{"disable-esc",       no_argument,       NULL, DISABLE_ESC},
+#ifdef WITH_XDIALOG
+	{"editable",          no_argument,       NULL, EDITABLE},
+#endif
 	{"error-exit-code",   required_argument, NULL, ERROR_EXIT_CODE},
 	{"esc-exit-code",     required_argument, NULL, ESC_EXIT_CODE},
 	{"exit-label",        required_argument, NULL, EXIT_LABEL},
@@ -362,6 +369,7 @@ static struct option longopts[] = {
 	{"checklist",    no_argument, NULL, CHECKLIST},
 #ifdef WITH_XDIALOG
 	{"colorsel",     no_argument, NULL, COLORSEL},
+	{"combobox",     no_argument, NULL, COMBOBOX},
 #endif
 	{"datebox",      no_argument, NULL, DATEBOX},
 #ifdef WITH_XDIALOG
@@ -948,6 +956,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case DISABLE_ESC:
 			conf->key.enable_esc = false;
 			break;
+#ifdef WITH_XDIALOG
+		case EDITABLE:
+			opt->editable = true;
+			break;
+#endif
 		case ERROR_EXIT_CODE:
 			exitcodes[BSDDIALOG_ERROR + 1].value
 				= strtol(optarg, NULL, 10);
@@ -1165,6 +1178,15 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog", opt->name);
 			opt->name = "--colorsel";
 			opt->dialogbuilder = builder_colorsel;
+			conf->auto_downmargin = 1;
+			break;
+		case COMBOBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --combobox without "
+						"--and-dialog", opt->name);
+			opt->name = "--combobox";
+			opt->dialogbuilder = builder_combobox;
 			conf->auto_downmargin = 1;
 			break;
 #endif

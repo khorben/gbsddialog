@@ -543,6 +543,53 @@ int builder_colorsel(struct bsddialog_conf const * conf,
 }
 
 
+/* builder_combobox */
+int builder_combobox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * widget;
+	int i;
+	gchar * p;
+
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+	_builder_dialog_buttons(dialog, conf);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+	/* XXX this requires Gtk+ 2.24 */
+	if(opt->editable)
+		widget = gtk_combo_box_text_new_with_entry();
+	else
+		widget = gtk_combo_box_text_new();
+	for(i = 0; i < argc; i++)
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget),
+				argv[i]);
+	gtk_widget_show(widget);
+	gtk_container_add(GTK_CONTAINER(container), widget);
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			p = gtk_combo_box_text_get_active_text(
+					GTK_COMBO_BOX_TEXT(widget));
+			if(p == NULL)
+				break;
+			dprintf(opt->output_fd, "%s\n", p);
+			g_free(p);
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
 /* builder_dselect */
 int builder_dselect(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,

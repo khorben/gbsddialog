@@ -61,6 +61,9 @@ int builder_checklist(struct bsddialog_conf const * conf,
 int builder_colorsel(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+int builder_combobox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
 # endif
 int builder_datebox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,

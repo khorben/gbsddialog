@@ -92,6 +92,8 @@ struct options
 	/* Forms options */
 	int unsigned max_input_form;
 #ifdef WITH_XDIALOG
+	/* Combo Box */
+	bool editable;
 	/* Help */
 	char * help;
 #endif
