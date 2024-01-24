@@ -106,6 +106,9 @@ struct options
 	bool ignore;
 	bool ignore_eof;
 	int output_fd;
+#ifdef WITH_XDIALOG
+	bool wizard;
+#endif
 	/* Text option */
 	bool cr_wrap;
 	bool tab_escape;

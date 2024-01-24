@@ -128,7 +128,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	gtk_widget_show_all(container);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -204,7 +204,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget2), (gdouble)value2);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget2), TRUE);
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	gtk_widget_show_all(box);
 	ret = _builder_dialog_run(conf, dialog);
 	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
@@ -329,7 +329,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(container), box);
 	gtk_widget_show_all(container);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -424,7 +424,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget3), (gdouble)value3);
 	gtk_entry_set_activates_default(GTK_ENTRY(widget3), TRUE);
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	gtk_widget_show_all(box);
 	ret = _builder_dialog_run(conf, dialog);
 	value1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget1));
@@ -509,7 +509,7 @@ int builder_colorsel(struct bsddialog_conf const * conf,
 #endif
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
@@ -556,7 +556,7 @@ int builder_combobox(struct bsddialog_conf const * conf,
 	gchar * p;
 
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -634,7 +634,7 @@ int builder_fontsel(struct bsddialog_conf const * conf,
 #endif
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
@@ -697,7 +697,7 @@ static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), text);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{

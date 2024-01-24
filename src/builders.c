@@ -133,7 +133,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		struct options const * opt, char const * text,
 		int rows, int cols);
 static void _builder_dialog_buttons(GtkWidget * dialog,
-		struct bsddialog_conf const * conf);
+		struct bsddialog_conf const * conf,
+		struct options const * opt);
 static int _builder_dialog_error(GtkWidget * parent,
 		struct bsddialog_conf const * conf, char const * error);
 static int _builder_dialog_help(GtkWidget * parent,
@@ -194,7 +195,7 @@ int builder_calendar(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE,
 			BORDER_WIDTH);
 	gtk_widget_show(widget);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_calendar_get_date(GTK_CALENDAR(widget), &year, &month, &day);
 	gtk_widget_destroy(dialog);
@@ -359,7 +360,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
@@ -562,7 +563,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), dd.year, TRUE, TRUE, 0);
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
@@ -667,7 +668,7 @@ int builder_form(struct bsddialog_conf const * conf,
 		gtk_container_add(GTK_CONTAINER(container), box);
 	}
 	gtk_widget_show_all(container);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -1017,7 +1018,7 @@ int builder_inputbox(struct bsddialog_conf const * conf,
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_widget_show(widget);
 	gtk_container_add(GTK_CONTAINER(container), widget);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -1153,7 +1154,7 @@ int builder_menu(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
@@ -1368,7 +1369,7 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, NULL);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -1417,7 +1418,7 @@ int builder_passwordbox(struct bsddialog_conf const * conf,
 			G_CALLBACK(_passwordbox_on_toggled), widget);
 	gtk_container_add(GTK_CONTAINER(container), checkbox);
 	gtk_widget_show_all(container);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	switch(ret)
@@ -1494,7 +1495,7 @@ int builder_pause(struct bsddialog_conf const * conf,
 	gtk_widget_show(pd.widget);
 	gtk_container_add(GTK_CONTAINER(container), pd.widget);
 	pd.id = g_timeout_add(1000, _pause_on_timeout, &pd);
-	_builder_dialog_buttons(pd.dialog, conf);
+	_builder_dialog_buttons(pd.dialog, conf, opt);
 	ret = _builder_dialog_run(conf, pd.dialog);
 	gtk_widget_destroy(pd.dialog);
 	if(pd.id != 0)
@@ -1668,7 +1669,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
@@ -1813,7 +1814,7 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 	gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
 	gtk_widget_show(widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 	gtk_widget_destroy(dialog);
@@ -1997,7 +1998,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	gtk_box_pack_start(GTK_BOX(box), td.second, TRUE, TRUE, 0);
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
-	_builder_dialog_buttons(dialog, conf);
+	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
 	switch(ret)
 	{
@@ -2203,23 +2204,41 @@ static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
 
 /* builder_dialog_buttons */
 static void _builder_dialog_buttons(GtkWidget * dialog,
-		struct bsddialog_conf const * conf)
+		struct bsddialog_conf const * conf,
+		struct options const * opt)
 {
+	char const * label;
+#ifdef WITH_XDIALOG
+	(void) opt;
+#endif
+
 	if(conf->button.without_cancel != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf->button.cancel_label != NULL)
-				? conf->button.cancel_label : "Cancel",
+	{
+		label = (conf->button.cancel_label != NULL)
+			? conf->button.cancel_label : "Cancel";
+#ifdef WITH_XDIALOG
+		if(opt != NULL && opt->wizard)
+			label = "Previous";
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
 				GTK_RESPONSE_CANCEL);
+	}
 	if(conf->button.with_extra == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.extra_label != NULL)
 				? conf->button.extra_label : "Extra",
 				BSDDIALOG_EXTRA);
 	if(conf->button.without_ok != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf->button.ok_label != NULL)
-				? conf->button.ok_label : "OK",
+	{
+		label = (conf->button.ok_label != NULL)
+			? conf->button.ok_label : "OK";
+#ifdef WITH_XDIALOG
+		if(opt != NULL && opt->wizard)
+			label = "Next";
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
 				GTK_RESPONSE_OK);
+	}
 	if(conf->button.with_help == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.help_label != NULL)

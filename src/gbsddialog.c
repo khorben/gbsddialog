@@ -177,6 +177,9 @@ enum OPTS {
 	TIMEOUT_EXIT_CODE,
 	TIME_FORMAT,
 	TITLE,
+#ifdef WITH_XDIALOG
+	WIZARD,
+#endif
 	/* Dialogs */
 	CALENDAR,
 	CHECKLIST,
@@ -360,6 +363,9 @@ static struct option longopts[] = {
 	{"timeout-exit-code", required_argument, NULL, TIMEOUT_EXIT_CODE},
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
 	{"title",             required_argument, NULL, TITLE},
+#ifdef WITH_XDIALOG
+	{"wizard",            no_argument,       NULL, WIZARD},
+#endif
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
 #ifdef WITH_XDIALOG
@@ -1160,6 +1166,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case TITLE:
 			conf->title = optarg;
 			break;
+#ifdef WITH_XDIALOG
+		case WIZARD:
+			opt->wizard = true;
+			break;
+#endif
 		/* Dialogs */
 		case CALENDAR:
 			if(opt->dialogbuilder != NULL)
