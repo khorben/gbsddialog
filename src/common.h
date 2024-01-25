@@ -123,8 +123,14 @@ struct options
 	const char *screen_mode;
 	/* Dialog */
 	bool mandatory_dialog;
+#if GTK_CHECK_VERSION(3, 14, 0)
+	GtkAlign halign;
+#else
+	gdouble halign;
+#endif
 #ifdef WITH_XDIALOG
 	bool fixed_font;
+	GtkJustification justify;
 	bool without_buttons;
 	const char *icon;
 #endif

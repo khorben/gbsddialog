@@ -86,6 +86,9 @@ enum OPTS {
 	BIKESHED,
 	CANCEL_EXIT_CODE,
 	CANCEL_LABEL,
+#ifdef WITH_XDIALOG
+	CENTER,
+#endif
 	CLEAR_DIALOG,
 	CLEAR_SCREEN,
 	COLUMNS_PER_ROW,
@@ -106,6 +109,7 @@ enum OPTS {
 	EXTRA_EXIT_CODE,
 	EXTRA_LABEL,
 #ifdef WITH_XDIALOG
+	FILL,
 	FIXED_FONT,
 	HELP,
 #endif
@@ -128,6 +132,9 @@ enum OPTS {
 	ITEM_BOTTOM_DESC,
 	ITEM_DEPTH,
 	ITEM_PREFIX,
+#ifdef WITH_XDIALOG
+	LEFT,
+#endif
 	LEFT1_BUTTON,
 	LEFT1_EXIT_CODE,
 	LEFT2_BUTTON,
@@ -155,6 +162,9 @@ enum OPTS {
 	PRINT_SIZE,
 	PRINT_VERSION,
 	QUOTED,
+#ifdef WITH_XDIALOG
+	RIGHT,
+#endif
 	RIGHT1_BUTTON,
 	RIGHT1_EXIT_CODE,
 	RIGHT2_BUTTON,
@@ -229,7 +239,7 @@ enum OPTS {
 static struct option longopts[] = {
 	/* Options */
 #ifdef WITH_XDIALOG
-	{"allow-close",	      no_argument,	 NULL, ALLOW_CLOSE},
+	{"allow-close",       no_argument,       NULL, ALLOW_CLOSE},
 #endif
 	{"alternate-screen",  no_argument,       NULL, ALTERNATE_SCREEN},
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
@@ -241,6 +251,9 @@ static struct option longopts[] = {
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
+#ifdef WITH_XDIALOG
+	{"center",            no_argument,       NULL, CENTER},
+#endif
 	{"clear",             no_argument,       NULL, CLEAR_SCREEN},
 	{"clear-dialog",      no_argument,       NULL, CLEAR_DIALOG},
 	{"clear-screen",      no_argument,       NULL, CLEAR_SCREEN},
@@ -270,8 +283,9 @@ static struct option longopts[] = {
 	{"extra-exit-code",   required_argument, NULL, EXTRA_EXIT_CODE},
 	{"extra-label",       required_argument, NULL, EXTRA_LABEL},
 #ifdef WITH_XDIALOG
-	{"fixed-font",	      no_argument,       NULL, FIXED_FONT},
-	{"help",	      required_argument, NULL, HELP},
+	{"fill",              no_argument,       NULL, FIXED_FONT},
+	{"fixed-font",        no_argument,       NULL, FIXED_FONT},
+	{"help",              required_argument, NULL, HELP},
 #endif
 	{"help-button",       no_argument,       NULL, HELP_BUTTON},
 	{"help-exit-code",    required_argument, NULL, HELP_EXIT_CODE},
@@ -298,6 +312,9 @@ static struct option longopts[] = {
 	{"item-help",         no_argument,       NULL, ITEM_BOTTOM_DESC},
 	{"item-prefix",       no_argument,       NULL, ITEM_PREFIX},
 	{"keep-tite",         no_argument,       NULL, ALTERNATE_SCREEN},
+#ifdef WITH_XDIALOG
+	{"left",              no_argument,       NULL, LEFT},
+#endif
 #if 0
 	{"left1-button",      required_argument, NULL, LEFT1_BUTTON},
 	{"left1-exit-code",   required_argument, NULL, LEFT1_EXIT_CODE},
@@ -314,8 +331,8 @@ static struct option longopts[] = {
 	{"no-cancel",         no_argument,       NULL, NO_CANCEL},
 	{"nocancel",          no_argument,       NULL, NO_CANCEL},
 #ifdef WITH_XDIALOG
-	{"no-close",	      no_argument,	 NULL, DISABLE_ESC},
-	{"no-cr-wrap",	      no_argument,	 NULL, NO_CR_WRAP},
+	{"no-close",          no_argument,       NULL, DISABLE_ESC},
+	{"no-cr-wrap",        no_argument,       NULL, NO_CR_WRAP},
 #endif
 	{"no-descriptions",   no_argument,       NULL, NO_DESCRIPTIONS},
 	{"no-items",          no_argument,       NULL, NO_DESCRIPTIONS},
@@ -338,6 +355,9 @@ static struct option longopts[] = {
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
 	{"quoted",            no_argument,       NULL, QUOTED},
+#ifdef WITH_XDIALOG
+	{"right",             no_argument,       NULL, RIGHT},
+#endif
 #if 0
 	{"right1-button",     required_argument, NULL, RIGHT1_BUTTON},
 	{"right1-exit-code",  required_argument, NULL, RIGHT1_EXIT_CODE},
@@ -875,6 +895,12 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 	opt->output_fd = STDERR_FILENO;
 	opt->max_input_form = 2048;
 	opt->mandatory_dialog = true;
+#if GTK_CHECK_VERSION(3, 14, 0)
+	opt->halign = GTK_ALIGN_START;
+#endif
+#ifdef WITH_XDIALOG
+	opt->justify = GTK_JUSTIFY_LEFT;
+#endif
 
 	for(i = 0; i < argc; i++)
 		if(strcmp(argv[i], "--and-dialog") == 0
@@ -948,6 +974,16 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case CLEAR_DIALOG:
 			conf->clear = true;
 			break;
+#ifdef WITH_XDIALOG
+		case CENTER:
+# if GTK_CHECK_VERSION(3, 14, 0)
+			opt->halign = GTK_ALIGN_CENTER;
+# else
+			opt->halign = 0.5;
+# endif
+			opt->justify = GTK_JUSTIFY_CENTER;
+			break;
+#endif
 		case CLEAR_SCREEN:
 			opt->mandatory_dialog = false;
 			opt->clearscreen = true;
@@ -994,6 +1030,14 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			conf->button.extra_label = optarg;
 			break;
 #ifdef WITH_XDIALOG
+		case FILL:
+# if GTK_CHECK_VERSION(3, 14, 0)
+			opt->halign = GTK_ALIGN_START;
+# else
+			opt->halign = 0.0;
+# endif
+			opt->justify = GTK_JUSTIFY_FILL;
+			break;
 		case FIXED_FONT:
 			opt->fixed_font = true;
 			break;
@@ -1046,6 +1090,16 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case ITEM_PREFIX:
 			opt->item_prefix = true;
 			break;
+#ifdef WITH_XDIALOG
+		case LEFT:
+# if GTK_CHECK_VERSION(3, 14, 0)
+			opt->halign = GTK_ALIGN_START;
+# else
+			opt->halign = 0.0;
+# endif
+			opt->justify = GTK_JUSTIFY_LEFT;
+			break;
+#endif
 		case LOAD_THEME:
 			opt->loadthemefile = optarg;
 			break;
@@ -1115,6 +1169,16 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case QUOTED:
 			opt->item_always_quote = true;
 			break;
+#ifdef WITH_XDIALOG
+		case RIGHT:
+# if GTK_CHECK_VERSION(3, 14, 0)
+			opt->halign = GTK_ALIGN_END;
+# else
+			opt->halign = 1.0;
+# endif
+			opt->justify = GTK_JUSTIFY_RIGHT;
+			break;
+#endif
 		case SAVE_THEME:
 			opt->mandatory_dialog = false;
 			opt->savethemefile = optarg;
