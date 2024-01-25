@@ -955,6 +955,9 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #ifdef WITH_XDIALOG
 	if(opt->without_buttons)
 		gtk_window_set_decorated(GTK_WINDOW(id.dialog), FALSE);
+	if(opt->wmclass != NULL)
+		gtk_window_set_wmclass(GTK_WINDOW(id.dialog), opt->wmclass,
+				opt->wmclass);
 #endif
 	if(conf->key.enable_esc == false)
 		gtk_window_set_deletable(GTK_WINDOW(id.dialog), FALSE);
@@ -2398,6 +2401,11 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
 	else
 		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+#ifdef WITH_XDIALOG
+	if(opt->wmclass != NULL)
+		gtk_window_set_wmclass(GTK_WINDOW(dialog), opt->wmclass,
+				opt->wmclass);
+#endif
 	return dialog;
 }
 

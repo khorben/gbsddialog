@@ -192,6 +192,7 @@ enum OPTS {
 	TITLE,
 #ifdef WITH_XDIALOG
 	WIZARD,
+	WMCLASS,
 #endif
 	/* Dialogs */
 	CALENDAR,
@@ -393,6 +394,7 @@ static struct option longopts[] = {
 	{"title",             required_argument, NULL, TITLE},
 #ifdef WITH_XDIALOG
 	{"wizard",            no_argument,       NULL, WIZARD},
+	{"wmclass",           required_argument, NULL, WMCLASS},
 #endif
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
@@ -1260,6 +1262,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 #ifdef WITH_XDIALOG
 		case WIZARD:
 			opt->wizard = true;
+			break;
+		case WMCLASS:
+			opt->wmclass = optarg;
 			break;
 #endif
 		/* Dialogs */

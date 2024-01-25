@@ -133,6 +133,7 @@ struct options
 	GtkJustification justify;
 	bool without_buttons;
 	const char *icon;
+	const char *wmclass;
 #endif
 	const char *name;
 	int (*dialogbuilder)(struct bsddialog_conf const * conf,
