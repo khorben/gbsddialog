@@ -91,6 +91,7 @@ struct textbox_data
 	int fd;
 	GtkWidget * dialog;
 	GtkTextBuffer * buffer;
+	GtkTextIter iter;
 	guint id;
 };
 
@@ -794,7 +795,7 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 	const char sep[] = "XXX\n";
 	const char end[] = "EOF\n";
 	GIOStatus status;
-	char buf[1024];
+	char buf[BUFSIZ + 1];
 	gsize r;
 	GError * error = NULL;
 	char * p, * q;
@@ -1983,7 +1984,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	int ret;
-	struct textbox_data td = { text, -1, NULL, NULL, 0 };
+	struct textbox_data td;
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
@@ -1996,6 +1997,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
+	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(td.dialog));
@@ -2057,7 +2059,6 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 	char buf[BUFSIZ];
 	gsize r;
 	GError * error = NULL;
-	GtkTextIter iter;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -2081,8 +2082,7 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 			return TRUE;
 		else if(status == G_IO_STATUS_EOF)
 			return _textbox_on_can_read_eof(td);
-		gtk_text_buffer_get_end_iter(td->buffer, &iter);
-		gtk_text_buffer_insert(td->buffer, &iter, buf, r);
+		gtk_text_buffer_insert(td->buffer, &td->iter, buf, r);
 	}
 	return TRUE;
 }
@@ -2106,17 +2106,18 @@ static gboolean _textbox_on_idle(gpointer data)
 	GIOChannel * channel;
 	char buf[BUFSIZ];
 
-	td->id = 0;
 	if((td->fd = open(td->filename, O_RDONLY)) <= -1)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", td->filename,
 				strerror(errno));
 		_builder_dialog_error(td->dialog, NULL, buf);
 		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
+		td->id = 0;
 		return FALSE;
 	}
 	channel = g_io_channel_unix_new(td->fd);
 	td->id = g_io_add_watch(channel, G_IO_IN, _textbox_on_can_read, td);
+	gtk_text_buffer_get_start_iter(td->buffer, &td->iter);
 	return FALSE;
 }
 
