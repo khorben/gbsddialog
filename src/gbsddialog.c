@@ -80,6 +80,9 @@ enum OPTS {
 #endif
 	AND_DIALOG,
 	ASCII_LINES,
+#ifdef WITH_XDIALOG
+	AUTO_PLACEMENT,
+#endif
 	BACKTITLE,
 #ifdef WITH_XDIALOG
 	BEGIN,
@@ -194,6 +197,7 @@ enum OPTS {
 	TIME_FORMAT,
 	TITLE,
 #ifdef WITH_XDIALOG
+	UNDER_MOUSE,
 	WIZARD,
 	WMCLASS,
 #endif
@@ -252,6 +256,9 @@ static struct option longopts[] = {
 	{"and-dialog",        no_argument,       NULL, AND_DIALOG},
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
+#ifdef WITH_XDIALOG
+	{"auto-placement",    no_argument,       NULL, AUTO_PLACEMENT},
+#endif
 	{"backtitle",         required_argument, NULL, BACKTITLE},
 #ifdef WITH_XDIALOG
 	{"begin",             required_argument, NULL, BEGIN},
@@ -399,6 +406,7 @@ static struct option longopts[] = {
 	{"time-format",       required_argument, NULL, TIME_FORMAT},
 	{"title",             required_argument, NULL, TITLE},
 #ifdef WITH_XDIALOG
+	{"under-mouse",       no_argument,       NULL, UNDER_MOUSE},
 	{"wizard",            no_argument,       NULL, WIZARD},
 	{"wmclass",           required_argument, NULL, WMCLASS},
 #endif
@@ -968,6 +976,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog without"
 						" previous --<dialog>");
 			break;
+#ifdef WITH_XDIALOG
+		case AUTO_PLACEMENT:
+			opt->position = GTK_WIN_POS_NONE;
+			break;
+#endif
 		case BACKTITLE:
 			opt->backtitle = optarg;
 			break;
@@ -1272,6 +1285,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			conf->title = optarg;
 			break;
 #ifdef WITH_XDIALOG
+		case UNDER_MOUSE:
+			opt->position = GTK_WIN_POS_MOUSE;
+			break;
 		case WIZARD:
 			opt->wizard = true;
 			break;
