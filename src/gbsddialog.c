@@ -81,6 +81,9 @@ enum OPTS {
 	AND_DIALOG,
 	ASCII_LINES,
 	BACKTITLE,
+#ifdef WITH_XDIALOG
+	BEGIN,
+#endif
 	BEGIN_X,
 	BEGIN_Y,
 	BIKESHED,
@@ -246,6 +249,9 @@ static struct option longopts[] = {
 	{"and-widget",        no_argument,       NULL, AND_DIALOG},
 	{"ascii-lines",       no_argument,       NULL, ASCII_LINES},
 	{"backtitle",         required_argument, NULL, BACKTITLE},
+#ifdef WITH_XDIALOG
+	{"begin",             required_argument, NULL, BEGIN},
+#endif
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
@@ -956,6 +962,15 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case BACKTITLE:
 			opt->backtitle = optarg;
 			break;
+#ifdef WITH_XDIALOG
+		case BEGIN:
+			/* FIXME this does not match Xdialog's behaviour */
+			if(sscanf(optarg, "%dx%d", &conf->x, &conf->y) != 2
+					|| conf->x < 0 || conf->y < 0)
+				return -error(BSDDIALOG_ERROR,
+						"--begin is invalid");
+			break;
+#endif
 		case BEGIN_X:
 			conf->x = (int)strtol(optarg, NULL, 10);
 			if(conf->x < BSDDIALOG_CENTER)
