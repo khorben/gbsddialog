@@ -29,9 +29,11 @@
 
 
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <strings.h>
 #include <time.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
@@ -80,6 +82,15 @@ struct pause_data
 	GtkWidget * widget;	/* progress bar */
 	unsigned int secs;
 	gdouble step;
+	guint id;
+};
+
+struct textbox_data
+{
+	char const * filename;
+	int fd;
+	GtkWidget * dialog;
+	GtkTextBuffer * buffer;
 	guint id;
 };
 
@@ -1962,37 +1973,34 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 
 
 /* builder_textbox */
+static gboolean _textbox_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data);
+static gboolean _textbox_on_can_read_eof(gpointer data);
+static gboolean _textbox_on_idle(gpointer data);
+
 int builder_textbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
 	int ret;
-	GtkWidget * dialog;
+	struct textbox_data td = { text, -1, NULL, NULL, 0 };
 	GtkWidget * container;
 	GtkWidget * window;
 	GtkWidget * widget;
-	GtkTextBuffer * buffer;
-	GtkTextIter iter;
 #ifdef WITH_XDIALOG
 	PangoFontDescription * desc = NULL;
 #endif
-	FILE * fp;
-	char buf[4096];
-	size_t size;
 
 	if(argc > 0)
 	{
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
-	/* FIXME use a GIOChannel instead */
-	if((fp = fopen(text, "r")) == NULL)
-		return BSDDIALOG_ERROR;
-	dialog = _builder_dialog(conf, opt, NULL, rows, cols);
+	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
-	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	container = gtk_dialog_get_content_area(GTK_DIALOG(td.dialog));
 #else
-	container = dialog->vbox;
+	container = td.dialog->vbox;
 #endif
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -2015,31 +2023,101 @@ int builder_textbox(struct bsddialog_conf const * conf,
 # endif
 	}
 #endif
-	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-	gtk_text_buffer_get_start_iter(buffer, &iter);
-	while((size = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
-		gtk_text_buffer_insert(buffer, &iter, buf, size);
-	fclose(fp);
+	td.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 #ifdef WITH_XDIALOG
 	if(!opt->without_buttons)
 #endif
-		gtk_dialog_add_button(GTK_DIALOG(dialog), "Exit",
+		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);
 #if GTK_CHECK_VERSION(3, 12, 0)
-	if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(dialog))) != NULL)
+	if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(td.dialog))) != NULL)
 		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(widget),
 				FALSE);
 #endif
-	ret = _builder_dialog_run(conf, dialog);
-	gtk_widget_destroy(dialog);
+	td.id = g_idle_add(_textbox_on_idle, &td);
+	ret = _builder_dialog_run(conf, td.dialog);
+	if(td.id != 0)
+		g_source_remove(td.id);
+	gtk_widget_destroy(td.dialog);
 #ifdef WITH_XDIALOG
 	if(desc != NULL)
 		pango_font_description_free(desc);
 #endif
 	return ret;
+}
+
+static gboolean _textbox_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data)
+{
+	struct textbox_data * td = data;
+	GIOStatus status;
+	char buf[BUFSIZ];
+	gsize r;
+	GError * error = NULL;
+	GtkTextIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN)
+	{
+		_builder_dialog_error(td->dialog, NULL, "Unexpected condition");
+		return _textbox_on_can_read_eof(td);
+	}
+	for(;;)
+	{
+		status = g_io_channel_read_chars(channel, buf, sizeof(buf),
+				&r, &error);
+		if(status == G_IO_ERROR)
+		{
+			_builder_dialog_error(td->dialog, NULL, error->message);
+			g_error_free(error);
+			return _textbox_on_can_read_eof(td);
+		}
+		else if(status == G_IO_STATUS_AGAIN)
+			return TRUE;
+		else if(status == G_IO_STATUS_EOF)
+			return _textbox_on_can_read_eof(td);
+		gtk_text_buffer_get_end_iter(td->buffer, &iter);
+		gtk_text_buffer_insert(td->buffer, &iter, buf, r);
+	}
+	return TRUE;
+}
+
+static gboolean _textbox_on_can_read_eof(gpointer data)
+{
+	struct textbox_data * td = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(td->fd >= 0)
+		close(td->fd);
+	td->id = 0;
+	return FALSE;
+}
+
+static gboolean _textbox_on_idle(gpointer data)
+{
+	struct textbox_data * td = data;
+	GIOChannel * channel;
+	char buf[BUFSIZ];
+
+	td->id = 0;
+	if((td->fd = open(td->filename, O_RDONLY)) <= -1)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", td->filename,
+				strerror(errno));
+		_builder_dialog_error(td->dialog, NULL, buf);
+		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
+		return FALSE;
+	}
+	channel = g_io_channel_unix_new(td->fd);
+	td->id = g_io_add_watch(channel, G_IO_IN, _textbox_on_can_read, td);
+	return FALSE;
 }
 
 
