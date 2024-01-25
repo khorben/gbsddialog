@@ -135,6 +135,7 @@ struct options
 	const char *icon;
 	const char *wmclass;
 #endif
+	GtkWindowPosition position;
 	const char *name;
 	int (*dialogbuilder)(struct bsddialog_conf const * conf,
 	    char const * text, int rows, int cols,

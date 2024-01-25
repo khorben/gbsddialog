@@ -175,6 +175,9 @@ enum OPTS {
 	RIGHT3_BUTTON,
 	RIGHT3_EXIT_CODE,
 	SAVE_THEME,
+#ifdef WITH_XDIALOG
+	SCREEN_CENTER,
+#endif
 	SEPARATE_OUTPUT,
 	SHADOW,
 	SINGLE_QUOTED,
@@ -374,6 +377,9 @@ static struct option longopts[] = {
 	{"right3-exit-code",  required_argument, NULL, RIGHT3_EXIT_CODE},
 #endif
 	{"save-theme",        required_argument, NULL, SAVE_THEME},
+#ifdef WITH_XDIALOG
+	{"screen-center",     no_argument,       NULL, SCREEN_CENTER},
+#endif
 	{"separate-output",   no_argument,       NULL, SEPARATE_OUTPUT},
 	{"separator",         required_argument, NULL, OUTPUT_SEPARATOR},
 	{"shadow",            no_argument,       NULL, SHADOW},
@@ -919,6 +925,7 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 #ifdef WITH_XDIALOG
 	opt->justify = GTK_JUSTIFY_LEFT;
 #endif
+	opt->position = GTK_WIN_POS_CENTER;
 
 	for(i = 0; i < argc; i++)
 		if(strcmp(argv[i], "--and-dialog") == 0
@@ -1210,6 +1217,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->mandatory_dialog = false;
 			opt->savethemefile = optarg;
 			break;
+#ifdef WITH_XDIALOG
+		case SCREEN_CENTER:
+			opt->position = GTK_WIN_POS_CENTER;
+			break;
+#endif
 		case SEPARATE_OUTPUT:
 			opt->item_output_sepnl = true;
 			break;

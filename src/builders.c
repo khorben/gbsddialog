@@ -148,7 +148,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
 static int _builder_dialog_error(GtkWidget * parent,
-		struct bsddialog_conf const * conf, char const * error);
+		struct bsddialog_conf const * conf, struct options const * opt,
+		char const * error);
 static int _builder_dialog_help(GtkWidget * parent,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
@@ -520,7 +521,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	else if((t = time(NULL)) != (time_t)-1 && localtime_r(&t, &tm) == NULL)
-		return _builder_dialog_error(NULL, conf, strerror(errno));
+		return _builder_dialog_error(NULL, conf, opt, strerror(errno));
 	else
 	{
 		day = tm.tm_mday;
@@ -806,13 +807,14 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 #endif
 	if(condition != G_IO_IN)
 	{
-		_builder_dialog_error(gd->dialog, NULL, "Unexpected condition");
+		_builder_dialog_error(gd->dialog, NULL, NULL,
+				"Unexpected condition");
 		return _gauge_on_can_read_eof(gd);
 	}
 	if((status = g_io_channel_read_chars(channel, buf, sizeof(buf) - 1,
 					&r, &error)) == G_IO_ERROR)
 	{
-		_builder_dialog_error(gd->dialog, NULL, error->message);
+		_builder_dialog_error(gd->dialog, NULL, NULL, error->message);
 		g_error_free(error);
 		return _gauge_on_can_read_eof(gd);
 	}
@@ -983,8 +985,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	else if(conf->x != BSDDIALOG_AUTOSIZE && conf->y != BSDDIALOG_AUTOSIZE)
 		gtk_window_move(GTK_WINDOW(id.dialog), conf->x, conf->y);
 	else
-		gtk_window_set_position(GTK_WINDOW(id.dialog),
-				GTK_WIN_POS_CENTER);
+		gtk_window_set_position(GTK_WINDOW(id.dialog), opt->position);
 	_builder_dialog_run(conf, id.dialog);
 	if(id.id != 0)
 		g_source_remove(id.id);
@@ -2071,13 +2072,14 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 #endif
 	if(condition != G_IO_IN)
 	{
-		_builder_dialog_error(td->dialog, NULL, "Unexpected condition");
+		_builder_dialog_error(td->dialog, NULL, NULL,
+				"Unexpected condition");
 		return _textbox_on_can_read_eof(td);
 	}
 	status = g_io_channel_read_chars(channel, buf, sizeof(buf), &r, &error);
 	if(status == G_IO_ERROR)
 	{
-		_builder_dialog_error(td->dialog, NULL, error->message);
+		_builder_dialog_error(td->dialog, NULL, NULL, error->message);
 		g_error_free(error);
 		return _textbox_on_can_read_eof(td);
 	}
@@ -2112,7 +2114,7 @@ static gboolean _textbox_on_idle(gpointer data)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", td->filename,
 				strerror(errno));
-		_builder_dialog_error(td->dialog, NULL, buf);
+		_builder_dialog_error(td->dialog, NULL, NULL, buf);
 		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
 		td->id = 0;
 		return FALSE;
@@ -2149,7 +2151,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 	memset(&tm, 0, sizeof(tm));
 	/* for more accurate time representation (eg leap seconds) */
 	if((t = time(NULL)) == (time_t)-1 || localtime_r(&t, &tm) == NULL)
-		return _builder_dialog_error(NULL, conf, strerror(errno));
+		return _builder_dialog_error(NULL, conf, opt, strerror(errno));
 	if(argc == 3)
 	{
 		hour = strtoul(argv[0], NULL, 10);
@@ -2403,7 +2405,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	else if(conf->x != BSDDIALOG_AUTOSIZE && conf->y != BSDDIALOG_AUTOSIZE)
 		gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
 	else
-		gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+		gtk_window_set_position(GTK_WINDOW(dialog), opt->position);
 #ifdef WITH_XDIALOG
 	if(opt->wmclass != NULL)
 		gtk_window_set_wmclass(GTK_WINDOW(dialog), opt->wmclass,
@@ -2473,7 +2475,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 
 /* builder_dialog_error */
 static int _builder_dialog_error(GtkWidget * parent,
-		struct bsddialog_conf const * conf, char const * error)
+		struct bsddialog_conf const * conf, struct options const * opt,
+		char const * error)
 {
 	GtkWidget * dialog;
 #if GTK_CHECK_VERSION(3, 12, 0)
@@ -2497,6 +2500,9 @@ static int _builder_dialog_error(GtkWidget * parent,
 			gtk_window_fullscreen(GTK_WINDOW(dialog));
 		else if(conf->x > 0 && conf->y > 0)
 			gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
+		else if(opt != NULL)
+			gtk_window_set_position(GTK_WINDOW(dialog),
+					opt->position);
 		else
 			gtk_window_set_position(GTK_WINDOW(dialog),
 					GTK_WIN_POS_CENTER);
