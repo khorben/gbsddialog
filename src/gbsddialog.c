@@ -488,6 +488,9 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	struct options * opt = &gbd->opt;
 	int parsed, argc, oi = optind;
 	char const ** argv;
+#ifdef WITH_XDIALOG
+	char const * p;
+#endif
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
 	int res;
@@ -543,8 +546,15 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 						"cannot allocate <text>"));
 			return _gbsddialog_on_idle_quit(gbd);
 		}
-		rows = (int)strtol(argv[1], NULL, 10);
-		cols = (int)strtol(argv[2], NULL, 10);
+#ifdef WITH_XDIALOG
+		if((p = getenv("XDIALOG_FORCE_AUTOSIZE")) == NULL
+				|| (strcmp(p, "1") != 0
+					&& strcasecmp(p, "true") != 0))
+#endif
+		{
+			rows = (int)strtol(argv[1], NULL, 10);
+			cols = (int)strtol(argv[2], NULL, 10);
+		}
 
 		if(opt->dialogbuilder != builder_textbox)
 			custom_text(opt, argv[0], text);
