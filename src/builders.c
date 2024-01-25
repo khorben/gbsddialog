@@ -610,10 +610,13 @@ int builder_form(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	GtkEntryBuffer * buffer;
 	GtkSizeGroup * group;
-	int i, n, fieldlen, maxletters;
+	int i, k, n, fieldlen, maxletters;
 	GSList * l = NULL;
 	const int j = 8;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
 	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
 			|| ((argc - 1) % j) != 0)
 	{
@@ -632,12 +635,13 @@ int builder_form(struct bsddialog_conf const * conf,
 	gtk_box_set_spacing(GTK_BOX(container), BORDER_WIDTH);
 	for(i = 0; (i + 1) * j < argc; i++)
 	{
+		k = i * j + 1;
 #if GTK_CHECK_VERSION(3, 0, 0)
 		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
 #else
 		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
-		widget = gtk_label_new(argv[i * j + 1]);
+		widget = gtk_label_new(argv[k]);
 #if GTK_CHECK_VERSION(3, 14, 0)
 		gtk_widget_set_halign(widget, GTK_ALIGN_START);
 #else
@@ -645,15 +649,16 @@ int builder_form(struct bsddialog_conf const * conf,
 #endif
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
-		buffer = gtk_entry_buffer_new(argv[i * j + 4], -1);
+		buffer = gtk_entry_buffer_new(argv[k + 3], -1);
 		l = g_slist_append(l, buffer);
 		widget = gtk_entry_new_with_buffer(buffer);
 		if(conf->button.always_active == true)
-			gtk_entry_set_activates_default(GTK_ENTRY(widget), TRUE);
+			gtk_entry_set_activates_default(GTK_ENTRY(widget),
+					TRUE);
 		if(conf->form.securech != '\0')
 			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
-		fieldlen = strtol(argv[i * j + 7], NULL, 10);
-		maxletters = strtol(argv[i * j + 8], NULL, 10);
+		fieldlen = strtol(argv[k + 6], NULL, 10);
+		maxletters = strtol(argv[k + 7], NULL, 10);
 		if(fieldlen != 0)
 			gtk_entry_set_width_chars(GTK_ENTRY(widget),
 					abs(fieldlen));
