@@ -2068,22 +2068,18 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 		_builder_dialog_error(td->dialog, NULL, "Unexpected condition");
 		return _textbox_on_can_read_eof(td);
 	}
-	for(;;)
+	status = g_io_channel_read_chars(channel, buf, sizeof(buf), &r, &error);
+	if(status == G_IO_ERROR)
 	{
-		status = g_io_channel_read_chars(channel, buf, sizeof(buf),
-				&r, &error);
-		if(status == G_IO_ERROR)
-		{
-			_builder_dialog_error(td->dialog, NULL, error->message);
-			g_error_free(error);
-			return _textbox_on_can_read_eof(td);
-		}
-		else if(status == G_IO_STATUS_AGAIN)
-			return TRUE;
-		else if(status == G_IO_STATUS_EOF)
-			return _textbox_on_can_read_eof(td);
-		gtk_text_buffer_insert(td->buffer, &td->iter, buf, r);
+		_builder_dialog_error(td->dialog, NULL, error->message);
+		g_error_free(error);
+		return _textbox_on_can_read_eof(td);
 	}
+	else if(status == G_IO_STATUS_AGAIN)
+		return TRUE;
+	else if(status == G_IO_STATUS_EOF)
+		return _textbox_on_can_read_eof(td);
+	gtk_text_buffer_insert(td->buffer, &td->iter, buf, r);
 	return TRUE;
 }
 
