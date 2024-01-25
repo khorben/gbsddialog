@@ -924,8 +924,11 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		id.id = g_timeout_add((timeout > 0) ? timeout : 1000,
 				_infobox_on_timeout, &id);
 	id.dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
-			buttons, "%s", "Information");
+			buttons,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Information");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(id.dialog),
+#endif
 			"%s", text);
 #ifdef WITH_XDIALOG
 	if(opt->icon != NULL)
@@ -2481,8 +2484,10 @@ static int _builder_dialog_error(GtkWidget * parent,
 
 	dialog = gtk_message_dialog_new(parent ? GTK_WINDOW(parent) : NULL,
 			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
 			"%s", error);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(parent == NULL && conf != NULL)
@@ -2532,8 +2537,11 @@ static int _builder_dialog_help(GtkWidget * parent,
 #endif
 	dialog = gtk_message_dialog_new((parent != NULL)
 			? GTK_WINDOW(parent) : NULL, flags,
-			GTK_MESSAGE_QUESTION, buttons, "%s", "Help");
+			GTK_MESSAGE_QUESTION, buttons,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Help");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
 			"%s", conf->key.f1_message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Help");
 	ret = _builder_dialog_run(conf, dialog);
