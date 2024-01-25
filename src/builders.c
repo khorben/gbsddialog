@@ -1204,6 +1204,111 @@ static void _menu_on_row_activated(gpointer data)
 }
 
 
+/* builder_mixedform */
+static void _mixedform_foreach_buffer(gpointer e, gpointer data);
+
+int builder_mixedform(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget;
+	GSList * l = NULL;
+	GtkEntryBuffer * buffer;
+	GtkSizeGroup * group;
+	int i, k, n, fieldlen, maxletters, flag;
+	const int j = 9;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+	gtk_box_set_spacing(GTK_BOX(container), BORDER_WIDTH);
+	for(i = 0; (i + 1) * j < argc; i++)
+	{
+		k = i * j + 1;
+#if GTK_CHECK_VERSION(3, 0, 0)
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
+#else
+		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
+#endif
+		widget = gtk_label_new(argv[k] + 0);
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+		gtk_size_group_add_widget(group, widget);
+		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		buffer = gtk_entry_buffer_new(argv[k + 3], -1);
+		l = g_slist_append(l, buffer);
+		widget = gtk_entry_new_with_buffer(buffer);
+		if(conf->button.always_active == true)
+			gtk_entry_set_activates_default(GTK_ENTRY(widget),
+					TRUE);
+		if(conf->form.securech != '\0')
+			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+		fieldlen = strtol(argv[k + 6], NULL, 10);
+		maxletters = strtol(argv[k + 7], NULL, 10);
+		flag = strtol(argv[k + 8], NULL, 10);
+		if(fieldlen != 0)
+			gtk_entry_set_width_chars(GTK_ENTRY(widget),
+					abs(fieldlen));
+		if(fieldlen < 0)
+			gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
+		if(maxletters == 0)
+			maxletters = abs(fieldlen);
+		if(maxletters > 0)
+			gtk_entry_set_max_length(GTK_ENTRY(widget), maxletters);
+		if(flag & 0x1)
+			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+		if(flag & 0x2)
+			gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
+		gtk_box_pack_start(GTK_BOX(box), widget,
+				(maxletters != 0) ? FALSE : TRUE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(container), box);
+	}
+	gtk_widget_show_all(container);
+	_builder_dialog_buttons(dialog, conf, opt);
+	ret = _builder_dialog_run(conf, dialog);
+	gtk_widget_destroy(dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			g_slist_foreach(l, _mixedform_foreach_buffer,
+					(void *)opt);
+			break;
+	}
+	g_slist_foreach(l, (GFunc)g_object_unref, NULL);
+	g_slist_free(l);
+	return ret;
+}
+
+static void _mixedform_foreach_buffer(gpointer e, gpointer data)
+{
+	GtkEntryBuffer * buffer = e;
+	struct options const * opt = data;
+
+	dprintf(opt->output_fd, "%s\n", gtk_entry_buffer_get_text(buffer));
+}
+
+
 /* builder_mixedgauge */
 static void _mixedgauge_set_percentage(GtkWidget * widget, int perc);
 

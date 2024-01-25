@@ -397,9 +397,7 @@ static struct option longopts[] = {
 	{"infobox",      no_argument, NULL, INFOBOX},
 	{"inputbox",     no_argument, NULL, INPUTBOX},
 	{"menu",         no_argument, NULL, MENU},
-#if 0
 	{"mixedform",    no_argument, NULL, MIXEDFORM},
-#endif
 	{"mixedgauge",   no_argument, NULL, MIXEDGAUGE},
 	{"msgbox",       no_argument, NULL, MSGBOX},
 	{"passwordbox",  no_argument, NULL, PASSWORDBOX},
@@ -1314,6 +1312,14 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->name = "--menu";
 			opt->dialogbuilder = builder_menu;
 			conf->auto_downmargin = 1;
+			break;
+		case MIXEDFORM:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --mixedform without "
+						"--and-dialog", opt->name);
+			opt->name = "--mixedform";
+			opt->dialogbuilder = builder_mixedform;
 			break;
 		case MIXEDGAUGE:
 			if(opt->dialogbuilder != NULL)
