@@ -90,6 +90,9 @@ enum OPTS {
 	BEGIN_X,
 	BEGIN_Y,
 	BIKESHED,
+#ifdef WITH_XDIALOG
+	BUTTONS_STYLE,
+#endif
 	CANCEL_EXIT_CODE,
 	CANCEL_LABEL,
 #ifdef WITH_XDIALOG
@@ -266,6 +269,9 @@ static struct option longopts[] = {
 	{"begin-x",           required_argument, NULL, BEGIN_X},
 	{"begin-y",           required_argument, NULL, BEGIN_Y},
 	{"bikeshed",          no_argument,       NULL, BIKESHED},
+#ifdef WITH_XDIALOG
+	{"buttons-style",     required_argument, NULL, BUTTONS_STYLE},
+#endif
 	{"cancel-exit-code",  required_argument, NULL, CANCEL_EXIT_CODE},
 	{"cancel-label",      required_argument, NULL, CANCEL_LABEL},
 #ifdef WITH_XDIALOG
@@ -1011,6 +1017,21 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case BIKESHED:
 			opt->bikeshed = true;
 			break;
+#ifdef WITH_XDIALOG
+		case BUTTONS_STYLE:
+			/* FIXME this is currently ignored */
+			if(strcmp(optarg, "default") == 0)
+				opt->buttons_style = 0;
+			else if(strcmp(optarg, "icon") == 0)
+				opt->buttons_style = 1;
+			else if(strcmp(optarg, "text") == 0)
+				opt->buttons_style = 2;
+			else
+				return -error(BSDDIALOG_ERROR, "%s",
+						"--buttons-style only supports"
+						" default, icon, or text");
+			break;
+#endif
 		case CANCEL_EXIT_CODE:
 			exitcodes[BSDDIALOG_CANCEL + 1].value
 				= strtol(optarg, NULL, 10);

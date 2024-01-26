@@ -129,6 +129,7 @@ struct options
 	gdouble halign;
 #endif
 #ifdef WITH_XDIALOG
+	int buttons_style;
 	bool fixed_font;
 	GtkJustification justify;
 	bool without_buttons;
