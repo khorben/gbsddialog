@@ -93,6 +93,7 @@ struct textbox_data
 	GtkTextBuffer * buffer;
 	GtkTextIter iter;
 	guint id;
+	GIOChannel * channel;
 };
 
 struct timebox_data
@@ -812,7 +813,7 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 		return _gauge_on_can_read_eof(gd);
 	}
 	if((status = g_io_channel_read_chars(channel, buf, sizeof(buf) - 1,
-					&r, &error)) == G_IO_ERROR)
+					&r, &error)) == G_IO_STATUS_ERROR)
 	{
 		_builder_dialog_error(gd->dialog, NULL, NULL, error->message);
 		g_error_free(error);
@@ -2077,7 +2078,7 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 		return _textbox_on_can_read_eof(td);
 	}
 	status = g_io_channel_read_chars(channel, buf, sizeof(buf), &r, &error);
-	if(status == G_IO_ERROR)
+	if(status == G_IO_STATUS_ERROR)
 	{
 		_builder_dialog_error(td->dialog, NULL, NULL, error->message);
 		g_error_free(error);
@@ -2098,8 +2099,7 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(td->fd >= 0)
-		close(td->fd);
+	g_object_unref(td->channel);
 	td->id = 0;
 	return FALSE;
 }
@@ -2107,9 +2107,17 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 static gboolean _textbox_on_idle(gpointer data)
 {
 	struct textbox_data * td = data;
-	GIOChannel * channel;
 	char buf[BUFSIZ];
+	gboolean close = TRUE;
 
+#ifdef WITH_XDIALOG
+	if(strcmp(td->filename, "-") == 0)
+	{
+		td->fd = STDIN_FILENO;
+		close = FALSE;
+	}
+	else
+#endif
 	if((td->fd = open(td->filename, O_RDONLY)) <= -1)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", td->filename,
@@ -2119,8 +2127,9 @@ static gboolean _textbox_on_idle(gpointer data)
 		td->id = 0;
 		return FALSE;
 	}
-	channel = g_io_channel_unix_new(td->fd);
-	td->id = g_io_add_watch(channel, G_IO_IN, _textbox_on_can_read, td);
+	td->channel = g_io_channel_unix_new(td->fd);
+	g_io_channel_set_close_on_unref(td->channel, close);
+	td->id = g_io_add_watch(td->channel, G_IO_IN, _textbox_on_can_read, td);
 	gtk_text_buffer_get_start_iter(td->buffer, &td->iter);
 	return FALSE;
 }
