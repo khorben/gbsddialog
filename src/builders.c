@@ -2099,7 +2099,6 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	g_object_unref(td->channel);
 	td->id = 0;
 	return FALSE;
 }
