@@ -2129,6 +2129,10 @@ static gboolean _textbox_on_idle(gpointer data)
 	}
 	td->channel = g_io_channel_unix_new(td->fd);
 	g_io_channel_set_close_on_unref(td->channel, close);
+	g_io_channel_set_encoding(td->channel, NULL, NULL);
+	/* XXX ignore errors */
+	g_io_channel_set_flags(td->channel, g_io_channel_get_flags(td->channel)
+			| G_IO_FLAG_NONBLOCK, NULL);
 	td->id = g_io_add_watch(td->channel, G_IO_IN, _textbox_on_can_read, td);
 	gtk_text_buffer_get_start_iter(td->buffer, &td->iter);
 	return FALSE;
