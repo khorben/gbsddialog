@@ -147,14 +147,17 @@ gdouble get_font_size(GdkScreen * screen)
 #if GTK_CHECK_VERSION(3, 0, 0)
 	style = gtk_style_context_new();
 	fontdesc = gtk_style_context_get_font(style, GTK_STATE_FLAG_NORMAL);
-	g_object_unref(style);
 	mask = pango_font_description_get_set_fields(fontdesc);
 	if((mask & PANGO_FONT_MASK_SIZE) == 0
 			|| (fontsize = pango_font_description_get_size(
 					fontdesc)) == 0)
 		fontsize = 9 * PANGO_SCALE;
 	else if(pango_font_description_get_size_is_absolute(fontdesc))
+	{
+		g_object_unref(style);
 		return fontsize;
+	}
+	g_object_unref(style);
 #else
 	/* FIXME implement for Gtk+ 2 */
 	fontsize = 9 * PANGO_SCALE;
