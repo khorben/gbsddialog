@@ -214,6 +214,7 @@ enum OPTS {
 	DATEBOX,
 #ifdef WITH_XDIALOG
 	DSELECT,
+	EDITBOX,
 	FONTSEL,
 #endif
 	FORM,
@@ -435,6 +436,7 @@ static struct option longopts[] = {
 	{"datebox",      no_argument, NULL, DATEBOX},
 #ifdef WITH_XDIALOG
 	{"dselect",      no_argument, NULL, DSELECT},
+	{"editbox",      no_argument, NULL, EDITBOX},
 #endif
 	{"form",         no_argument, NULL, FORM},
 #ifdef WITH_XDIALOG
@@ -1370,6 +1372,15 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog", opt->name);
 			opt->name = "--dselect";
 			opt->dialogbuilder = builder_dselect;
+			conf->auto_downmargin = 1;
+			break;
+		case EDITBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --editbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--editbox";
+			opt->dialogbuilder = builder_editbox;
 			conf->auto_downmargin = 1;
 			break;
 		case FONTSEL:
