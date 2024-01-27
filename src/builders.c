@@ -541,7 +541,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
 	gtk_box_pack_start(GTK_BOX(box),
-		       	gtk_label_new("Day: "), FALSE, TRUE, 0);
+			gtk_label_new("Day: "), FALSE, TRUE, 0);
 	dd.day = gtk_spin_button_new_with_range(1.0, 31.0, 1.0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(dd.day), TRUE);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(dd.day), (gdouble)day);
@@ -573,7 +573,7 @@ int builder_datebox(struct bsddialog_conf const * conf,
 	if(conf->button.always_active == true)
 		gtk_entry_set_activates_default(GTK_ENTRY(dd.year), TRUE);
 	g_signal_connect(dd.year, "value-changed",
-		       	G_CALLBACK(_datebox_on_year_value_changed), NULL);
+			G_CALLBACK(_datebox_on_year_value_changed), NULL);
 	gtk_box_pack_start(GTK_BOX(box), dd.year, TRUE, TRUE, 0);
 	gtk_widget_show_all(box);
 	gtk_container_add(GTK_CONTAINER(container), box);
