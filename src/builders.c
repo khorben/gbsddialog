@@ -2092,6 +2092,8 @@ int builder_textbox(struct bsddialog_conf const * conf,
 			gtk_widget_show(td.button);
 			gtk_container_add(GTK_CONTAINER(container), td.button);
 		}
+		else
+			td.button = NULL;
 # endif
 #endif
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
@@ -2157,7 +2159,8 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 #endif
 	td->id = 0;
 #ifdef WITH_XDIALOG
-	gtk_widget_set_sensitive(td->button, TRUE);
+	if(td->button != NULL)
+		gtk_widget_set_sensitive(td->button, TRUE);
 #endif
 	return FALSE;
 }
@@ -2184,7 +2187,8 @@ static gboolean _textbox_on_idle(gpointer data)
 		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
 		td->id = 0;
 #ifdef WITH_XDIALOG
-		gtk_widget_set_sensitive(td->button, TRUE);
+		if(td->button != NULL)
+			gtk_widget_set_sensitive(td->button, TRUE);
 #endif
 		return FALSE;
 	}

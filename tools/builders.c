@@ -971,6 +971,8 @@ int builder_editbox(struct bsddialog_conf const * conf,
 			gtk_widget_show(td.button);
 			gtk_container_add(GTK_CONTAINER(container), td.button);
 		}
+		else
+			td.button = NULL;
 #endif
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);
