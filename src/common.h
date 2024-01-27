@@ -129,6 +129,8 @@ struct options
 	gdouble halign;
 #endif
 #ifdef WITH_XDIALOG
+	bool beep;
+	bool beep_after;
 	int buttons_style;
 	bool fixed_font;
 	GtkJustification justify;

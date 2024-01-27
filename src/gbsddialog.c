@@ -85,6 +85,8 @@ enum OPTS {
 #endif
 	BACKTITLE,
 #ifdef WITH_XDIALOG
+	BEEP,
+	BEEP_AFTER,
 	BEGIN,
 #endif
 	BEGIN_X,
@@ -268,6 +270,8 @@ static struct option longopts[] = {
 #endif
 	{"backtitle",         required_argument, NULL, BACKTITLE},
 #ifdef WITH_XDIALOG
+	{"beep",              no_argument,       NULL, BEEP},
+	{"beep-after",        no_argument,       NULL, BEEP_AFTER},
 	{"begin",             required_argument, NULL, BEGIN},
 #endif
 	{"begin-x",           required_argument, NULL, BEGIN_X},
@@ -595,8 +599,16 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 
 		/* FIXME implement conf->text.escape/highlight */
 
+#ifdef WITH_XDIALOG
+		if(opt->beep == true)
+			gdk_display_beep(gdk_screen_get_display(gbd->screen));
+#endif
 		res = opt->dialogbuilder(conf, text, rows, cols,
 				argc - 3, argv + 3, opt);
+#ifdef WITH_XDIALOG
+		if(opt->beep_after == true)
+			gdk_display_beep(gdk_screen_get_display(gbd->screen));
+#endif
 		*gbd->ret = EXITCODE(res);
 		free(text);
 		if(res == BSDDIALOG_ERROR)
@@ -997,6 +1009,12 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->backtitle = optarg;
 			break;
 #ifdef WITH_XDIALOG
+		case BEEP:
+			opt->beep = true;
+			break;
+		case BEEP_AFTER:
+			opt->beep_after = true;
+			break;
 		case BEGIN:
 			/* FIXME this does not match Xdialog's behaviour */
 			if(sscanf(optarg, "%dx%d", &conf->x, &conf->y) != 2
