@@ -381,7 +381,7 @@ static struct option longopts[] = {
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 #ifdef WITH_XDIALOG
 	{"password",          no_argument,       NULL, INSECURE},
-	{"print",             no_argument,       NULL, PRINT},
+	{"print",             required_argument, NULL, PRINT},
 #endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
@@ -1242,7 +1242,7 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			break;
 #ifdef WITH_XDIALOG
 		case PRINT:
-			opt->print = true;
+			opt->print = optarg;
 			break;
 #endif
 		case PRINT_MAXSIZE:

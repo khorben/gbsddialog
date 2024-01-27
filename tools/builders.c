@@ -948,7 +948,7 @@ int builder_editbox(struct bsddialog_conf const * conf,
 	if(!opt->without_buttons)
 	{
 #if GTK_CHECK_VERSION(2, 10, 0)
-		if(opt->print)
+		if(opt->print != NULL)
 		{
 # if GTK_CHECK_VERSION(3, 12, 0)
 			container = gtk_dialog_get_header_bar(

@@ -2068,7 +2068,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	{
 #if GTK_CHECK_VERSION(2, 10, 0)
 # ifdef WITH_XDIALOG
-		if(opt->print)
+		if(opt->print != NULL)
 		{
 #  if GTK_CHECK_VERSION(3, 12, 0)
 			container = gtk_dialog_get_header_bar(
@@ -2236,6 +2236,8 @@ static void _textbox_on_print(gpointer data)
 	g_signal_connect(operation, "paginate", G_CALLBACK(
 				_print_dialog_on_paginate), td);
 	settings = gtk_print_settings_new();
+	if(td->opt->print != NULL && strlen(td->opt->print) > 0)
+		gtk_print_settings_set_printer(settings, td->opt->print);
 	gtk_print_operation_set_print_settings(operation, settings);
 	gtk_print_operation_run(operation,
 			GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
