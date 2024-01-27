@@ -2493,6 +2493,7 @@ int builder_yesno(struct bsddialog_conf const * conf,
 {
 	int ret;
 	GtkWidget * dialog;
+	char const * label;
 
 	if(argc > 0)
 	{
@@ -2500,26 +2501,42 @@ int builder_yesno(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
+	if(conf->button.without_ok != true)
+	{
+		label = (conf->button.ok_label != NULL)
+			? conf->button.ok_label : "Yes";
+#ifdef WITH_XDIALOG
+		if(opt->wizard)
+			label = "Next";
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
+				GTK_RESPONSE_YES);
+	}
 	if(conf->button.without_cancel != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf->button.cancel_label != NULL)
-				? conf->button.cancel_label : "No",
+	{
+		label = (conf->button.cancel_label != NULL)
+			? conf->button.cancel_label : "No";
+#ifdef WITH_XDIALOG
+		if(opt->wizard)
+			label = "Cancel";
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
 				GTK_RESPONSE_NO);
+	}
 	if(conf->button.with_extra == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.extra_label != NULL)
 				? conf->button.extra_label : "Extra",
 				BSDDIALOG_EXTRA);
-	if(conf->button.without_ok != true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
-				(conf->button.ok_label != NULL)
-				? conf->button.ok_label : "Yes",
-				GTK_RESPONSE_YES);
 	if(conf->button.with_help == true)
 		gtk_dialog_add_button(GTK_DIALOG(dialog),
 				(conf->button.help_label != NULL)
 				? conf->button.help_label : "Help",
 				GTK_RESPONSE_HELP);
+#ifdef WITH_XDIALOG
+	if(opt->wizard)
+		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
+#endif
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			conf->button.default_cancel
 			? GTK_RESPONSE_NO : GTK_RESPONSE_YES);
@@ -2660,14 +2677,14 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 	(void) opt;
 #endif
 
+#ifdef WITH_XDIALOG
+	if(opt != NULL && opt->wizard)
+		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
+#endif
 	if(conf->button.without_cancel != true)
 	{
 		label = (conf->button.cancel_label != NULL)
 			? conf->button.cancel_label : "Cancel";
-#ifdef WITH_XDIALOG
-		if(opt != NULL && opt->wizard)
-			label = "Previous";
-#endif
 		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
 				GTK_RESPONSE_CANCEL);
 	}
