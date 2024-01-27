@@ -1,6 +1,6 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.0.1
-SUBDIRS	= src tests tools
+SUBDIRS	= doc src tests tools
 LN	= ln -f
 RM	= rm -f
 TAR	= tar
@@ -21,6 +21,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README.md \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gbsddialog.1 \
+		$(PACKAGE)-$(VERSION)/doc/Xdialog.1 \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/builders.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
