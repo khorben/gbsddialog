@@ -2679,10 +2679,6 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 	(void) opt;
 #endif
 
-#ifdef WITH_XDIALOG
-	if(opt != NULL && opt->wizard)
-		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
-#endif
 	if(conf->button.without_cancel != true)
 	{
 		label = (conf->button.cancel_label != NULL)
@@ -2711,6 +2707,10 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 				(conf->button.help_label != NULL)
 				? conf->button.help_label : "Help",
 				GTK_RESPONSE_HELP);
+#ifdef WITH_XDIALOG
+	if(opt != NULL && opt->wizard)
+		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
+#endif
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			conf->button.default_cancel
 			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
