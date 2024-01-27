@@ -167,6 +167,9 @@ enum OPTS {
 	OK_LABEL,
 	OUTPUT_FD,
 	OUTPUT_SEPARATOR,
+#ifdef WITH_XDIALOG
+	PRINT,
+#endif
 	PRINT_MAXSIZE,
 	PRINT_SIZE,
 	PRINT_VERSION,
@@ -374,6 +377,7 @@ static struct option longopts[] = {
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 #ifdef WITH_XDIALOG
 	{"password",          no_argument,       NULL, INSECURE},
+	{"print",             no_argument,       NULL, PRINT},
 #endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
 	{"print-size",        no_argument,       NULL, PRINT_SIZE},
@@ -1218,6 +1222,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case OUTPUT_SEPARATOR:
 			opt->item_output_sep = optarg;
 			break;
+#ifdef WITH_XDIALOG
+		case PRINT:
+			opt->print = true;
+			break;
+#endif
 		case PRINT_MAXSIZE:
 			opt->mandatory_dialog = false;
 			get_workarea(gbd->screen, &workarea);
