@@ -105,12 +105,14 @@ struct textbox_data
 	guint id;
 	GIOChannel * channel;
 
+#ifdef WITH_XDIALOG
 	/* printing */
 	GtkWidget * button;
 	PangoFontDescription * font;
 	double font_size;
 	double line_space;
 	guint line_count;
+#endif
 };
 
 struct timebox_data
@@ -2154,7 +2156,9 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	td->id = 0;
+#ifdef WITH_XDIALOG
 	gtk_widget_set_sensitive(td->button, TRUE);
+#endif
 	return FALSE;
 }
 
@@ -2179,7 +2183,9 @@ static gboolean _textbox_on_idle(gpointer data)
 		_builder_dialog_error(td->dialog, NULL, NULL, buf);
 		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
 		td->id = 0;
+#ifdef WITH_XDIALOG
 		gtk_widget_set_sensitive(td->button, TRUE);
+#endif
 		return FALSE;
 	}
 	td->channel = g_io_channel_unix_new(td->fd);
