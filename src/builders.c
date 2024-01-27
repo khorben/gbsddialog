@@ -5,6 +5,9 @@
  *
  * Copyright (c) 2023-2024 The FreeBSD Foundation
  *
+ * The printing code is:
+ * Copyright (c) 2015-2024 Pierre Pronchery <khorben@defora.org>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -33,6 +36,9 @@
 #include <stdio.h>
 #include <strings.h>
 #include <time.h>
+#ifdef WITH_XDIALOG
+# include <math.h>
+#endif
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -87,13 +93,24 @@ struct pause_data
 
 struct textbox_data
 {
+	struct options const * opt;
+
+	gboolean editable;
 	char const * filename;
 	int fd;
 	GtkWidget * dialog;
+	GtkWidget * view;
 	GtkTextBuffer * buffer;
 	GtkTextIter iter;
 	guint id;
 	GIOChannel * channel;
+
+	/* printing */
+	GtkWidget * button;
+	PangoFontDescription * font;
+	double font_size;
+	double line_space;
+	guint line_count;
 };
 
 struct timebox_data
@@ -1986,6 +2003,11 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
 static gboolean _textbox_on_can_read_eof(gpointer data);
 static gboolean _textbox_on_idle(gpointer data);
+#if GTK_CHECK_VERSION(2, 10, 0)
+# ifdef WITH_XDIALOG
+static void _textbox_on_print(gpointer data);
+# endif
+#endif
 
 int builder_textbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -1995,7 +2017,6 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	struct textbox_data td;
 	GtkWidget * container;
 	GtkWidget * window;
-	GtkWidget * widget;
 #ifdef WITH_XDIALOG
 	PangoFontDescription * desc = NULL;
 #endif
@@ -2005,6 +2026,8 @@ int builder_textbox(struct bsddialog_conf const * conf,
 		error_args(opt->name, argc, argv);
 		return BSDDIALOG_ERROR;
 	}
+	td.opt = opt;
+	td.editable = FALSE;
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -2018,33 +2041,64 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	if(conf->shadow == false)
 		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
 				GTK_SHADOW_NONE);
-	widget = gtk_text_view_new();
-	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(widget), FALSE);
-	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(widget), GTK_WRAP_WORD_CHAR);
+	td.view = gtk_text_view_new();
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(td.view), FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(td.view), td.editable);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(td.view), GTK_WRAP_WORD_CHAR);
 #ifdef WITH_XDIALOG
 	if(opt->fixed_font)
 	{
 		desc = pango_font_description_from_string("Monospace");
 # if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_widget_override_font(widget, desc);
+		gtk_widget_override_font(td.view, desc);
 # else
-		gtk_widget_modify_font(widget, desc);
+		gtk_widget_modify_font(td.view, desc);
 # endif
 	}
 #endif
-	td.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-	gtk_container_add(GTK_CONTAINER(window), widget);
+	td.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(td.view));
+	gtk_container_add(GTK_CONTAINER(window), td.view);
 	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
 #ifdef WITH_XDIALOG
 	if(!opt->without_buttons)
 #endif
+	{
+#if GTK_CHECK_VERSION(2, 10, 0)
+# ifdef WITH_XDIALOG
+		if(opt->print)
+		{
+#  if GTK_CHECK_VERSION(3, 12, 0)
+			container = gtk_dialog_get_header_bar(
+					GTK_DIALOG(td.dialog));
+			if(container == NULL)
+#  endif
+#  if GTK_CHECK_VERSION(2, 14, 0)
+				container = gtk_dialog_get_action_area(
+						GTK_DIALOG(td.dialog));
+#  else
+			container = td.dialog->action_area;
+#  endif
+#  if GTK_CHECK_VERSION(3, 10, 0)
+			td.button = gtk_button_new_with_label("Print");
+#  else
+			td.button = gtk_button_new_from_stock(GTK_STOCK_PRINT);
+#  endif
+			gtk_widget_set_sensitive(td.button, FALSE);
+			g_signal_connect_swapped(td.button, "clicked",
+					G_CALLBACK(_textbox_on_print), &td);
+			gtk_widget_show(td.button);
+			gtk_container_add(GTK_CONTAINER(container), td.button);
+		}
+# endif
+#endif
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);
+	}
 #if GTK_CHECK_VERSION(3, 12, 0)
-	if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(td.dialog))) != NULL)
-		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(widget),
+	if((container = gtk_dialog_get_header_bar(GTK_DIALOG(td.dialog)))
+			!= NULL)
+		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(container),
 				FALSE);
 #endif
 	td.id = g_idle_add(_textbox_on_idle, &td);
@@ -2100,6 +2154,7 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	td->id = 0;
+	gtk_widget_set_sensitive(td->button, TRUE);
 	return FALSE;
 }
 
@@ -2124,6 +2179,7 @@ static gboolean _textbox_on_idle(gpointer data)
 		_builder_dialog_error(td->dialog, NULL, NULL, buf);
 		gtk_dialog_response(GTK_DIALOG(td->dialog), BSDDIALOG_ERROR);
 		td->id = 0;
+		gtk_widget_set_sensitive(td->button, TRUE);
 		return FALSE;
 	}
 	td->channel = g_io_channel_unix_new(td->fd);
@@ -2136,6 +2192,153 @@ static gboolean _textbox_on_idle(gpointer data)
 	gtk_text_buffer_get_start_iter(td->buffer, &td->iter);
 	return FALSE;
 }
+
+#if GTK_CHECK_VERSION(2, 10, 0)
+# ifdef WITH_XDIALOG
+static void _print_dialog_on_begin_print(gpointer data);
+static void _print_dialog_on_done(GtkPrintOperation * operation,
+		GtkPrintOperationResult result, gpointer data);
+static void _print_dialog_on_draw_page(GtkPrintOperation * operation,
+		GtkPrintContext * context, gint page, gpointer data);
+static void _print_dialog_on_end_print(gpointer data);
+static gboolean _print_dialog_on_paginate(GtkPrintOperation * operation,
+		GtkPrintContext * context, gpointer data);
+
+static void _textbox_on_print(gpointer data)
+{
+	struct textbox_data * td = data;
+	GtkPrintOperation * operation;
+	GtkPrintSettings * settings;
+	GError * error = NULL;
+
+	operation = gtk_print_operation_new();
+	gtk_print_operation_set_embed_page_setup(operation, TRUE);
+	gtk_print_operation_set_unit(operation, GTK_UNIT_POINTS);
+	gtk_print_operation_set_use_full_page(operation, FALSE);
+	g_signal_connect_swapped(operation, "begin-print", G_CALLBACK(
+				_print_dialog_on_begin_print), td);
+	g_signal_connect(operation, "done", G_CALLBACK(_print_dialog_on_done),
+			td);
+	g_signal_connect(operation, "draw-page", G_CALLBACK(
+				_print_dialog_on_draw_page), td);
+	g_signal_connect_swapped(operation, "end-print", G_CALLBACK(
+				_print_dialog_on_end_print), td);
+	g_signal_connect(operation, "paginate", G_CALLBACK(
+				_print_dialog_on_paginate), td);
+	settings = gtk_print_settings_new();
+	gtk_print_operation_set_print_settings(operation, settings);
+	gtk_print_operation_run(operation,
+			GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+			GTK_WINDOW(td->dialog), &error);
+	g_object_unref(settings);
+	g_object_unref(operation);
+	if(error)
+	{
+		_builder_dialog_error(td->dialog, NULL, NULL, error->message);
+		g_error_free(error);
+	}
+}
+
+static void _print_dialog_on_begin_print(gpointer data)
+{
+	const gdouble size = 9.0;
+	struct textbox_data * td = data;
+	char const * font;
+
+	/* FIXME obtain the actual font */
+	font = td->opt->fixed_font ? "Monospace" : "Sans";
+	td->font = pango_font_description_from_string(font);
+	pango_font_description_set_size(td->font,
+			pango_units_from_double(size));
+	td->font_size = size;
+	td->line_space = 0.0;
+}
+
+static void _print_dialog_on_done(GtkPrintOperation * operation,
+		GtkPrintOperationResult result, gpointer data)
+{
+	struct textbox_data * td = data;
+	GError * error = NULL;
+
+	switch(result)
+	{
+		case GTK_PRINT_OPERATION_RESULT_ERROR:
+			gtk_print_operation_get_error(operation, &error);
+			_builder_dialog_error(td->dialog, NULL, NULL,
+					error->message);
+			g_error_free(error);
+			break;
+		default:
+			break;
+	}
+}
+
+static void _print_dialog_on_draw_page(GtkPrintOperation * operation,
+		GtkPrintContext * context, gint page, gpointer data)
+{
+	struct textbox_data * td = data;
+	cairo_t * cairo;
+	PangoLayout * layout;
+	guint i;
+	gboolean valid = TRUE;
+	GtkTextIter end;
+	gchar * p;
+	(void) operation;
+
+	cairo = gtk_print_context_get_cairo_context(context);
+	layout = gtk_print_context_create_pango_layout(context);
+	/* set the font */
+	pango_layout_set_font_description(layout, td->font);
+	/* print the text */
+	cairo_move_to(cairo, 0.0, 0.0);
+	gtk_text_buffer_get_iter_at_line(td->buffer, &td->iter,
+			td->line_count * page);
+	for(i = 0, valid = !gtk_text_iter_is_end(&td->iter);
+			i < td->line_count && valid == TRUE;
+			i++, valid = gtk_text_iter_forward_line(&td->iter))
+	{
+		end = td->iter;
+		if(!gtk_text_iter_ends_line(&end))
+			gtk_text_iter_forward_to_line_end(&end);
+		p = gtk_text_buffer_get_text(td->buffer, &td->iter, &end,
+				FALSE);
+		/* FIXME the line may be too long */
+		pango_layout_set_text(layout, p, -1);
+		g_free(p);
+		pango_cairo_show_layout(cairo, layout);
+		cairo_rel_move_to(cairo, 0.0, td->font_size + td->line_space);
+	}
+	g_object_unref(layout);
+}
+
+static void _print_dialog_on_end_print(gpointer data)
+{
+	struct textbox_data * td = data;
+
+	pango_font_description_free(td->font);
+	if(td->editable)
+		gtk_text_view_set_editable(GTK_TEXT_VIEW(td->view), TRUE);
+}
+
+static gboolean _print_dialog_on_paginate(GtkPrintOperation * operation,
+		GtkPrintContext * context, gpointer data)
+{
+	struct textbox_data * td = data;
+	gint count;
+	double height;
+
+	/* count the lines to print */
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(td->view), FALSE);
+	count = gtk_text_buffer_get_line_count(td->buffer);
+	/* count the pages required */
+	height = gtk_print_context_get_height(context);
+	td->line_count = floor(height / (td->font_size + td->line_space));
+	gtk_print_operation_set_n_pages(operation,
+			((count - 1) / td->line_count) + 1);
+	return TRUE;
+}
+# endif
+#endif
 
 
 /* builder_timebox */

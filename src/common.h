@@ -132,6 +132,7 @@ struct options
 	int buttons_style;
 	bool fixed_font;
 	GtkJustification justify;
+	bool print;
 	bool without_buttons;
 	const char *icon;
 	const char *wmclass;

@@ -32,13 +32,13 @@ gbsddialog3.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks
 	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK3) $(CFLAGS) -o gbsddialog3.o -c gbsddialog.c
 
 Xdialog2: Xdialog2.o
-	$(CC) $(LDFLAGSF_GTK2) $(LDFLAGS) -o Xdialog2 Xdialog2.o
+	$(CC) $(LDFLAGSF_GTK2) -lm $(LDFLAGS) -o Xdialog2 Xdialog2.o
 
 Xdialog2.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
 	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o Xdialog2.o -c Xdialog.c
 
 Xdialog3: Xdialog3.o
-	$(CC) $(LDFLAGSF_GTK3) $(LDFLAGS) -o Xdialog3 Xdialog3.o
+	$(CC) $(LDFLAGSF_GTK3) -lm $(LDFLAGS) -o Xdialog3 Xdialog3.o
 
 Xdialog3.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
 	$(CC) $(CPPFLAGS) `pkg-config --cflags gtk+-3.0` $(CFLAGS) -o Xdialog3.o -c Xdialog.c
