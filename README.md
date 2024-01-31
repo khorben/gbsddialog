@@ -60,8 +60,9 @@ The current status according to the development plan above is at step 2.
 implemented. However:
 
 - A few features of `bsddialog(1)` are still missing, such as highlights for
-  text, initial window sizing, and generic buttons.
-- Some features of `Xdialog(1)` are still missing.
+  text or generic buttons.
+- Some features of `Xdialog(1)` are still missing or incomplete, such as the
+  buildlist dialog, or tracking changes to files in logbox and tailbox.
 - Depending on the version of Gtk+ installed, some of the API calls used may be
   considered obsolete during the build. (Triggering many compilation warnings)
 
