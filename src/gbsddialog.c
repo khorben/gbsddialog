@@ -248,6 +248,7 @@ enum OPTS {
 	RANGESBOX3,
 	SPINSBOX2,
 	SPINSBOX3,
+	TAILBOX,
 #endif
 	TEXTBOX,
 	TIMEBOX,
@@ -414,6 +415,9 @@ static struct option longopts[] = {
 	{"tab-escape",        no_argument,       NULL, TAB_ESCAPE},
 #if 0
 	{"tab-len",           required_argument, NULL, TAB_LEN},
+#endif
+#ifdef WITH_XDIALOG
+	{"tailbox",           no_argument,       NULL, TAILBOX},
 #endif
 	{"text-escape",       no_argument,       NULL, TEXT_ESCAPE},
 	{"text-unchanged",    no_argument,       NULL, TEXT_UNCHANGED},
@@ -1628,6 +1632,15 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog", opt->name);
 			opt->name = "--3spinsbox";
 			opt->dialogbuilder = builder_3spinsbox;
+			break;
+		case TAILBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --tailbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--tailbox";
+			opt->dialogbuilder = builder_tailbox;
+			conf->auto_downmargin = 1;
 			break;
 #endif
 		case TEXTBOX:

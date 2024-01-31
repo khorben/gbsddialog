@@ -891,6 +891,7 @@ int builder_editbox(struct bsddialog_conf const * conf,
 	}
 	td.opt = opt;
 	td.editable = TRUE;
+	td.scroll = FALSE;
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -1056,6 +1057,106 @@ int builder_fselect(struct bsddialog_conf const * conf,
 {
 	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
 			GTK_FILE_CHOOSER_ACTION_SAVE);
+}
+
+
+/* builder_tailbox */
+int builder_tailbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	/* XXX copy/pasted from src/builders.c */
+	int ret;
+	struct textbox_data td;
+	GtkWidget * container;
+	GtkWidget * window;
+	PangoFontDescription * desc = NULL;
+
+	if(argc > 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	td.opt = opt;
+	td.editable = FALSE;
+	td.scroll = TRUE;
+	td.filename = text;
+	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(td.dialog));
+#else
+	container = td.dialog->vbox;
+#endif
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
+	td.view = gtk_text_view_new();
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(td.view), FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(td.view), td.editable);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(td.view), GTK_WRAP_WORD_CHAR);
+	if(opt->fixed_font)
+	{
+		desc = pango_font_description_from_string("Monospace");
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_widget_override_font(td.view, desc);
+#else
+		gtk_widget_modify_font(td.view, desc);
+#endif
+	}
+	td.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(td.view));
+	gtk_container_add(GTK_CONTAINER(window), td.view);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
+	gtk_widget_show_all(window);
+	if(!opt->without_buttons)
+	{
+#if GTK_CHECK_VERSION(2, 10, 0)
+		if(opt->print != NULL)
+		{
+# if GTK_CHECK_VERSION(3, 12, 0)
+			container = gtk_dialog_get_header_bar(
+					GTK_DIALOG(td.dialog));
+			if(container == NULL)
+# endif
+# if GTK_CHECK_VERSION(2, 14, 0)
+				container = gtk_dialog_get_action_area(
+						GTK_DIALOG(td.dialog));
+# else
+			container = td.dialog->action_area;
+# endif
+# if GTK_CHECK_VERSION(3, 10, 0)
+			td.button = gtk_button_new_with_label("Print");
+# else
+			td.button = gtk_button_new_from_stock(GTK_STOCK_PRINT);
+# endif
+			g_signal_connect_swapped(td.button, "clicked",
+					G_CALLBACK(_textbox_on_print), &td);
+			gtk_widget_show(td.button);
+			gtk_container_add(GTK_CONTAINER(container), td.button);
+		}
+		else
+			td.button = NULL;
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
+				GTK_RESPONSE_OK);
+	}
+#if GTK_CHECK_VERSION(3, 12, 0)
+	if((container = gtk_dialog_get_header_bar(GTK_DIALOG(td.dialog)))
+			!= NULL)
+		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(container),
+				FALSE);
+#endif
+	td.id = g_idle_add(_textbox_on_idle, &td);
+	/* FIXME also monitor changes to the file */
+	ret = _builder_dialog_run(conf, td.dialog);
+	if(td.id != 0)
+		g_source_remove(td.id);
+	gtk_widget_destroy(td.dialog);
+	if(desc != NULL)
+		pango_font_description_free(desc);
+	return ret;
 }
 
 

@@ -129,6 +129,11 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 int builder_rangebox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+# ifdef WITH_XDIALOG
+int builder_tailbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
+#endif
 int builder_textbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);

@@ -95,7 +95,12 @@ struct textbox_data
 {
 	struct options const * opt;
 
+	/* preferences */
 	gboolean editable;
+#ifdef WITH_XDIALOG
+	gboolean scroll;
+#endif
+
 	char const * filename;
 	int fd;
 	GtkWidget * dialog;
@@ -2018,6 +2023,9 @@ int builder_rangebox(struct bsddialog_conf const * conf,
 static gboolean _textbox_on_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
 static gboolean _textbox_on_can_read_eof(gpointer data);
+#ifdef WITH_XDIALOG
+static gboolean _textbox_on_can_read_scroll(gpointer data);
+#endif
 static gboolean _textbox_on_idle(gpointer data);
 #if GTK_CHECK_VERSION(2, 10, 0)
 # ifdef WITH_XDIALOG
@@ -2044,6 +2052,9 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	}
 	td.opt = opt;
 	td.editable = FALSE;
+#ifdef WITH_XDIALOG
+	td.scroll = FALSE;
+#endif
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -2167,6 +2178,13 @@ static gboolean _textbox_on_can_read(GIOChannel * channel,
 	else if(status == G_IO_STATUS_EOF)
 		return _textbox_on_can_read_eof(td);
 	gtk_text_buffer_insert(td->buffer, &td->iter, buf, r);
+#ifdef WITH_XDIALOG
+	if(td->scroll)
+	{
+		td->id = g_idle_add(_textbox_on_can_read_scroll, td);
+		return FALSE;
+	}
+#endif
 	return TRUE;
 }
 
@@ -2184,6 +2202,18 @@ static gboolean _textbox_on_can_read_eof(gpointer data)
 #endif
 	return FALSE;
 }
+
+#ifdef WITH_XDIALOG
+static gboolean _textbox_on_can_read_scroll(gpointer data)
+{
+	struct textbox_data * td = data;
+
+	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(td->view), &td->iter,
+			0.0, TRUE, 0.0, 1.0);
+	td->id = g_io_add_watch(td->channel, G_IO_IN, _textbox_on_can_read, td);
+	return FALSE;
+}
+#endif
 
 static gboolean _textbox_on_idle(gpointer data)
 {
