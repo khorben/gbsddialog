@@ -137,6 +137,7 @@ struct options
 	GtkJustification justify;
 	unsigned int password;
 	char const * print;
+	bool reverse;
 	bool without_buttons;
 	const char *icon;
 	const char *wmclass;

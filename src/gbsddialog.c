@@ -178,6 +178,7 @@ enum OPTS {
 	PRINT_VERSION,
 	QUOTED,
 #ifdef WITH_XDIALOG
+	REVERSE,
 	RIGHT,
 #endif
 	RIGHT1_BUTTON,
@@ -391,6 +392,7 @@ static struct option longopts[] = {
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
 	{"quoted",            no_argument,       NULL, QUOTED},
 #ifdef WITH_XDIALOG
+	{"reverse",           no_argument,       NULL, REVERSE},
 	{"right",             no_argument,       NULL, RIGHT},
 #endif
 #if 0
@@ -1310,6 +1312,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->item_always_quote = true;
 			break;
 #ifdef WITH_XDIALOG
+		case REVERSE:
+			opt->reverse = true;
+			break;
 		case RIGHT:
 # if GTK_CHECK_VERSION(3, 14, 0)
 			opt->halign = GTK_ALIGN_END;

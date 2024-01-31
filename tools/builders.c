@@ -1182,7 +1182,10 @@ static gboolean _logbox_on_can_read(GIOChannel * channel,
 	else if(status == G_IO_STATUS_EOF)
 		return _logbox_on_can_read_eof(ld);
 	line[r] = '\0';
-	gtk_list_store_append(GTK_LIST_STORE(ld->store), &iter);
+	if(ld->opt->reverse)
+		gtk_list_store_insert(GTK_LIST_STORE(ld->store), &iter, 0);
+	else
+		gtk_list_store_append(GTK_LIST_STORE(ld->store), &iter);
 	/* FIXME determine the timestamp */
 	gtk_list_store_set(GTK_LIST_STORE(ld->store), &iter, 0, "", 1, line,
 			-1);
