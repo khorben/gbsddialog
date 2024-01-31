@@ -87,9 +87,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
@@ -115,9 +113,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
@@ -183,9 +179,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget1), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget1), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	min = strtol(argv[1], NULL, 10);
 	max = strtol(argv[2], NULL, 10);
@@ -211,9 +205,7 @@ int builder_2rangesbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget2), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget2), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	min = strtol(argv[5], NULL, 10);
 	max = strtol(argv[6], NULL, 10);
@@ -301,9 +293,7 @@ int builder_2spinsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 2 */
 	min = strtol(argv[4], NULL, 10);
@@ -326,9 +316,7 @@ int builder_2spinsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	gtk_box_pack_start(GTK_BOX(container), box, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
@@ -390,9 +378,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer1 = gtk_entry_buffer_new(argv[1], -1);
@@ -418,9 +404,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer2 = gtk_entry_buffer_new(argv[3], -1);
@@ -446,9 +430,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
 	buffer3 = gtk_entry_buffer_new(argv[5], -1);
@@ -516,9 +498,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget1), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget1), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget1, FALSE, TRUE, BORDER_WIDTH);
 	min = strtol(argv[1], NULL, 10);
 	max = strtol(argv[2], NULL, 10);
@@ -544,9 +524,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget2), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget2), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget2, FALSE, TRUE, BORDER_WIDTH);
 	min = strtol(argv[5], NULL, 10);
 	max = strtol(argv[6], NULL, 10);
@@ -572,9 +550,7 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget3), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget3), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget3, FALSE, TRUE, BORDER_WIDTH);
 	min = strtol(argv[9], NULL, 10);
 	max = strtol(argv[10], NULL, 10);
@@ -663,9 +639,7 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 2 */
 	min = strtol(argv[4], NULL, 10);
@@ -688,9 +662,7 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	/* spin 3 */
 	min = strtol(argv[8], NULL, 10);
@@ -713,9 +685,7 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
 #endif
-#ifdef WITH_XDIALOG
 	gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
-#endif
 	gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, BORDER_WIDTH);
 	gtk_box_pack_start(GTK_BOX(container), box, FALSE, TRUE, BORDER_WIDTH);
 	_builder_dialog_buttons(dialog, conf, opt);
