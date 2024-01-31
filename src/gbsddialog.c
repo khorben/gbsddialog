@@ -233,6 +233,7 @@ enum OPTS {
 #ifdef WITH_XDIALOG
 	INPUTSBOX2,
 	INPUTSBOX3,
+	LOGBOX,
 #endif
 	MENU,
 	MIXEDFORM,
@@ -459,6 +460,9 @@ static struct option longopts[] = {
 	{"gauge",        no_argument, NULL, GAUGE},
 	{"infobox",      no_argument, NULL, INFOBOX},
 	{"inputbox",     no_argument, NULL, INPUTBOX},
+#ifdef WITH_XDIALOG
+	{"logbox",       no_argument, NULL, LOGBOX},
+#endif
 	{"menu",         no_argument, NULL, MENU},
 	{"mixedform",    no_argument, NULL, MIXEDFORM},
 	{"mixedgauge",   no_argument, NULL, MIXEDGAUGE},
@@ -1521,6 +1525,15 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 						"--and-dialog", opt->name);
 			opt->name = "--3inputsbox";
 			opt->dialogbuilder = builder_3inputsbox;
+			conf->auto_downmargin = 1;
+			break;
+		case LOGBOX:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --logbox without "
+						"--and-dialog", opt->name);
+			opt->name = "--logbox";
+			opt->dialogbuilder = builder_logbox;
 			conf->auto_downmargin = 1;
 			break;
 #endif

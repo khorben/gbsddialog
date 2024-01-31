@@ -38,6 +38,21 @@
 
 
 /* private */
+/* types */
+struct logbox_data
+{
+	struct options const * opt;
+
+	char const * filename;
+	int fd;
+	GtkWidget * dialog;
+	GtkListStore * store;
+	GtkWidget * view;
+	guint id;
+	GIOChannel * channel;
+};
+
+
 /* prototypes */
 static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -1057,6 +1072,164 @@ int builder_fselect(struct bsddialog_conf const * conf,
 {
 	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
 			GTK_FILE_CHOOSER_ACTION_SAVE);
+}
+
+
+/* builder_logbox */
+static gboolean _logbox_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data);
+static gboolean _logbox_on_can_read_eof(gpointer data);
+static gboolean _logbox_on_idle(gpointer data);
+
+int builder_logbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	struct logbox_data ld;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	if(argc > 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	ld.opt = opt;
+	ld.filename = text;
+	ld.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(ld.dialog));
+#else
+	container = td.dialog->vbox;
+#endif
+	ld.store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
+	ld.view = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ld.view), TRUE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(ld.view),
+			GTK_TREE_MODEL(ld.store));
+	renderer = gtk_cell_renderer_text_new();
+	if(opt->fixed_font)
+		g_object_set(renderer, "family", "Monospace", NULL);
+	column = gtk_tree_view_column_new_with_attributes("Date - Time",
+			renderer, "text", 0, NULL);
+	gtk_tree_view_column_set_expand(column, FALSE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ld.view), column);
+	renderer = gtk_cell_renderer_text_new();
+	if(opt->fixed_font)
+		g_object_set(renderer, "family", "Monospace", NULL);
+	column = gtk_tree_view_column_new_with_attributes("Log message",
+			renderer, "text", 1, NULL);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(ld.view), column);
+	gtk_container_add(GTK_CONTAINER(window), ld.view);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
+	gtk_widget_show_all(window);
+	if(!opt->without_buttons)
+		_builder_dialog_buttons(ld.dialog, conf, opt);
+#if GTK_CHECK_VERSION(3, 12, 0)
+	if((container = gtk_dialog_get_header_bar(GTK_DIALOG(ld.dialog)))
+			!= NULL)
+		gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(container),
+				FALSE);
+#endif
+	ld.id = g_idle_add(_logbox_on_idle, &ld);
+	/* FIXME also monitor changes to the file */
+	ret = _builder_dialog_run(conf, ld.dialog);
+	if(ld.id != 0)
+		g_source_remove(ld.id);
+	gtk_widget_destroy(ld.dialog);
+	return ret;
+}
+
+static gboolean _logbox_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data)
+{
+	struct logbox_data * ld = data;
+	GIOStatus status;
+	gchar * line;
+	gsize r;
+	GError * error = NULL;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN)
+	{
+		_builder_dialog_error(ld->dialog, NULL, NULL,
+				"Unexpected condition");
+		return _logbox_on_can_read_eof(ld);
+	}
+	status = g_io_channel_read_line(channel, &line, NULL, &r, &error);
+	if(status == G_IO_STATUS_ERROR)
+	{
+		_builder_dialog_error(ld->dialog, NULL, NULL, error->message);
+		g_error_free(error);
+		return _logbox_on_can_read_eof(ld);
+	}
+	else if(status == G_IO_STATUS_AGAIN)
+		return TRUE;
+	else if(status == G_IO_STATUS_EOF)
+		return _logbox_on_can_read_eof(ld);
+	line[r] = '\0';
+	gtk_list_store_append(GTK_LIST_STORE(ld->store), &iter);
+	/* FIXME determine the timestamp */
+	gtk_list_store_set(GTK_LIST_STORE(ld->store), &iter, 0, "", 1, line,
+			-1);
+	g_free(line);
+	return TRUE;
+}
+
+static gboolean _logbox_on_can_read_eof(gpointer data)
+{
+	struct logbox_data * ld = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ld->id = 0;
+	return FALSE;
+}
+
+static gboolean _logbox_on_idle(gpointer data)
+{
+	struct logbox_data * ld = data;
+	char buf[BUFSIZ];
+	gboolean close = TRUE;
+
+	ld->id = 0;
+	if(strcmp(ld->filename, "-") == 0)
+	{
+		ld->fd = STDIN_FILENO;
+		close = FALSE;
+	}
+	else if((ld->fd = open(ld->filename, O_RDONLY)) <= -1)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", ld->filename,
+				strerror(errno));
+		_builder_dialog_error(ld->dialog, NULL, NULL, buf);
+		gtk_dialog_response(GTK_DIALOG(ld->dialog), BSDDIALOG_ERROR);
+		ld->id = 0;
+		return FALSE;
+	}
+	ld->channel = g_io_channel_unix_new(ld->fd);
+	g_io_channel_set_close_on_unref(ld->channel, close);
+	g_io_channel_set_encoding(ld->channel, NULL, NULL);
+	/* XXX ignore errors */
+	g_io_channel_set_flags(ld->channel, g_io_channel_get_flags(ld->channel)
+			| G_IO_FLAG_NONBLOCK, NULL);
+	ld->id = g_io_add_watch(ld->channel, G_IO_IN, _logbox_on_can_read, ld);
+	return FALSE;
 }
 
 

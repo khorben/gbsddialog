@@ -102,6 +102,11 @@ int builder_infobox(struct bsddialog_conf const * conf,
 int builder_inputbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+# ifdef WITH_XDIALOG
+int builder_logbox(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
+#endif
 int builder_menu(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
