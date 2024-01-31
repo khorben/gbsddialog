@@ -195,6 +195,9 @@ enum OPTS {
 	SHADOW,
 	SINGLE_QUOTED,
 	SLEEP,
+#ifdef WITH_XDIALOG
+	SMOOTH,
+#endif
 	STDERR,
 	STDOUT,
 	SWITCH_BUTTONS,
@@ -412,6 +415,9 @@ static struct option longopts[] = {
 	{"shadow",            no_argument,       NULL, SHADOW},
 	{"single-quoted",     no_argument,       NULL, SINGLE_QUOTED},
 	{"sleep",             required_argument, NULL, SLEEP},
+#ifdef WITH_XDIALOG
+	{"smooth",            no_argument,       NULL, SMOOTH},
+#endif
 	{"stderr",            no_argument,       NULL, STDERR},
 	{"stdout",            no_argument,       NULL, STDOUT},
 	{"switch-buttons",    no_argument,       NULL, SWITCH_BUTTONS},
@@ -1345,6 +1351,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case SLEEP:
 			conf->sleep = strtoul(optarg, NULL, 10) * 1000;
 			break;
+#ifdef WITH_XDIALOG
+		case SMOOTH:
+			/* no-op */
+			break;
+#endif
 		case STDERR:
 			opt->output_fd = STDERR_FILENO;
 			break;
