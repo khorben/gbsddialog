@@ -78,8 +78,15 @@ int main(int argc, char * argv[])
 	{
 		if(strcmp(argv[i], "--version") == 0)
 		{
-			printf("Version: %s (libbsddialog: %s)\n",
-					VERSION, LIBBSDDIALOG_VERSION);
+#ifdef WITH_XDIALOG
+			if((p = getenv("XDIALOG_HIGH_DIALOG_COMPAT")) == NULL
+					|| (strcmp(p, "1") != 0
+						&& strcasecmp(p, "true") != 0))
+				printf("%s\n", VERSION);
+			else
+#endif
+				printf("Version: %s (libbsddialog: %s)\n",
+						VERSION, LIBBSDDIALOG_VERSION);
 			return (BSDDIALOG_OK);
 		}
 #ifdef WITH_XDIALOG

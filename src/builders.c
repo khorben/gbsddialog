@@ -922,6 +922,8 @@ int builder_infobox(struct bsddialog_conf const * conf,
 #endif
 #if defined(WITH_XDIALOG)
 	GtkWidget * image;
+	char const * p;
+	int t;
 #endif
 	GtkButtonsType buttons = GTK_BUTTONS_NONE;
 	gdouble ex;
@@ -930,12 +932,24 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	int timeout = (conf->sleep > INT_MAX) ? INT_MAX : (int)conf->sleep;
 
 #ifdef WITH_XDIALOG
+	if(opt->high_compat)
+	{
+		t = (p = getenv("XDIALOG_INFOBOX_TIMEOUT")) != NULL
+			? strtol(p, NULL, 10) : 0;
+		if(t == 0)
+			return builder_msgbox(conf, text, rows, cols,
+					argc, argv, opt);
+		timeout = t;
+	}
 	if(argc == 1)
 	{
 		if((timeout = strtol(argv[0], NULL, 10)) > 0)
 			timeout = timeout * 1000;
 		argc--;
 	}
+	else if((p = getenv("XDIALOG_INFOBOX_TIMEOUT")) != NULL
+			&& (t = strtol(p, NULL, 10)) > 0)
+		timeout = t;
 #endif
 	if(argc > 0)
 	{

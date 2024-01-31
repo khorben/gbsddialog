@@ -133,6 +133,7 @@ struct options
 	bool beep_after;
 	int buttons_style;
 	bool fixed_font;
+	bool high_compat;
 	GtkJustification justify;
 	unsigned int password;
 	char const * print;

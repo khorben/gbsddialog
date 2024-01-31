@@ -934,6 +934,9 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 	int arg, i;
 	struct bsddialog_conf * conf = &gbd->conf;
 	struct options * opt = &gbd->opt;
+#ifdef WITH_XDIALOG
+	char const * p;
+#endif
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
@@ -952,13 +955,35 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 	opt->output_fd = STDERR_FILENO;
 	opt->max_input_form = 2048;
 	opt->mandatory_dialog = true;
-#if GTK_CHECK_VERSION(3, 14, 0)
-	opt->halign = GTK_ALIGN_START;
-#endif
 #ifdef WITH_XDIALOG
-	opt->justify = GTK_JUSTIFY_LEFT;
-#endif
+	opt->cr_wrap = true;
+# if GTK_CHECK_VERSION(3, 14, 0)
+	opt->halign = GTK_ALIGN_CENTER;
+# endif
+	opt->halign = 0.5;
+	opt->justify = GTK_JUSTIFY_CENTER;
+#else
+# if GTK_CHECK_VERSION(3, 14, 0)
+	opt->halign = GTK_ALIGN_START;
+# endif
 	opt->position = GTK_WIN_POS_CENTER;
+#endif
+
+#ifdef WITH_XDIALOG
+	if((p = getenv("XDIALOG_HIGH_DIALOG_COMPAT")) != NULL
+			&& (strcmp(p, "1") == 0 || strcasecmp(p, "true") == 0))
+	{
+		opt->cr_wrap = false;
+		opt->fixed_font = true;
+# if GTK_CHECK_VERSION(3, 14, 0)
+		opt->halign = GTK_ALIGN_START;
+# else
+		opt->halign = 0.0;
+# endif
+		opt->high_compat = true;
+		opt->justify = GTK_JUSTIFY_LEFT;
+	}
+#endif
 
 	for(i = 0; i < argc; i++)
 		if(strcmp(argv[i], "--and-dialog") == 0
