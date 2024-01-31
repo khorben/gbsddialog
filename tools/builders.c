@@ -97,6 +97,8 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
+	if(opt->password & (0x1 << 0))
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
@@ -123,7 +125,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
-	if(conf->form.securech != '\0')
+	if(opt->password & (0x1 << 1))
 		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
@@ -388,6 +390,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
+	if(opt->password & (0x1 << 0))
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
@@ -414,6 +418,8 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
+	if(opt->password & (0x1 << 1))
+		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
 	gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
@@ -440,7 +446,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
-	if(conf->form.securech != '\0')
+	if(opt->password & (0x1 << 2))
 		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);

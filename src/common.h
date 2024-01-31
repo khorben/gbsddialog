@@ -134,6 +134,7 @@ struct options
 	int buttons_style;
 	bool fixed_font;
 	GtkJustification justify;
+	unsigned int password;
 	char const * print;
 	bool without_buttons;
 	const char *icon;

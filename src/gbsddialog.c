@@ -170,6 +170,7 @@ enum OPTS {
 	OUTPUT_FD,
 	OUTPUT_SEPARATOR,
 #ifdef WITH_XDIALOG
+	PASSWORD,
 	PRINT,
 #endif
 	PRINT_MAXSIZE,
@@ -380,7 +381,7 @@ static struct option longopts[] = {
 	{"output-fd",         required_argument, NULL, OUTPUT_FD},
 	{"output-separator",  required_argument, NULL, OUTPUT_SEPARATOR},
 #ifdef WITH_XDIALOG
-	{"password",          no_argument,       NULL, INSECURE},
+	{"password",          optional_argument, NULL, PASSWORD},
 	{"print",             required_argument, NULL, PRINT},
 #endif
 	{"print-maxsize",     no_argument,       NULL, PRINT_MAXSIZE},
@@ -980,6 +981,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 {
 	GdkRectangle workarea;
 	gdouble ex;
+#ifdef WITH_XDIALOG
+	unsigned int u;
+#endif
 
 	switch(arg)
 	{
@@ -1241,6 +1245,12 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->item_output_sep = optarg;
 			break;
 #ifdef WITH_XDIALOG
+		case PASSWORD:
+			if(optarg != NULL && (u = strtoul(optarg, NULL, 10)) > 0)
+				opt->password |= (0x1 << (u - 1));
+			else if(optarg == NULL)
+				opt->password |= (0x1 | (opt->password << 1));
+			break;
 		case PRINT:
 			opt->print = optarg;
 			break;
