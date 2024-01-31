@@ -950,6 +950,10 @@ int builder_editbox(struct bsddialog_conf const * conf,
 		else
 			td.button = NULL;
 #endif
+		if(conf->button.without_cancel != true
+				&& opt->high_compat == false)
+			gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Cancel",
+					GTK_RESPONSE_CANCEL);
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);
 	}
@@ -963,7 +967,13 @@ int builder_editbox(struct bsddialog_conf const * conf,
 	ret = _builder_dialog_run(conf, td.dialog);
 	if(td.id != 0)
 		g_source_remove(td.id);
-	_editbox_print(opt, td.buffer);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			_editbox_print(opt, td.buffer);
+			break;
+	}
 	gtk_widget_destroy(td.dialog);
 	if(desc != NULL)
 		pango_font_description_free(desc);

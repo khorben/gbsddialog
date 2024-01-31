@@ -2110,6 +2110,12 @@ int builder_textbox(struct bsddialog_conf const * conf,
 			td.button = NULL;
 # endif
 #endif
+#ifdef WITH_XDIALOG
+		if(conf->button.without_cancel != true
+				&& opt->high_compat == false)
+			gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Cancel",
+					GTK_RESPONSE_CANCEL);
+#endif
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);
 	}
