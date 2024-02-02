@@ -1158,7 +1158,6 @@ static gboolean _logbox_on_can_read(GIOChannel * channel,
 	gchar * line;
 	gsize r;
 	GError * error = NULL;
-	GtkTreeModel * model;
 	GtkTreeIter iter;
 
 #ifdef DEBUG
