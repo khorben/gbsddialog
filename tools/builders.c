@@ -760,6 +760,7 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 	gboolean valid;
 	gchar * p;
 	int i;
+	char const * sep = "";
 
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -830,17 +831,21 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 	{
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			valid = gtk_tree_model_get_iter_first(
-					GTK_TREE_MODEL(bd.rstore), &iter);
-			for(; valid == TRUE; valid = gtk_tree_model_iter_next(
+			for(valid = gtk_tree_model_get_iter_first(
+						GTK_TREE_MODEL(bd.rstore),
+						&iter); valid == TRUE;
+					valid = gtk_tree_model_iter_next(
 						GTK_TREE_MODEL(bd.rstore),
 						&iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(bd.rstore),
 						&iter, 0, &p, -1);
-				dprintf(opt->output_fd, "%s\n", p);
+				dprintf(opt->output_fd, "%s%s", sep, p);
+				sep = (opt->item_output_sep != NULL)
+					? opt->item_output_sep : "/";
 				g_free(p);
 			}
+			dprintf(opt->output_fd, "\n", p);
 			break;
 	}
 	gtk_widget_destroy(dialog);
