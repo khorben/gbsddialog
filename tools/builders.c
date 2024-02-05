@@ -39,6 +39,17 @@
 
 /* private */
 /* types */
+struct buildlist_data
+{
+	/* left treeview */
+	GtkListStore * lstore;
+	GtkTreeSelection * ltreesel;
+
+	/* right treeview */
+	GtkListStore * rstore;
+	GtkTreeSelection * rtreesel;
+};
+
 struct logbox_data
 {
 	struct options const * opt;
@@ -725,6 +736,161 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 			break;
 	}
 	return ret;
+}
+
+
+/* builder_buildlist */
+static void _building_on_add(gpointer data);
+static void _building_on_remove(gpointer data);
+
+int builder_buildlist(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	struct buildlist_data bd;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * hbox;
+	GtkWidget * window;
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkTreeViewColumn * column;
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	int i;
+
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, BORDER_WIDTH);
+#else
+	hbox = gtk_hbox_new(FALSE, BORDER_WIDTH);
+#endif
+	/* left treeview */
+	window = gtk_scrolled_window_new(NULL, NULL);
+	bd.lstore = gtk_list_store_new(1, G_TYPE_STRING);
+	for(i = 0; i < argc; i++)
+	{
+		gtk_list_store_append(bd.lstore, &iter);
+		gtk_list_store_set(bd.lstore, &iter, 0, argv[i], -1);
+	}
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget),
+			GTK_TREE_MODEL(bd.lstore));
+	bd.ltreesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(bd.ltreesel, GTK_SELECTION_BROWSE);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 0, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_box_pack_start(GTK_BOX(hbox), window, TRUE, TRUE, 0);
+	/* middle buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
+#else
+	vbox = gtk_vbox_new(FALSE, BORDER_WIDTH);
+#endif
+	widget = gtk_button_new_with_label("Add");
+	g_signal_connect_swapped(widget, "clicked",
+			G_CALLBACK(_building_on_add), &bd);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_with_label("Remove");
+	g_signal_connect_swapped(widget, "clicked",
+			G_CALLBACK(_building_on_remove), &bd);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
+	/* right treeview */
+	window = gtk_scrolled_window_new(NULL, NULL);
+	bd.rstore = gtk_list_store_new(1, G_TYPE_STRING);
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget),
+			GTK_TREE_MODEL(bd.rstore));
+	bd.rtreesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(bd.rtreesel, GTK_SELECTION_BROWSE);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text", 0, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_box_pack_start(GTK_BOX(hbox), window, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(container), hbox, TRUE, TRUE, 0);
+	gtk_widget_show_all(container);
+	_builder_dialog_buttons(dialog, conf, NULL);
+	ret = _builder_dialog_run(conf, dialog);
+	switch(ret)
+	{
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			valid = gtk_tree_model_get_iter_first(
+					GTK_TREE_MODEL(bd.rstore), &iter);
+			for(; valid == TRUE; valid = gtk_tree_model_iter_next(
+						GTK_TREE_MODEL(bd.rstore),
+						&iter))
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(bd.rstore),
+						&iter, 0, &p, -1);
+				dprintf(opt->output_fd, "%s\n", p);
+				g_free(p);
+			}
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static void _building_on_add(gpointer data)
+{
+	struct buildlist_data * bd = data;
+	GList * rows, * row;
+	GtkTreeIter iter;
+	gchar * p;
+
+	rows = gtk_tree_selection_get_selected_rows(bd->ltreesel, NULL);
+	for(row = rows; row != NULL; row = row->next)
+	{
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(bd->lstore), &iter,
+				row->data);
+		gtk_tree_model_get(GTK_TREE_MODEL(bd->lstore), &iter, 0, &p,
+				-1);
+		gtk_list_store_remove(bd->lstore, &iter);
+		gtk_list_store_append(bd->rstore, &iter);
+		gtk_list_store_set(bd->rstore, &iter, 0, p, -1);
+		g_free(p);
+	}
+	g_list_foreach(rows, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(rows);
+}
+
+static void _building_on_remove(gpointer data)
+{
+	struct buildlist_data * bd = data;
+	GList * rows, * row;
+	GtkTreeIter iter;
+	gchar * p;
+
+	rows = gtk_tree_selection_get_selected_rows(bd->rtreesel, NULL);
+	for(row = rows; row != NULL; row = row->next)
+	{
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(bd->rstore), &iter,
+				row->data);
+		gtk_tree_model_get(GTK_TREE_MODEL(bd->rstore), &iter, 0, &p,
+				-1);
+		gtk_list_store_remove(bd->rstore, &iter);
+		gtk_list_store_append(bd->lstore, &iter);
+		gtk_list_store_set(bd->lstore, &iter, 0, p, -1);
+		g_free(p);
+	}
+	g_list_foreach(rows, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(rows);
 }
 
 

@@ -56,6 +56,9 @@ int builder_3rangesbox(struct bsddialog_conf const * conf,
 int builder_3spinsbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+int builder_buildlist(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
 # endif
 int builder_calendar(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,

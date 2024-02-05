@@ -215,6 +215,9 @@ enum OPTS {
 	WMCLASS,
 #endif
 	/* Dialogs */
+#ifdef WITH_XDIALOG
+	BUILDLIST,
+#endif
 	CALENDAR,
 	CHECKLIST,
 #ifdef WITH_XDIALOG
@@ -448,6 +451,7 @@ static struct option longopts[] = {
 	{ "3rangesbox",  no_argument, NULL, RANGESBOX3},
 	{ "2spinsbox",   no_argument, NULL, SPINSBOX2},
 	{ "3spinsbox",   no_argument, NULL, SPINSBOX3},
+	{ "buildlist",   no_argument, NULL, BUILDLIST},
 #endif
 	{"calendar",     no_argument, NULL, CALENDAR},
 	{"checklist",    no_argument, NULL, CHECKLIST},
@@ -1406,6 +1410,17 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			break;
 #endif
 		/* Dialogs */
+#ifdef WITH_XDIALOG
+		case BUILDLIST:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --buildlist without "
+						"--and-dialog", opt->name);
+			opt->name = "--buildlist";
+			opt->dialogbuilder = builder_buildlist;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case CALENDAR:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
