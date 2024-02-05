@@ -1008,7 +1008,8 @@ static int _gbsddialog_parseargs(GBSDDialog * gbd, int argc, char const ** argv)
 			argc = i + 1;
 			break;
 		}
-	while((arg = getopt_long(argc, argv, "", longopts, NULL)) != -1)
+	while((arg = getopt_long(argc, (char * const *)argv, "", longopts,
+					NULL)) != -1)
 		if((ret = _parseargs_arg(gbd, conf, opt, arg)) != 0)
 			return ret;
 #ifdef DEBUG
