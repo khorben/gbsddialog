@@ -2618,7 +2618,8 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	gdouble ex;
 	struct confopt_data confopt = { conf, opt };
 
-	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL);
+	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL,
+			NULL);
 	if(conf->key.enable_esc == false)
 	{
 		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
