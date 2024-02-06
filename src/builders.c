@@ -1393,7 +1393,8 @@ int builder_mixedgauge(struct bsddialog_conf const * conf,
 	GtkWidget * container;
 	GtkWidget * box;
 	GtkWidget * widget;
-	int i, j = 2, perc;
+	int i, perc;
+	const int j = 2;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
