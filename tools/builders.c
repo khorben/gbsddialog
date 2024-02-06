@@ -64,6 +64,17 @@ struct logbox_data
 };
 
 
+/* constants */
+enum BUILDLIST_LIST_STORE
+{
+	BLS_ITEM = 0,
+	BLS_NAME,
+	BLS_TOOLTIP
+};
+# define BLS_LAST BLS_TOOLTIP
+# define BLS_COUNT (BLS_LAST + 1)
+
+
 /* prototypes */
 static int _builder_dialog_fselect(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -740,8 +751,9 @@ int builder_3spinsbox(struct bsddialog_conf const * conf,
 
 
 /* builder_buildlist */
-static void _building_on_add(gpointer data);
-static void _building_on_remove(gpointer data);
+static void _buildlist_convert_rows(GtkTreeModel * model, GList * rows);
+static void _buildlist_on_add(gpointer data);
+static void _buildlist_on_remove(gpointer data);
 
 int builder_buildlist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -756,12 +768,21 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkTreeViewColumn * column;
+	GtkListStore * store;
 	GtkTreeIter iter;
 	gboolean valid;
 	gchar * p;
-	int i;
+	int i, j = 3, k, n;
 	char const * sep = "";
 
+	if(opt->item_bottomdesc == true)
+		j++;
+	if(argc < (j + 1) || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -775,22 +796,21 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 #endif
 	/* left treeview */
 	window = gtk_scrolled_window_new(NULL, NULL);
-	bd.lstore = gtk_list_store_new(1, G_TYPE_STRING);
-	for(i = 0; i < argc; i++)
-	{
-		gtk_list_store_append(bd.lstore, &iter);
-		gtk_list_store_set(bd.lstore, &iter, 0, argv[i], -1);
-	}
+	bd.lstore = gtk_list_store_new(BLS_COUNT, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING);
 	widget = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget),
 			GTK_TREE_MODEL(bd.lstore));
+	if(opt->item_bottomdesc)
+		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
+				BLS_TOOLTIP);
 	bd.ltreesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(bd.ltreesel, GTK_SELECTION_BROWSE);
+	gtk_tree_selection_set_mode(bd.ltreesel, GTK_SELECTION_MULTIPLE);
 	column = gtk_tree_view_column_new_with_attributes(NULL,
-				gtk_cell_renderer_text_new(), "text", 0, NULL);
-		gtk_tree_view_column_set_expand(column, TRUE);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+			gtk_cell_renderer_text_new(), "text", BLS_NAME, NULL);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(hbox), window, TRUE, TRUE, 0);
 	/* middle buttons */
@@ -801,29 +821,46 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 #endif
 	widget = gtk_button_new_with_label("Add");
 	g_signal_connect_swapped(widget, "clicked",
-			G_CALLBACK(_building_on_add), &bd);
+			G_CALLBACK(_buildlist_on_add), &bd);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_with_label("Remove");
 	g_signal_connect_swapped(widget, "clicked",
-			G_CALLBACK(_building_on_remove), &bd);
+			G_CALLBACK(_buildlist_on_remove), &bd);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
 	/* right treeview */
 	window = gtk_scrolled_window_new(NULL, NULL);
-	bd.rstore = gtk_list_store_new(1, G_TYPE_STRING);
+	bd.rstore = gtk_list_store_new(BLS_COUNT, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING);
 	widget = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(widget),
 			GTK_TREE_MODEL(bd.rstore));
+	if(opt->item_bottomdesc)
+		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
+				BLS_TOOLTIP);
 	bd.rtreesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-	gtk_tree_selection_set_mode(bd.rtreesel, GTK_SELECTION_BROWSE);
+	gtk_tree_selection_set_mode(bd.rtreesel, GTK_SELECTION_MULTIPLE);
 	column = gtk_tree_view_column_new_with_attributes(NULL,
-				gtk_cell_renderer_text_new(), "text", 0, NULL);
-		gtk_tree_view_column_set_expand(column, TRUE);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+			gtk_cell_renderer_text_new(), "text", BLS_NAME, NULL);
+	gtk_tree_view_column_set_expand(column, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_box_pack_start(GTK_BOX(hbox), window, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(container), hbox, TRUE, TRUE, 0);
+	/* fill the data */
+	for(i = 0; (i + 1) * j < argc; i++)
+	{
+		k = i * j + 1;
+		store = (strcmp(argv[k + 2], "on") == 0)
+			? bd.rstore : bd.lstore;
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter, BLS_ITEM, argv[k],
+				BLS_NAME, argv[k + 1], -1);
+		if(opt->item_bottomdesc == true)
+			gtk_list_store_set(store, &iter,
+					BLS_TOOLTIP, argv[k + 3], -1);
+	}
 	gtk_widget_show_all(container);
 	_builder_dialog_buttons(dialog, conf, NULL);
 	ret = _builder_dialog_run(conf, dialog);
@@ -839,62 +876,97 @@ int builder_buildlist(struct bsddialog_conf const * conf,
 						&iter))
 			{
 				gtk_tree_model_get(GTK_TREE_MODEL(bd.rstore),
-						&iter, 0, &p, -1);
+						&iter, BLS_ITEM, &p, -1);
 				dprintf(opt->output_fd, "%s%s", sep, p);
 				sep = (opt->item_output_sep != NULL)
 					? opt->item_output_sep : "/";
 				g_free(p);
 			}
-			dprintf(opt->output_fd, "\n", p);
+			if(strlen(sep) > 0)
+				dprintf(opt->output_fd, "\n");
 			break;
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
 }
 
-static void _building_on_add(gpointer data)
+static void _buildlist_convert_rows(GtkTreeModel * model, GList * rows)
+{
+	GList * row;
+	GtkTreeRowReference * ref;
+
+	for(row = rows; row != NULL; row = row->next)
+	{
+		ref = gtk_tree_row_reference_new(model, row->data);
+		gtk_tree_path_free(row->data);
+		row->data = ref;
+	}
+}
+
+static void _buildlist_on_add(gpointer data)
 {
 	struct buildlist_data * bd = data;
 	GList * rows, * row;
+	GtkTreePath * path;
 	GtkTreeIter iter;
-	gchar * p;
+	gchar * item;
+	gchar * name;
+	gchar * help;
 
 	rows = gtk_tree_selection_get_selected_rows(bd->ltreesel, NULL);
+	_buildlist_convert_rows(GTK_TREE_MODEL(bd->lstore), rows);
 	for(row = rows; row != NULL; row = row->next)
 	{
+		if((path = gtk_tree_row_reference_get_path(row->data)) == NULL)
+			continue;
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(bd->lstore), &iter,
-				row->data);
-		gtk_tree_model_get(GTK_TREE_MODEL(bd->lstore), &iter, 0, &p,
-				-1);
+				path);
+		gtk_tree_path_free(path);
+		gtk_tree_model_get(GTK_TREE_MODEL(bd->lstore), &iter,
+				BLS_ITEM, &item, BLS_NAME, &name,
+				BLS_TOOLTIP, &help, -1);
 		gtk_list_store_remove(bd->lstore, &iter);
 		gtk_list_store_append(bd->rstore, &iter);
-		gtk_list_store_set(bd->rstore, &iter, 0, p, -1);
-		g_free(p);
+		gtk_list_store_set(bd->rstore, &iter, BLS_ITEM, item,
+				BLS_NAME, name, BLS_TOOLTIP, help, -1);
+		g_free(item);
+		g_free(name);
+		g_free(help);
 	}
-	g_list_foreach(rows, (GFunc)gtk_tree_path_free, NULL);
+	g_list_foreach(rows, (GFunc)gtk_tree_row_reference_free, NULL);
 	g_list_free(rows);
 }
 
-static void _building_on_remove(gpointer data)
+static void _buildlist_on_remove(gpointer data)
 {
 	struct buildlist_data * bd = data;
 	GList * rows, * row;
+	GtkTreePath * path;
 	GtkTreeIter iter;
-	gchar * p;
+	gchar * item;
+	gchar * name;
+	gchar * help;
 
 	rows = gtk_tree_selection_get_selected_rows(bd->rtreesel, NULL);
+	_buildlist_convert_rows(GTK_TREE_MODEL(bd->rstore), rows);
 	for(row = rows; row != NULL; row = row->next)
 	{
+		path = gtk_tree_row_reference_get_path(row->data);
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(bd->rstore), &iter,
-				row->data);
-		gtk_tree_model_get(GTK_TREE_MODEL(bd->rstore), &iter, 0, &p,
-				-1);
+				path);
+		gtk_tree_path_free(path);
+		gtk_tree_model_get(GTK_TREE_MODEL(bd->rstore), &iter,
+				BLS_ITEM, &item, BLS_NAME, &name,
+				BLS_TOOLTIP, &help, -1);
 		gtk_list_store_remove(bd->rstore, &iter);
 		gtk_list_store_append(bd->lstore, &iter);
-		gtk_list_store_set(bd->lstore, &iter, 0, p, -1);
-		g_free(p);
+		gtk_list_store_set(bd->lstore, &iter, BLS_ITEM, item,
+				BLS_NAME, name, BLS_TOOLTIP, help, -1);
+		g_free(item);
+		g_free(name);
+		g_free(help);
 	}
-	g_list_foreach(rows, (GFunc)gtk_tree_path_free, NULL);
+	g_list_foreach(rows, (GFunc)gtk_tree_row_reference_free, NULL);
 	g_list_free(rows);
 }
 
