@@ -1,6 +1,6 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.0.1
-SUBDIRS	= src tests tools
+SUBDIRS	= doc src tests tools
 LN	= ln -f
 RM	= rm -f
 TAR	= tar
@@ -21,6 +21,45 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README.md \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gbsddialog.1 \
+		$(PACKAGE)-$(VERSION)/doc/samples/Xdialog.wrapper.c \
+		$(PACKAGE)-$(VERSION)/doc/samples/Xmessage \
+		$(PACKAGE)-$(VERSION)/doc/samples/Xmore \
+		$(PACKAGE)-$(VERSION)/doc/samples/allrpms \
+		$(PACKAGE)-$(VERSION)/doc/samples/bluebox.rc \
+		$(PACKAGE)-$(VERSION)/doc/samples/buildlist \
+		$(PACKAGE)-$(VERSION)/doc/samples/calendar \
+		$(PACKAGE)-$(VERSION)/doc/samples/chain \
+		$(PACKAGE)-$(VERSION)/doc/samples/checklist \
+		$(PACKAGE)-$(VERSION)/doc/samples/dselect \
+		$(PACKAGE)-$(VERSION)/doc/samples/editbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/fixed-font.rc \
+		$(PACKAGE)-$(VERSION)/doc/samples/format1440 \
+		$(PACKAGE)-$(VERSION)/doc/samples/fselect \
+		$(PACKAGE)-$(VERSION)/doc/samples/gauge \
+		$(PACKAGE)-$(VERSION)/doc/samples/infobox \
+		$(PACKAGE)-$(VERSION)/doc/samples/infobox2 \
+		$(PACKAGE)-$(VERSION)/doc/samples/inputbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/install-wrapper \
+		$(PACKAGE)-$(VERSION)/doc/samples/kernel \
+		$(PACKAGE)-$(VERSION)/doc/samples/logbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/logbox2 \
+		$(PACKAGE)-$(VERSION)/doc/samples/login \
+		$(PACKAGE)-$(VERSION)/doc/samples/menubox \
+		$(PACKAGE)-$(VERSION)/doc/samples/msgbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/no-entry.xpm \
+		$(PACKAGE)-$(VERSION)/doc/samples/radiolist \
+		$(PACKAGE)-$(VERSION)/doc/samples/rangebox \
+		$(PACKAGE)-$(VERSION)/doc/samples/set-time \
+		$(PACKAGE)-$(VERSION)/doc/samples/tailbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/textbox \
+		$(PACKAGE)-$(VERSION)/doc/samples/timebox \
+		$(PACKAGE)-$(VERSION)/doc/samples/treeview \
+		$(PACKAGE)-$(VERSION)/doc/samples/warning.xpm \
+		$(PACKAGE)-$(VERSION)/doc/samples/xlock-wrapper \
+		$(PACKAGE)-$(VERSION)/doc/samples/yesno \
+		$(PACKAGE)-$(VERSION)/doc/Xdialog.1.in \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/builders.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
