@@ -164,6 +164,9 @@ enum OPTS {
 	NO_NAMES,
 	NO_OK,
 	NO_SHADOW,
+#ifdef WITH_XDIALOG
+	NO_WRAP,
+#endif
 	NORMAL_SCREEN,
 	OK_EXIT_CODE,
 	OK_LABEL,
@@ -213,6 +216,7 @@ enum OPTS {
 	UNDER_MOUSE,
 	WIZARD,
 	WMCLASS,
+	WRAP,
 #endif
 	/* Dialogs */
 #ifdef WITH_XDIALOG
@@ -384,6 +388,9 @@ static struct option longopts[] = {
 	{"nook",              no_argument,       NULL, NO_OK},
 	{"no-shadow",         no_argument,       NULL, NO_SHADOW},
 	{"no-tags",           no_argument,       NULL, NO_NAMES},
+#ifdef WITH_XDIALOG
+	{"no-wrap",           no_argument,       NULL, NO_WRAP},
+#endif
 	{"normal-screen",     no_argument,       NULL, NORMAL_SCREEN},
 	{"ok-exit-code",      required_argument, NULL, OK_EXIT_CODE},
 	{"ok-label",          required_argument, NULL, OK_LABEL},
@@ -441,6 +448,7 @@ static struct option longopts[] = {
 	{"under-mouse",       no_argument,       NULL, UNDER_MOUSE},
 	{"wizard",            no_argument,       NULL, WIZARD},
 	{"wmclass",           required_argument, NULL, WMCLASS},
+	{"wrap",              no_argument,       NULL, WRAP},
 #endif
 	{"yes-label",         required_argument, NULL, OK_LABEL},
 	/* Dialogs */
@@ -1277,6 +1285,11 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 		case NO_SHADOW:
 			conf->shadow = false;
 			break;
+#ifdef WITH_XDIALOG
+		case NO_WRAP:
+			opt->wrap = false;
+			break;
+#endif
 		case OK_EXIT_CODE:
 			exitcodes[BSDDIALOG_OK + 1].value
 				= strtol(optarg, NULL, 10);
@@ -1407,6 +1420,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			break;
 		case WMCLASS:
 			opt->wmclass = optarg;
+			break;
+		case WRAP:
+			opt->wrap = true;
 			break;
 #endif
 		/* Dialogs */
