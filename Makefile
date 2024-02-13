@@ -23,7 +23,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/README.md \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gbsddialog.1 \
-		$(PACKAGE)-$(VERSION)/doc/Xdialog.1 \
+		$(PACKAGE)-$(VERSION)/doc/Xdialog.1.in \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/builders.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
