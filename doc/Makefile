@@ -34,21 +34,23 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install:
-	$(MKDIR) $(DATADIR)/doc/$(PROJECT)/samples
+	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples
 	for sample in $(SAMPLES); do \
 		mode=0644; [ -x samples/$$sample ] && mode=0755; \
 		$(INSTALL) -m $$mode samples/$$sample \
-			$(DATADIR)/doc/$(PROJECT)/samples/$$sample; \
+			$(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples/$$sample \
+				|| exit $$?; \
 	done
-	$(MKDIR) $(MANDIR)/man1
-	$(INSTALL) -m 0644 gbsddialog.1 $(MANDIR)/man1/gbsddialog.1
-	$(INSTALL) -m 0644 Xdialog.1 $(MANDIR)/man1/Xdialog.1
+	$(MKDIR) $(DESTDIR)$(MANDIR)/man1
+	$(INSTALL) -m 0644 gbsddialog.1 $(DESTDIR)$(MANDIR)/man1/gbsddialog.1
+	$(INSTALL) -m 0644 Xdialog.1 $(DESTDIR)$(MANDIR)/man1/Xdialog.1
 
 uninstall:
 	for sample in $(SAMPLES); do \
-		$(RM) $(DATADIR)/doc/$(PROJECT)/samples/$$sample; \
+		$(RM) $(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples/$$sample \
+				|| exit $$?; \
 	done
-	$(RM) $(MANDIR)/man1/gbsddialog.1
-	$(RM) $(MANDIR)/man1/Xdialog.1
+	$(RM) $(DESTDIR)$(MANDIR)/man1/gbsddialog.1
+	$(RM) $(DESTDIR)$(MANDIR)/man1/Xdialog.1
 
 .PHONY: all clean distclean install uninstall

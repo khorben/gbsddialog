@@ -33,10 +33,10 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: $(TARGETS)
-	$(MKDIR) $(BINDIR)
-	$(INSTALL) -m 0755 Xdialog $(BINDIR)/Xdialog
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 Xdialog $(DESTDIR)$(BINDIR)/Xdialog
 
 uninstall:
-	$(RM) $(BINDIR)/Xdialog
+	$(RM) $(DESTDIR)$(BINDIR)/Xdialog
 
 .PHONY: all clean distclean install uninstall

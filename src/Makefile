@@ -42,10 +42,10 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: $(TARGETS)
-	$(MKDIR) $(BINDIR)
-	$(INSTALL) -m 0755 gbsddialog $(BINDIR)/gbsddialog
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 gbsddialog $(DESTDIR)$(BINDIR)/gbsddialog
 
 uninstall:
-	$(RM) $(BINDIR)/gbsddialog
+	$(RM) $(DESTDIR)$(BINDIR)/gbsddialog
 
 .PHONY: all clean distclean install uninstall
