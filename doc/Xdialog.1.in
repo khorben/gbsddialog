@@ -266,8 +266,6 @@ Note that when chaining dialogs, the chain is broken and Xdialog terminates as s
 .LP
 \fI%%bindir%%/Xdialog\fP
 .br
-\fI%%datadir%%/locale/*/LC_MESSAGES/Xdialog.mo\fP
-.br
 \fI%%mandir%%/man1/Xdialog.1*\fP
 .br
 \fI%%datadir%%/doc/%%project%%/*\fP
