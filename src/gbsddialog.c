@@ -181,6 +181,7 @@ enum OPTS {
 	PRINT_VERSION,
 	QUOTED,
 #ifdef WITH_XDIALOG
+	RC_FILE,
 	REVERSE,
 	RIGHT,
 #endif
@@ -405,6 +406,7 @@ static struct option longopts[] = {
 	{"print-version",     no_argument,       NULL, PRINT_VERSION},
 	{"quoted",            no_argument,       NULL, QUOTED},
 #ifdef WITH_XDIALOG
+	{"rc-file",           required_argument, NULL, RC_FILE},
 	{"reverse",           no_argument,       NULL, REVERSE},
 	{"right",             no_argument,       NULL, RIGHT},
 #endif
@@ -1350,6 +1352,9 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->item_always_quote = true;
 			break;
 #ifdef WITH_XDIALOG
+		case RC_FILE:
+			opt->loadthemefile = optarg;
+			break;
 		case REVERSE:
 			opt->reverse = true;
 			break;
