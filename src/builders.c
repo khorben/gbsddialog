@@ -316,7 +316,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	container = dialog->vbox;
 #endif
 	store = gtk_tree_store_new(CTS_COUNT, G_TYPE_STRING, G_TYPE_BOOLEAN,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
