@@ -560,7 +560,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 #endif
 	char * text = NULL;
 	int rows = BSDDIALOG_AUTOSIZE, cols = BSDDIALOG_AUTOSIZE;
-	int res;
+	int j = 3, res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(gbd->argc=%d gbd->argv=\"%s\")\n",
@@ -601,7 +601,18 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 		_gbsddialog_backtitle(gbd);
 	if(opt->dialogbuilder != NULL)
 	{
-		if(argc < 3)
+#ifdef WITH_XDIALOG
+		if(argc >= 2 && (sscanf(argv[1], "%dx%d", &rows, &cols) == 2
+					|| sscanf(argv[1], "%dX%d",
+						&rows, &cols) == 2))
+		{
+			if(rows >= BSDDIALOG_AUTOSIZE
+					&& cols >= BSDDIALOG_AUTOSIZE)
+				j--;
+		}
+		else
+#endif
+		if(argc < j)
 		{
 			*gbd->ret = EXITCODE(error(BSDDIALOG_ERROR,
 						"expected <text> <rows> <cols>"));
@@ -614,9 +625,12 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			return _gbsddialog_on_idle_quit(gbd);
 		}
 #ifdef WITH_XDIALOG
-		if((p = getenv("XDIALOG_FORCE_AUTOSIZE")) == NULL
-				|| (strcmp(p, "1") != 0
-					&& strcasecmp(p, "true") != 0))
+		if(((p = getenv("XDIALOG_FORCE_AUTOSIZE")) == NULL
+					|| (strcmp(p, "1") != 0
+						&& strcasecmp(p, "true") != 0))
+				&& j == 3)
+#else
+		if(j == 3)
 #endif
 		{
 			rows = (int)strtol(argv[1], NULL, 10);
@@ -633,7 +647,7 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 			gdk_display_beep(gdk_screen_get_display(gbd->screen));
 #endif
 		res = opt->dialogbuilder(conf, text, rows, cols,
-				argc - 3, argv + 3, opt);
+				argc - j, argv + j, opt);
 #ifdef WITH_XDIALOG
 		if(opt->beep_after == true)
 			gdk_display_beep(gdk_screen_get_display(gbd->screen));
