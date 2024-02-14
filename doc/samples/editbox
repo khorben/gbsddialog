@@ -22,7 +22,7 @@ Try to input some text below:
 
 EOF
 
-Xdialog --title "EDIT BOX" --fixed-font -print "" \
+Xdialog --title "EDIT BOX" --fixed-font --print "" \
 	--editbox /tmp/editbox.tmp.$$ 0 0 2>/tmp/editbox.txt.$$
 
 case $? in
