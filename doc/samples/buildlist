@@ -3,12 +3,12 @@
 result=`Xdialog --title "XDIALOG BUILDLIST" --backtitle "A user-built list" \
 		--stdout --separator "|" \
 		--buildlist "hello, this is a --buildlist..." 0 0 0 \
-			    "1" "Item n° 1" "on" \
-			    "2" "Item n° 2" "off" \
-			    "3" "Item n° 3" "on" \
-			    "4" "Item n° 4" "on" \
-			    "5" "Item n° 5" "off" \
-			    "6" "Item n° 6" "on"`
+			    "1" "Item nÂ° 1" "on" \
+			    "2" "Item nÂ° 2" "off" \
+			    "3" "Item nÂ° 3" "on" \
+			    "4" "Item nÂ° 4" "on" \
+			    "5" "Item nÂ° 5" "off" \
+			    "6" "Item nÂ° 6" "on"`
 
 retval=$?
 case $retval in
