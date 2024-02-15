@@ -1314,7 +1314,7 @@ int builder_fselect(struct bsddialog_conf const * conf,
 		int argc, char const ** argv, struct options const * opt)
 {
 	return _builder_dialog_fselect(conf, text, rows, cols, argc, argv, opt,
-			GTK_FILE_CHOOSER_ACTION_SAVE);
+			GTK_FILE_CHOOSER_ACTION_OPEN);
 }
 
 
