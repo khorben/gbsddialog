@@ -2529,12 +2529,159 @@ int builder_treeview(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
 {
-	struct bsddialog_conf conf2 = *conf;
-	struct options opt2 = *opt;
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * container;
+	GtkWidget * window;
+	GtkWidget * widget;
+	GtkTreeStore * store;
+	GtkTreeIter iter, parent, * pparent = NULL;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+	GtkTreeSelection * treesel;
+	int i, j, k, n, depth = 0;
+	gboolean b, set, toquote;
+	char quotech;
+	char const * prefix = NULL, * name, * desc, * tooltip;
+	char * p;
 
-	conf2.menu.no_name = true;
-	opt2.item_depth = true;
-	return builder_radiolist(&conf2, text, rows, cols, argc, argv, &opt2);
+	j = opt->item_bottomdesc ? 5 : 4;
+	if(opt->item_prefix)
+		j++;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d (%d), \"%s\")\n", __func__,
+			rows, cols, argc, (argc - 1) / j,
+			(argv[0] != NULL) ? argv[0] : "(null)");
+#endif
+	if(argc < 1 || (n = strtol(argv[0], NULL, 10)) < 0
+			|| ((argc - 1) % j) != 0)
+	{
+		error_args(opt->name, argc, argv);
+		return BSDDIALOG_ERROR;
+	}
+	else if(n == 0)
+		n = (argc - 1) / j;
+	dialog = _builder_dialog(conf, opt, text, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	container = dialog->vbox;
+#endif
+	store = gtk_tree_store_new(RTS_COUNT, G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING);
+	window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	if(conf->shadow == false)
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(window),
+				GTK_SHADOW_NONE);
+	widget = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget), FALSE);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(widget), GTK_TREE_MODEL(store));
+	if(opt->item_bottomdesc)
+		gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(widget),
+				RTS_TOOLTIP);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_BROWSE);
+	for(i = 0, set = FALSE; (i + 1) * j < argc; i++)
+	{
+		k = i * j + 1;
+		if(opt->item_prefix)
+			prefix = argv[k++];
+		name = argv[k++];
+		desc = argv[k++];
+		set = (set == FALSE && strcasecmp(argv[k], "on") == 0)
+			? TRUE : FALSE;
+		depth = strtol(argv[++k], NULL, 10);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__, depth);
+#endif
+		pparent = _radiolist_get_parent(GTK_TREE_MODEL(store), &parent,
+				depth);
+		tooltip = (++k < j) ? argv[k] : NULL;
+		gtk_tree_store_append(store, &iter, pparent);
+		gtk_tree_store_set(store, &iter, RTS_PREFIX, prefix,
+				RTS_SET, set,
+				RTS_NAME, name, RTS_DESCRIPTION, desc,
+				(tooltip != NULL) ? RTS_TOOLTIP : -1,
+				(tooltip != NULL) ? tooltip : NULL, -1);
+		if(opt->item_default != NULL
+				&& strcmp(name, opt->item_default) == 0)
+			gtk_tree_selection_select_iter(treesel, &iter);
+	}
+	if(opt->item_prefix == true)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(),
+				"text", RTS_PREFIX, NULL);
+		gtk_tree_view_column_set_expand(column, FALSE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	renderer = gtk_cell_renderer_toggle_new();
+	gtk_cell_renderer_toggle_set_radio(GTK_CELL_RENDERER_TOGGLE(renderer),
+			TRUE);
+	g_signal_connect(renderer, "toggled",
+			G_CALLBACK(_radiolist_on_row_toggled), store);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"active", RTS_SET, NULL);
+	gtk_tree_view_column_set_expand(column, FALSE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	if(conf->menu.no_desc == false)
+	{
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				gtk_cell_renderer_text_new(), "text",
+				RTS_DESCRIPTION, NULL);
+		gtk_tree_view_column_set_expand(column, TRUE);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	}
+	gtk_tree_view_expand_all(GTK_TREE_VIEW(widget));
+	g_signal_connect(widget, "row-activated",
+			G_CALLBACK(_radiolist_on_row_activated), NULL);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_box_pack_start(GTK_BOX(container), window, TRUE, TRUE, 0);
+	gtk_widget_show_all(window);
+	_builder_dialog_buttons(dialog, conf, opt);
+	ret = _builder_dialog_run(conf, dialog);
+	quotech = opt->item_singlequote ? '\'' : '"';
+	switch(ret)
+	{
+		case BSDDIALOG_HELP:
+			_builder_dialog_menu_output(opt, treesel,
+					GTK_TREE_MODEL(store), RTS_NAME,
+					"HELP ");
+			break;
+		case BSDDIALOG_EXTRA:
+		case BSDDIALOG_OK:
+			for(b = gtk_tree_model_get_iter_first(
+						GTK_TREE_MODEL(store), &iter);
+					b != FALSE;
+					b = gtk_tree_model_iter_next(
+						GTK_TREE_MODEL(store), &iter))
+			{
+				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+						RTS_SET, &set, RTS_NAME, &p,
+						-1);
+				if(set)
+				{
+					toquote = FALSE;
+					if(string_needs_quoting(p))
+						toquote = opt->item_always_quote;
+					if(toquote)
+						dprintf(opt->output_fd,
+								"%c%s%c\n",
+								quotech, p,
+								quotech);
+					else
+						dprintf(opt->output_fd, "%s\n",
+								p);
+				}
+				free(p);
+			}
+			break;
+	}
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
