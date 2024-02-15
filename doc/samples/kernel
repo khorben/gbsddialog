@@ -4,9 +4,9 @@
 # installation. No guarantee is given on its suitability to your own system
 # though.
 
-function check_error() {
+check_error() {
 	ret=$?
-	if (( $ret != 0 )) ; then
+	if [ $ret != 0 ] ; then
 		echo "Error while building the kernel..."
 		exit $ret
 	fi
@@ -27,7 +27,7 @@ cd /usr/src/linux
 check_error
 
 Xdialog --title "$TITLE" --yesno "make mrproper first ?" 0 0
-if (( $? == 0 )) ; then
+if [ $? = 0 ] ; then
 	echo "--------------------------------------------------------------------------"
 	echo "Making mrproper..."
 	echo "--------------------------------------------------------------------------"
@@ -37,7 +37,7 @@ fi
 
 if [ -f /usr/src/linux/.config ] ; then
 	Xdialog --title "$TITLE" --yesno "Configure the kernel ?" 0 0
-	if (( $? == 0 )) ; then
+	if [ $? = 0 ] ; then
 		echo "--------------------------------------------------------------------------"
 		echo "Making xconfig..."
 		echo "--------------------------------------------------------------------------"
@@ -92,7 +92,7 @@ if [ -f /boot/module-info-`uname -r` ] && ! [ -f /boot/module-info-$VERSION ] ; 
 	/bin/cp -f /boot/module-info-`uname -r` /boot/module-info-$VERSION 2>&1
 fi
 Xdialog --title "$TITLE" --yesno "Make the new kernel the current one ?" 0 0
-if (( $? == 0 )) ; then
+if [ $? = 0 ] ; then
 	echo "--------------------------------------------------------------------------"
 	echo "Making v$VERSION the current kernel... "
 	echo "--------------------------------------------------------------------------"
@@ -103,7 +103,7 @@ if (( $? == 0 )) ; then
 	fi
 	if [ -f /boot/map ] && [ -f /sbin/lilo ] && [ -f /etc/lilo.conf ] ; then
 		Xdialog --title "$TITLE" --yesno "Install the new kernel with lilo ?" 0 0
-		if (( $? == 0 )) ; then
+		if [ $? = 0 ] ; then
 			echo "--------------------------------------------------------------------------"
 			echo "Running lilo... "
 			echo "--------------------------------------------------------------------------"
