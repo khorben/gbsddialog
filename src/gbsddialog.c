@@ -1330,7 +1330,7 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			if(optarg != NULL && (u = strtoul(optarg, NULL, 10)) > 0)
 				opt->password |= (0x1 << (u - 1));
 			else if(optarg == NULL)
-				opt->password |= (0x1 | (opt->password << 1));
+				conf->form.securech = '*';
 			break;
 		case PRINT:
 			opt->print = optarg;

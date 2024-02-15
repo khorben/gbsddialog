@@ -174,7 +174,7 @@ int builder_2inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
-	if(opt->password & (0x1 << 1))
+	if(opt->password & (0x1 << 1) || conf->form.securech != '\0')
 		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
@@ -495,7 +495,7 @@ int builder_3inputsbox(struct bsddialog_conf const * conf,
 	if(opt->max_input_form > 0)
 		gtk_entry_set_max_length(GTK_ENTRY(widget),
 				opt->max_input_form);
-	if(opt->password & (0x1 << 2))
+	if(opt->password & (0x1 << 2) || conf->form.securech != '\0')
 		gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(cols > 0)
 		gtk_entry_set_width_chars(GTK_ENTRY(widget), cols);
