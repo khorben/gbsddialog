@@ -91,6 +91,14 @@ struct pause_data
 	guint id;
 };
 
+struct radiolist_data
+{
+	int depth;
+	GtkTreeIter * parent;
+	GtkTreeIter * pparent;
+	char const * name;
+};
+
 struct textbox_data
 {
 	struct options const * opt;
@@ -1715,7 +1723,9 @@ static gboolean _pause_on_timeout(gpointer data)
 
 /* builder_radiolist */
 static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
-		GtkTreeIter * iter, int depth);
+		GtkTreeIter * iter, int depth, char const * name);
+static gboolean _radiolist_get_parent_foreach(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data);
 static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
@@ -1795,7 +1805,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 					depth);
 #endif
 			pparent = _radiolist_get_parent(GTK_TREE_MODEL(store),
-					&parent, depth);
+					&parent, depth, argv[k]);
 		}
 		name = argv[k++];
 		desc = argv[k++];
@@ -1804,7 +1814,7 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 		tooltip = (++k < j) ? argv[k] : NULL;
 		gtk_tree_store_append(store, &iter, pparent);
 		gtk_tree_store_set(store, &iter, RTS_PREFIX, prefix,
-				RTS_SET, set,
+				RTS_SET, set, RTS_DEPTH, depth,
 				RTS_NAME, name, RTS_DESCRIPTION, desc,
 				(tooltip != NULL) ? RTS_TOOLTIP : -1,
 				(tooltip != NULL) ? tooltip : NULL, -1);
@@ -1896,26 +1906,38 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 }
 
 static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
-		GtkTreeIter * parent, int depth)
+		GtkTreeIter * parent, int depth, char const * name)
 {
-	GtkTreeIter * ret = NULL;
-	GtkTreeIter iter;
-	gboolean b;
-	int d;
+	struct radiolist_data rd;
 
 	if(depth <= 0)
 		return NULL;
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
-			b = gtk_tree_model_iter_next(model, &iter))
+	rd.depth = depth;
+	rd.parent = parent;
+	rd.pparent = NULL;
+	rd.name = name;
+	gtk_tree_model_foreach(model, _radiolist_get_parent_foreach, &rd);
+	return rd.pparent;
+}
+
+static gboolean _radiolist_get_parent_foreach(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data)
+{
+	struct radiolist_data * rd = data;
+	int d;
+	(void) path;
+
+	gtk_tree_model_get(model, iter, RTS_DEPTH, &d, -1);
+	if(d < rd->depth)
 	{
-		gtk_tree_model_get(model, &iter, RTS_DEPTH, &d, -1);
-		if(d < depth)
-		{
-			*parent = iter;
-			ret = parent;
-		}
+		*(rd->parent) = *iter;
+		rd->pparent = rd->parent;
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s(\"%s\") %d < %d\n", __func__,
+				rd->name, d, rd->depth);
+#endif
 	}
-	return ret;
+	return FALSE;
 }
 
 static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
@@ -2598,11 +2620,11 @@ int builder_treeview(struct bsddialog_conf const * conf,
 		fprintf(stderr, "DEBUG: %s() depth=%d\n", __func__, depth);
 #endif
 		pparent = _radiolist_get_parent(GTK_TREE_MODEL(store), &parent,
-				depth);
+				depth, name);
 		tooltip = (++k < j) ? argv[k] : NULL;
 		gtk_tree_store_append(store, &iter, pparent);
 		gtk_tree_store_set(store, &iter, RTS_PREFIX, prefix,
-				RTS_SET, set,
+				RTS_SET, set, RTS_DEPTH, depth,
 				RTS_NAME, name, RTS_DESCRIPTION, desc,
 				(tooltip != NULL) ? RTS_TOOLTIP : -1,
 				(tooltip != NULL) ? tooltip : NULL, -1);
