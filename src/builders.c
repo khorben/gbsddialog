@@ -1799,9 +1799,9 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 		}
 		name = argv[k++];
 		desc = argv[k++];
-		set = (set == FALSE && strcasecmp(argv[k++], "on") == 0)
+		set = (set == FALSE && strcasecmp(argv[k], "on") == 0)
 			? TRUE : FALSE;
-		tooltip = (k < j) ? argv[k++] : NULL;
+		tooltip = (++k < j) ? argv[k] : NULL;
 		gtk_tree_store_append(store, &iter, pparent);
 		gtk_tree_store_set(store, &iter, RTS_PREFIX, prefix,
 				RTS_SET, set,
