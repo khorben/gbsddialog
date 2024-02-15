@@ -1730,6 +1730,8 @@ static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 		gpointer data);
+static gboolean _radiolist_on_row_toggled_foreach(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data);
 
 int builder_radiolist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
@@ -1945,15 +1947,11 @@ static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 {
 	GtkTreeModel * model;
 	GtkTreeIter iter;
-	gboolean b;
 	(void) column;
 	(void) data;
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
-			b = gtk_tree_model_iter_next(model, &iter))
-		gtk_tree_store_set(GTK_TREE_STORE(model), &iter, RTS_SET, FALSE,
-				-1);
+	gtk_tree_model_foreach(model, _radiolist_on_row_toggled_foreach, NULL);
 	if(gtk_tree_model_get_iter(model, &iter, path) == FALSE)
 		return;
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, RTS_SET, TRUE, -1);
@@ -1966,21 +1964,35 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 	GtkTreePath * tp;
 	GtkTreeIter iter;
 	gboolean b;
+	(void) renderer;
 
 	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
 		return;
-	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
-			b == TRUE;
-			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
-		gtk_tree_store_set(store, &iter, RTS_SET, FALSE, -1);
+	gtk_tree_model_foreach(GTK_TREE_MODEL(store),
+			_radiolist_on_row_toggled_foreach, NULL);
 	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
 	gtk_tree_path_free(tp);
 	if(b == FALSE)
 		return;
-	gtk_tree_store_set(store, &iter, RTS_SET,
-			gtk_cell_renderer_toggle_get_active(
-				GTK_CELL_RENDERER_TOGGLE(renderer))
-			? FALSE : TRUE, -1);
+	gtk_tree_store_set(store, &iter, RTS_SET, TRUE, -1);
+}
+
+static gboolean _radiolist_on_row_toggled_foreach(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data)
+{
+	gboolean set;
+	(void) path;
+	(void) data;
+
+	gtk_tree_model_get(model, iter, RTS_SET, &set, -1);
+	if(set)
+	{
+		/* XXX assumes only one row is set */
+		gtk_tree_store_set(GTK_TREE_STORE(model), iter, RTS_SET, FALSE,
+				-1);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 
