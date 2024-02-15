@@ -948,8 +948,7 @@ int builder_infobox(struct bsddialog_conf const * conf,
 	}
 	if(argc == 1)
 	{
-		if((timeout = strtol(argv[0], NULL, 10)) > 0)
-			timeout = timeout * 1000;
+		timeout = strtol(argv[0], NULL, 10);
 		argc--;
 	}
 	else if((p = getenv("XDIALOG_INFOBOX_TIMEOUT")) != NULL
