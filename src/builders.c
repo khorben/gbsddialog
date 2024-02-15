@@ -1722,6 +1722,8 @@ static gboolean _pause_on_timeout(gpointer data)
 
 
 /* builder_radiolist */
+static gboolean _radiolist_foreach_response(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data);
 static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
 		GtkTreeIter * iter, int depth, char const * name);
 static gboolean _radiolist_get_parent_foreach(GtkTreeModel * model,
@@ -1748,10 +1750,8 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, k, n, depth = 0;
-	gboolean b, set, toquote;
-	char quotech;
+	gboolean set;
 	char const * prefix = NULL, * name, * desc, * tooltip;
-	char * p;
 
 	j = opt->item_bottomdesc ? 4 : 3;
 	if(opt->item_prefix)
@@ -1866,7 +1866,6 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
-	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -1876,35 +1875,41 @@ int builder_radiolist(struct bsddialog_conf const * conf,
 			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			for(b = gtk_tree_model_get_iter_first(
-						GTK_TREE_MODEL(store), &iter);
-					b != FALSE;
-					b = gtk_tree_model_iter_next(
-						GTK_TREE_MODEL(store), &iter))
-			{
-				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						RTS_SET, &set, RTS_NAME, &p,
-						-1);
-				if(set)
-				{
-					toquote = FALSE;
-					if(string_needs_quoting(p))
-						toquote = opt->item_always_quote;
-					if(toquote)
-						dprintf(opt->output_fd,
-								"%c%s%c\n",
-								quotech, p,
-								quotech);
-					else
-						dprintf(opt->output_fd, "%s\n",
-								p);
-				}
-				free(p);
-			}
+			gtk_tree_model_foreach(GTK_TREE_MODEL(store),
+					_radiolist_foreach_response,
+					(gpointer)opt);
 			break;
 	}
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static gboolean _radiolist_foreach_response(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data)
+{
+	struct options const * opt = data;
+	gboolean set;
+	gchar * p;
+	gboolean toquote;
+	char quotech;
+	(void) path;
+
+	gtk_tree_model_get(model, iter, RTS_SET, &set, -1);
+	if(set == FALSE)
+		return FALSE;
+	gtk_tree_model_get(model, iter, RTS_NAME, &p, -1);
+	toquote = FALSE;
+	if(string_needs_quoting(p))
+		toquote = opt->item_always_quote;
+	if(toquote)
+	{
+		quotech = opt->item_singlequote ? '\'' : '"';
+		dprintf(opt->output_fd, "%c%s%c\n", quotech, p, quotech);
+	}
+	else
+		dprintf(opt->output_fd, "%s\n", p);
+	g_free(p);
+	return TRUE;
 }
 
 static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
@@ -2574,10 +2579,8 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 	int i, j, k, n, depth = 0;
-	gboolean b, set, toquote;
-	char quotech;
+	gboolean set;
 	char const * prefix = NULL, * name, * desc, * tooltip;
-	char * p;
 
 	j = opt->item_bottomdesc ? 5 : 4;
 	if(opt->item_prefix)
@@ -2677,7 +2680,6 @@ int builder_treeview(struct bsddialog_conf const * conf,
 	gtk_widget_show_all(window);
 	_builder_dialog_buttons(dialog, conf, opt);
 	ret = _builder_dialog_run(conf, dialog);
-	quotech = opt->item_singlequote ? '\'' : '"';
 	switch(ret)
 	{
 		case BSDDIALOG_HELP:
@@ -2687,31 +2689,9 @@ int builder_treeview(struct bsddialog_conf const * conf,
 			break;
 		case BSDDIALOG_EXTRA:
 		case BSDDIALOG_OK:
-			for(b = gtk_tree_model_get_iter_first(
-						GTK_TREE_MODEL(store), &iter);
-					b != FALSE;
-					b = gtk_tree_model_iter_next(
-						GTK_TREE_MODEL(store), &iter))
-			{
-				gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
-						RTS_SET, &set, RTS_NAME, &p,
-						-1);
-				if(set)
-				{
-					toquote = FALSE;
-					if(string_needs_quoting(p))
-						toquote = opt->item_always_quote;
-					if(toquote)
-						dprintf(opt->output_fd,
-								"%c%s%c\n",
-								quotech, p,
-								quotech);
-					else
-						dprintf(opt->output_fd, "%s\n",
-								p);
-				}
-				free(p);
-			}
+			gtk_tree_model_foreach(GTK_TREE_MODEL(store),
+					_radiolist_foreach_response,
+					(gpointer)opt);
 			break;
 	}
 	gtk_widget_destroy(dialog);
