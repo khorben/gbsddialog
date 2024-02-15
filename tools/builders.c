@@ -1150,6 +1150,7 @@ int builder_editbox(struct bsddialog_conf const * conf,
 	td.opt = opt;
 	td.editable = TRUE;
 	td.scroll = FALSE;
+	td.button = NULL;
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -1206,8 +1207,6 @@ int builder_editbox(struct bsddialog_conf const * conf,
 			gtk_widget_show(td.button);
 			gtk_container_add(GTK_CONTAINER(container), td.button);
 		}
-		else
-			td.button = NULL;
 #endif
 		if(conf->button.without_cancel != true
 				&& opt->high_compat == false)
@@ -1498,6 +1497,7 @@ int builder_tailbox(struct bsddialog_conf const * conf,
 	td.opt = opt;
 	td.editable = FALSE;
 	td.scroll = TRUE;
+	td.button = NULL;
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -1554,8 +1554,6 @@ int builder_tailbox(struct bsddialog_conf const * conf,
 			gtk_widget_show(td.button);
 			gtk_container_add(GTK_CONTAINER(container), td.button);
 		}
-		else
-			td.button = NULL;
 #endif
 		gtk_dialog_add_button(GTK_DIALOG(td.dialog), "Exit",
 				GTK_RESPONSE_OK);

@@ -2054,6 +2054,7 @@ int builder_textbox(struct bsddialog_conf const * conf,
 	td.editable = FALSE;
 #ifdef WITH_XDIALOG
 	td.scroll = FALSE;
+	td.button = NULL;
 #endif
 	td.filename = text;
 	td.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
@@ -2117,8 +2118,6 @@ int builder_textbox(struct bsddialog_conf const * conf,
 			gtk_widget_show(td.button);
 			gtk_container_add(GTK_CONTAINER(container), td.button);
 		}
-		else
-			td.button = NULL;
 # endif
 #endif
 #ifdef WITH_XDIALOG
