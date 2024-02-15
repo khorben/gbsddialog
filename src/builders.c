@@ -458,7 +458,7 @@ static GtkTreeIter * _checklist_get_parent(GtkTreeModel * model,
 
 	if(depth <= 0)
 		return NULL;
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
 			b = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, CTS_DEPTH, &d, -1);
@@ -1251,7 +1251,7 @@ static GtkTreeIter * _menu_get_parent(GtkTreeModel * model,
 
 	if(depth <= 0)
 		return NULL;
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
 			b = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, MTS_DEPTH, &d, -1);
@@ -1905,7 +1905,7 @@ static GtkTreeIter * _radiolist_get_parent(GtkTreeModel * model,
 
 	if(depth <= 0)
 		return NULL;
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
 			b = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, RTS_DEPTH, &d, -1);
@@ -1928,7 +1928,7 @@ static void _radiolist_on_row_activated(GtkWidget * widget, GtkTreePath * path,
 	(void) data;
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
-	for(b = gtk_tree_model_get_iter_first(model, &iter); b;
+	for(b = gtk_tree_model_get_iter_first(model, &iter); b == TRUE;
 			b = gtk_tree_model_iter_next(model, &iter))
 		gtk_tree_store_set(GTK_TREE_STORE(model), &iter, RTS_SET, FALSE,
 				-1);
@@ -1947,7 +1947,8 @@ static void _radiolist_on_row_toggled(GtkCellRenderer * renderer, char * path,
 
 	if((tp = gtk_tree_path_new_from_string(path)) == NULL)
 		return;
-	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter); b;
+	for(b = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter);
+			b == TRUE;
 			b = gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
 		gtk_tree_store_set(store, &iter, RTS_SET, FALSE, -1);
 	b = gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tp);
