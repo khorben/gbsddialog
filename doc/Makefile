@@ -33,7 +33,7 @@ clean:
 distclean: clean
 	$(RM) $(TARGETS)
 
-install:
+install: all
 	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples
 	for sample in $(SAMPLES); do \
 		mode=0644; [ -x samples/$$sample ] && mode=0755; \
