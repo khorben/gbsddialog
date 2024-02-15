@@ -50,6 +50,18 @@ struct buildlist_data
 	GtkTreeSelection * rtreesel;
 };
 
+struct progress_data
+{
+	struct options const * opt;
+	GtkWidget * dialog;
+	GtkWidget * label;
+	GtkWidget * widget;	/* progress bar */
+	guint id;
+	unsigned int count;
+	unsigned int maxdots;
+	int msglen;
+};
+
 struct logbox_data
 {
 	struct options const * opt;
@@ -1474,6 +1486,205 @@ static gboolean _logbox_on_idle(gpointer data)
 			| G_IO_FLAG_NONBLOCK, NULL);
 	ld->id = g_io_add_watch(ld->channel, G_IO_IN, _logbox_on_can_read, ld);
 	return FALSE;
+}
+
+
+/* builder_progress */
+static gboolean _progress_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data);
+static void _progress_on_can_read_append(struct progress_data * pd, char * buf,
+		gsize * len);
+static gboolean _progress_on_can_read_eof(gpointer data);
+static void _progress_on_can_read_skip(struct progress_data * pd, char * buf,
+		gsize * len);
+static void _progress_set_percentage(struct progress_data * pd,
+		unsigned int perc);
+
+int builder_progress(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt)
+{
+	int ret;
+	struct progress_data pd = { NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+	GtkWidget * container;
+	GIOChannel * channel;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, argc);
+#endif
+	if(argc > 2)
+	{
+		error_args(opt->name, argc - 1, argv + 1);
+		return BSDDIALOG_ERROR;
+	}
+	if(argc == 2)
+		pd.msglen = strtol(argv[1], NULL, 10);
+	if(argc >= 1)
+		pd.maxdots = strtoul(argv[0], NULL, 10);
+	pd.opt = opt;
+	pd.dialog = _builder_dialog(conf, opt, NULL, rows, cols);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	container = gtk_dialog_get_content_area(GTK_DIALOG(pd.dialog));
+#else
+	container = pd.dialog->vbox;
+#endif
+	if(text != NULL)
+	{
+		pd.label = gtk_label_new(text);
+		gtk_label_set_line_wrap(GTK_LABEL(pd.label), TRUE);
+		gtk_label_set_line_wrap_mode(GTK_LABEL(pd.label),
+				PANGO_WRAP_WORD_CHAR);
+		gtk_label_set_single_line_mode(GTK_LABEL(pd.label), FALSE);
+#if GTK_CHECK_VERSION(3, 10, 0)
+		if(rows > 0)
+			gtk_label_set_lines(GTK_LABEL(pd.label), rows);
+#endif
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(pd.label, opt->halign);
+#else
+		gtk_misc_set_alignment(GTK_MISC(pd.label), opt->halign, 0.5);
+#endif
+#ifdef WITH_XDIALOG
+		gtk_label_set_justify(GTK_LABEL(pd.label), opt->justify);
+#endif
+		gtk_widget_show(pd.label);
+		gtk_box_pack_start(GTK_BOX(container), pd.label, FALSE, TRUE,
+				BORDER_WIDTH);
+	}
+	pd.widget = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(pd.widget), TRUE);
+#endif
+	_progress_set_percentage(&pd, 0);
+	gtk_widget_show(pd.widget);
+	gtk_container_add(GTK_CONTAINER(container), pd.widget);
+	channel = g_io_channel_unix_new(STDIN_FILENO);
+	g_io_channel_set_encoding(channel, NULL, NULL);
+	/* XXX ignore errors */
+	g_io_channel_set_flags(channel, g_io_channel_get_flags(channel)
+			| G_IO_FLAG_NONBLOCK, NULL);
+	pd.id = g_io_add_watch(channel, G_IO_IN, _progress_on_can_read, &pd);
+	ret = _builder_dialog_run(conf, pd.dialog);
+	if(pd.id != 0)
+		g_source_remove(pd.id);
+	gtk_widget_destroy(pd.dialog);
+	return ret;
+}
+
+static gboolean _progress_on_can_read(GIOChannel * channel,
+		GIOCondition condition, gpointer data)
+{
+	struct progress_data * pd = data;
+	GIOStatus status;
+	char buf[BUFSIZ + 1];
+	gsize r;
+	GError * error = NULL;
+	char * p;
+	unsigned int perc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN)
+	{
+		_builder_dialog_error(pd->dialog, NULL, NULL,
+				"Unexpected condition");
+		return _progress_on_can_read_eof(pd);
+	}
+	if((status = g_io_channel_read_chars(channel, buf, sizeof(buf) - 1,
+					&r, &error)) == G_IO_STATUS_ERROR)
+	{
+		_builder_dialog_error(pd->dialog, NULL, NULL, error->message);
+		g_error_free(error);
+		return _progress_on_can_read_eof(pd);
+	}
+	else if(status == G_IO_STATUS_AGAIN)
+		return TRUE;
+	else if(status == G_IO_STATUS_EOF)
+		return _progress_on_can_read_eof(pd);
+	buf[r] = '\0';
+	_progress_on_can_read_skip(pd, buf, &r);
+	_progress_on_can_read_append(pd, buf, &r);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() buf=\"%s\"\n", __func__, buf);
+#endif
+	for(p = buf; p[0] != '\0'; p++)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, p);
+#endif
+		if(sscanf(p, "%u", &perc) == 1)
+			/* set the current percentage */
+			_progress_set_percentage(pd, perc);
+		else
+		{
+			pd->count += r;
+			_progress_set_percentage(pd, pd->count);
+			break;
+		}
+		if((p = strchr(p, '\n')) == NULL)
+			break;
+	}
+	return TRUE;
+}
+
+static void _progress_on_can_read_append(struct progress_data * pd, char * buf,
+		gsize * len)
+{
+	gsize max;
+	char c;
+
+	if(pd->msglen <= 0)
+		return;
+	max = (*len > (gsize)pd->msglen) ? pd->msglen : *len;
+	/* set the current text */
+	c = buf[max];
+	buf[max] = '\0';
+	/* FIXME append to the text instead */
+	gtk_label_set_text(GTK_LABEL(pd->label), buf);
+	buf[max] = c;
+	*len -= max;
+	memmove(buf, &buf[max], *len + 1);
+	pd->msglen -= max;
+}
+
+static gboolean _progress_on_can_read_eof(gpointer data)
+{
+	struct progress_data * pd = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(!pd->opt->ignore_eof)
+		gtk_dialog_response(GTK_DIALOG(pd->dialog), GTK_RESPONSE_CLOSE);
+	pd->id = 0;
+	return FALSE;
+}
+
+static void _progress_on_can_read_skip(struct progress_data * pd, char * buf,
+		gsize * len)
+{
+	gsize max;
+
+	if(pd->msglen >= 0)
+		return;
+	max = (*len > (gsize)-pd->msglen) ? -pd->msglen : *len;
+	*len -= max;
+	memmove(buf, &buf[max], *len + 1);
+	pd->msglen += max;
+}
+
+static void _progress_set_percentage(struct progress_data * pd,
+		unsigned int perc)
+{
+	gdouble fraction;
+	char buf[8];
+
+	perc = MIN(perc, pd->maxdots);
+	fraction = (gdouble)perc / (gdouble)pd->maxdots;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pd->widget), fraction);
+	snprintf(buf, sizeof(buf), "%.0f %%", fraction * 100);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(pd->widget), buf);
 }
 
 

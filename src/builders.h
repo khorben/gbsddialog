@@ -131,6 +131,11 @@ int builder_passwordform(struct bsddialog_conf const * conf,
 int builder_pause(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);
+# ifdef WITH_XDIALOG
+int builder_progress(struct bsddialog_conf const * conf,
+		char const * text, int rows, int cols,
+		int argc, char const ** argv, struct options const * opt);
+#endif
 int builder_radiolist(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt);

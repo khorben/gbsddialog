@@ -254,6 +254,9 @@ enum OPTS {
 	PASSWORDBOX,
 	PASSWORDFORM,
 	PAUSE,
+#ifdef WITH_XDIALOG
+	PROGRESS,
+#endif
 	RADIOLIST,
 	RANGEBOX,
 #ifdef WITH_XDIALOG
@@ -492,6 +495,9 @@ static struct option longopts[] = {
 	{"passwordbox",  no_argument, NULL, PASSWORDBOX},
 	{"passwordform", no_argument, NULL, PASSWORDFORM},
 	{"pause",        no_argument, NULL, PAUSE},
+#ifdef WITH_XDIALOG
+	{"progress",     no_argument, NULL, PROGRESS},
+#endif
 	{"radiolist",    no_argument, NULL, RADIOLIST},
 	{"rangebox",     no_argument, NULL, RANGEBOX},
 	{"textbox",      no_argument, NULL, TEXTBOX},
@@ -1663,6 +1669,17 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->name = "--pause";
 			opt->dialogbuilder = builder_pause;
 			break;
+#ifdef WITH_XDIALOG
+		case PROGRESS:
+			if(opt->dialogbuilder != NULL)
+				return -error(BSDDIALOG_ERROR,
+						"%s and --progress without "
+						"--and-dialog", opt->name);
+			opt->name = "--progress";
+			opt->dialogbuilder = builder_progress;
+			conf->auto_downmargin = 1;
+			break;
+#endif
 		case RADIOLIST:
 			if(opt->dialogbuilder != NULL)
 				return -error(BSDDIALOG_ERROR,
