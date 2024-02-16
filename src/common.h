@@ -39,8 +39,12 @@
 
 /* common */
 /* macros */
-# define PACKAGE	"gbsddialog"
-# define VERSION	"0.0.1"
+# ifndef PACKAGE
+#  define PACKAGE	"gbsddialog"
+# endif
+# ifndef VERSION
+#  define VERSION	"0.8.0"
+# endif
 
 # ifndef PROGNAME
 #  define PROGNAME	PACKAGE
