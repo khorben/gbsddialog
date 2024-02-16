@@ -18,7 +18,7 @@ SED	= sed
 
 all: $(TARGETS)
 
-Xdialog.1: Xdialog.1.in
+Xdialog.1: Xdialog.1.in Makefile
 	$(SED) -e s,%%project%%,$(PACKAGE), \
 		-e s,%%version%%,$(VERSION), \
 		-e s,%%prefix%%,$(PREFIX), \
