@@ -1,7 +1,11 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.0.1
 SUBDIRS	= doc src tests tools
+PREFIX	= /usr/local
+DATADIR	= $(PREFIX)/share
+INSTALL	= install
 LN	= ln -f
+MKDIR	= mkdir -p
 RM	= rm -f
 TAR	= tar
 
@@ -87,8 +91,14 @@ distclean:
 
 install:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) install) || exit $$?; done
+	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)
+	$(INSTALL) -m 0644 COPYING $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
+	$(INSTALL) -m 0644 README.md \
+		$(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/README.md
 
 uninstall:
 	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || exit $$?; done
+	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
+	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/README.md
 
 .PHONY: all tests clean dist distcheck distclean install uninstall
