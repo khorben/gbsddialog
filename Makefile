@@ -10,13 +10,17 @@ RM	= rm -f
 TAR	= tar
 
 all:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE)) || exit $$?; done
+	@for subdir in $(SUBDIRS); do \
+		(cd $$subdir && $(MAKE)) || exit $$?; \
+	done
 
 tests: all
 	cd tests && $(MAKE) tests
 
 clean:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) clean) || exit $$?; done
+	@for subdir in $(SUBDIRS); do \
+		(cd $$subdir && $(MAKE) clean) || exit $$?; \
+	done
 
 dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
@@ -87,17 +91,23 @@ distcheck: dist
 	cd $(PACKAGE)-$(VERSION) && $(MAKE) dist all
 
 distclean:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) distclean) || exit $$?; done
+	@for subdir in $(SUBDIRS); do \
+		(cd $$subdir && $(MAKE) distclean) || exit $$?; \
+	done
 
 install:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) install) || exit $$?; done
+	@for subdir in $(SUBDIRS); do \
+		(cd $$subdir && $(MAKE) install) || exit $$?; \
+	done
 	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)
 	$(INSTALL) -m 0644 COPYING $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
 	$(INSTALL) -m 0644 README.md \
 		$(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/README.md
 
 uninstall:
-	@for subdir in $(SUBDIRS); do (cd $$subdir && $(MAKE) uninstall) || exit $$?; done
+	@for subdir in $(SUBDIRS); do \
+		(cd $$subdir && $(MAKE) uninstall) || exit $$?; \
+	done
 	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
 	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/README.md
 

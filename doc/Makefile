@@ -1,5 +1,5 @@
-PROJECT	= gbsddialog
-VERSION	= 0.8.0
+PACKAGE	= gbsddialog
+VERSION	= 0.0.1
 TARGETS	= Xdialog.1
 SAMPLES	= Xdialog.wrapper.c Xmessage Xmore allrpms bluebox.rc buildlist \
 	  calendar chain checklist dselect editbox fixed-font.rc format1440 \
@@ -19,7 +19,7 @@ SED	= sed
 all: $(TARGETS)
 
 Xdialog.1: Xdialog.1.in
-	$(SED) -e s,%%project%%,$(PROJECT), \
+	$(SED) -e s,%%project%%,$(PACKAGE), \
 		-e s,%%version%%,$(VERSION), \
 		-e s,%%prefix%%,$(PREFIX), \
 		-e s,%%bindir%%,$(BINDIR), \
@@ -34,11 +34,11 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples
+	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/samples
 	for sample in $(SAMPLES); do \
 		mode=0644; [ -x samples/$$sample ] && mode=0755; \
 		$(INSTALL) -m $$mode samples/$$sample \
-			$(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples/$$sample \
+			$(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/samples/$$sample \
 				|| exit $$?; \
 	done
 	$(MKDIR) $(DESTDIR)$(MANDIR)/man1
@@ -47,7 +47,7 @@ install: all
 
 uninstall:
 	for sample in $(SAMPLES); do \
-		$(RM) $(DESTDIR)$(DATADIR)/doc/$(PROJECT)/samples/$$sample \
+		$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/samples/$$sample \
 				|| exit $$?; \
 	done
 	$(RM) $(DESTDIR)$(MANDIR)/man1/gbsddialog.1
