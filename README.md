@@ -11,11 +11,11 @@ console-based equivalents.
 The objective is to reproduce the same behaviour as the original tool,
 respecting the exact command-line parameters and output. gbsddialog can then be
 used as a drop-in replacement to bsddialog, effectively granting the possibility
-to install FreeBSD entirely in graphical mode.
+to install and configure FreeBSD entirely in graphical mode.
 
 In addition, an implementation of [Xdialog](http://xdialog.free.fr) is also
-provided, which is meant to be used by `bsdconfig(8)` when invoked for use with
-a graphical interface through `-S` or `-X`.
+provided, for use with `bsdconfig(8)` when invoked in graphical mode with `-S`
+or `-X`.
 
 This project is sponsored by the FreeBSD Foundation.
 
@@ -61,8 +61,8 @@ implemented. However:
 
 - A few features of `bsddialog(1)` are still missing, such as highlights for
   text or generic buttons.
-- Some features of `Xdialog(1)` are still missing or incomplete, such as the
-  buildlist dialog, or tracking changes to files in logbox and tailbox.
+- Some features of `Xdialog(1)` are still missing or incomplete, like tracking
+  changes to files in logbox and tailbox.
 - Depending on the version of Gtk+ installed, some of the API calls used may be
   considered obsolete during the build. (Triggering many compilation warnings)
 
