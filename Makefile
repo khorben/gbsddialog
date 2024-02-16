@@ -1,6 +1,6 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.0.1
-SUBDIRS	= doc src tests tools
+SUBDIRS	= data doc src tests tools
 PREFIX	= /usr/local
 DATADIR	= $(PREFIX)/share
 INSTALL	= install
@@ -29,6 +29,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README.md \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/bsdconfig-48.png \
+		$(PACKAGE)-$(VERSION)/data/bsdconfig.desktop \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gbsddialog.1 \
 		$(PACKAGE)-$(VERSION)/doc/samples/Xdialog.wrapper.c \
