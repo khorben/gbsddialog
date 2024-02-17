@@ -1412,12 +1412,7 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			opt->tab_escape = true;
 			break;
 		case TEXT_ESCAPE:
-#ifdef __FreeBSD__
-			/* XXX ugly compatibility fix for now */
 			conf->text.highlight = true;
-#else
-			conf->text.escape = true;
-#endif
 			break;
 		case TEXT_UNCHANGED:
 			opt->text_unchanged = true;
