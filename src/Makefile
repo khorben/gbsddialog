@@ -7,7 +7,7 @@ CFLAGS	= -W -Wall -g -O2 -fstack-protector
 LDFLAGSF= `pkg-config --libs gtk+-3.0`
 LDFLAGS	=
 INSTALL	= install
-MKDIR	= mkdir -p
+MKDIR	= mkdir -p -m 0755
 RM	= rm -f
 OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
 

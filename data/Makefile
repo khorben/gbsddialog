@@ -2,7 +2,7 @@ PREFIX	= /usr/local
 OSNAME	= FreeBSD
 DATADIR	= $(PREFIX)/share
 INSTALL	= install
-MKDIR	= mkdir -p
+MKDIR	= mkdir -p -m 0755
 RM	= rm -f
 UNAME	= uname
 

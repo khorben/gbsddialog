@@ -12,7 +12,7 @@ BINDIR	= $(PREFIX)/bin
 DATADIR	= $(PREFIX)/share
 MANDIR	= $(DATADIR)/man
 INSTALL	= install
-MKDIR	= mkdir -p
+MKDIR	= mkdir -p -m 0755
 RM	= rm -f
 SED	= sed
 

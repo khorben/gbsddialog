@@ -2,8 +2,6 @@ TARGETS	= gbsddialog2 gbsddialog3 Xdialog2 Xdialog3
 CPPFLAGS= -D_FORTIFY_SOURCE=2
 CFLAGS	= -W -Wall -g -O2 -fstack-protector
 LDFLAGS	=
-INSTALL	= install
-MKDIR	= mkdir -p
 RM	= rm -f
 OBJS	= gbsddialog2.o gbsddialog3.o Xdialog2.o Xdialog3.o
 

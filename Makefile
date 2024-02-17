@@ -5,7 +5,7 @@ PREFIX	= /usr/local
 DATADIR	= $(PREFIX)/share
 INSTALL	= install
 LN	= ln -f
-MKDIR	= mkdir -p
+MKDIR	= mkdir -p -m 0755
 RM	= rm -f
 TAR	= tar
 
