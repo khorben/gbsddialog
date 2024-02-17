@@ -22,13 +22,13 @@ tests: $(TARGETS)
 gbsddialog2: gbsddialog2.o
 	$(CC) $(LDFLAGSF_GTK2) $(LDFLAGS) -o gbsddialog2 gbsddialog2.o
 
-gbsddialog2.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+gbsddialog2.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
 	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o gbsddialog2.o -c gbsddialog.c
 
 gbsddialog3: gbsddialog3.o
 	$(CC) $(LDFLAGSF_GTK3) $(LDFLAGS) -o gbsddialog3 gbsddialog3.o
 
-gbsddialog3.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+gbsddialog3.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
 	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK3) $(CFLAGS) -o gbsddialog3.o -c gbsddialog.c
 
 Xdialog2: Xdialog2.o

@@ -72,6 +72,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/samples/yesno \
 		$(PACKAGE)-$(VERSION)/doc/Xdialog.1.in \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/bsddialog.h \
 		$(PACKAGE)-$(VERSION)/src/builders.c \
 		$(PACKAGE)-$(VERSION)/src/builders.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \

@@ -32,7 +32,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <bsddialog.h>
 #include "common.h"
 #include "callbacks.h"
 

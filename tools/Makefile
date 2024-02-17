@@ -20,10 +20,10 @@ all: $(TARGETS)
 Xdialog: $(OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Xdialog $(OBJS)
 
-builders.o: builders.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/common.h
+builders.o: builders.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/common.h ../src/bsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o builders.o -c builders.c
 
-Xdialog.o: Xdialog.c ../src/builders.h ../src/common.c ../src/common.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+Xdialog.o: Xdialog.c ../src/builders.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o Xdialog.o -c Xdialog.c
 
 clean:

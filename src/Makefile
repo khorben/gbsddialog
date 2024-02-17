@@ -20,19 +20,19 @@ all: $(TARGETS)
 gbsddialog: $(OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gbsddialog $(OBJS)
 
-builders.o: builders.c builders.h callbacks.h common.h
+builders.o: builders.c builders.h callbacks.h common.h bsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o builders.o -c builders.c
 
-callbacks.o: callbacks.c callbacks.h common.h
+callbacks.o: callbacks.c callbacks.h common.h bsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o callbacks.o -c callbacks.c
 
-common.o: common.c common.h
+common.o: common.c common.h bsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o common.o -c common.c
 
-gbsddialog.o: gbsddialog.c builders.h common.h gbsddialog.h
+gbsddialog.o: gbsddialog.c builders.h common.h bsddialog.h gbsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o gbsddialog.o -c gbsddialog.c
 
-main.o: main.c common.h gbsddialog.h
+main.o: main.c common.h bsddialog.h gbsddialog.h
 	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o main.o -c main.c
 
 clean:

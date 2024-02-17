@@ -33,8 +33,8 @@
 # define GBSDDIALOG_COMMON_H
 
 # include <stdbool.h>
-# include <bsddialog.h>
 # include <gtk/gtk.h>
+# include "bsddialog.h"
 
 
 /* common */
