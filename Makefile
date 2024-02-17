@@ -73,14 +73,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Xdialog.1.in \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/builders.c \
-		$(PACKAGE)-$(VERSION)/src/callbacks.c \
-		$(PACKAGE)-$(VERSION)/src/common.c \
-		$(PACKAGE)-$(VERSION)/src/gbsddialog.c \
-		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/builders.h \
+		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
+		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/gbsddialog.c \
 		$(PACKAGE)-$(VERSION)/src/gbsddialog.h \
+		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
 		$(PACKAGE)-$(VERSION)/tests/gbsddialog.c \
 		$(PACKAGE)-$(VERSION)/tests/Xdialog.c \
