@@ -1,5 +1,5 @@
 PACKAGE	= gbsddialog
-VERSION	= 0.8.0
+VERSION	= 0.8.1
 TARGETS	= Xdialog.1
 SAMPLES	= Xdialog.wrapper.c Xmessage Xmore allrpms bluebox.rc buildlist \
 	  calendar chain checklist dselect editbox fixed-font.rc format1440 \
