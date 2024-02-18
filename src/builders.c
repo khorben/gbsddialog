@@ -293,7 +293,7 @@ int builder_checklist(struct bsddialog_conf const * conf,
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
-	int i, j, k, n, depth;
+	int i, j, k, n, depth = 0;
 	gboolean b, set, toquote;
 	char quotech;
 	char const * prefix = NULL, * name, * desc, * tooltip;
