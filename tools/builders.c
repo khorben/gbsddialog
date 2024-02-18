@@ -1636,7 +1636,7 @@ static void _progress_on_can_read_append(struct progress_data * pd, char * buf,
 
 	if(pd->msglen <= 0)
 		return;
-	max = (*len > (gsize)pd->msglen) ? pd->msglen : *len;
+	max = (*len > (gsize)pd->msglen) ? (gsize)pd->msglen : *len;
 	/* set the current text */
 	c = buf[max];
 	buf[max] = '\0';
@@ -1668,7 +1668,7 @@ static void _progress_on_can_read_skip(struct progress_data * pd, char * buf,
 
 	if(pd->msglen >= 0)
 		return;
-	max = (*len > (gsize)-pd->msglen) ? -pd->msglen : *len;
+	max = (*len > (gsize)-pd->msglen) ? (gsize)-pd->msglen : *len;
 	*len -= max;
 	memmove(buf, &buf[max], *len + 1);
 	pd->msglen += max;
