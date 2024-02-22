@@ -22,8 +22,8 @@ This project is sponsored by the FreeBSD Foundation.
 Dependencies
 ------------
 
-gbsdinstall only depends on Gtk+. While it is meant to be used with version 3
-of Gtk+, it can also be built with version 2. (Ideally version 2.10 or later)
+gbsddialog only depends on Gtk+. While it is meant to be used with version 3 of
+Gtk+, it can also be built with version 2. (Ideally version 2.10 or later)
 
 To switch between version 2 or 3, modify `src/Makefile` and `tools/Makefile`
 where indicated.
@@ -40,7 +40,7 @@ This involves:
   flexibility of replacing the tool used for widgets and dialogs, as well as
   additional ways to test the code without possibly harming the host system.
 - The ability to fallback to the original bsddialog in situations where
-  gbsdinstall does not support a feature yet.
+  gbsddialog does not support a feature yet.
 
 Different phases are planned, as follows:
 
