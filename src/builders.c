@@ -1323,7 +1323,9 @@ int builder_mixedform(struct bsddialog_conf const * conf,
 #else
 		box = gtk_hbox_new(FALSE, BORDER_WIDTH);
 #endif
-		widget = gtk_label_new(argv[k] + 0);
+		gtk_container_add(GTK_CONTAINER(container), box);
+		/* label */
+		widget = gtk_label_new(argv[k]);
 #if GTK_CHECK_VERSION(3, 14, 0)
 		gtk_widget_set_halign(widget, opt->halign);
 #else
@@ -1334,17 +1336,21 @@ int builder_mixedform(struct bsddialog_conf const * conf,
 #endif
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE, 0);
+		/* entry */
 		buffer = gtk_entry_buffer_new(argv[k + 3], -1);
 		l = g_slist_append(l, buffer);
+		fieldlen = strtol(argv[k + 6], NULL, 10);
+		maxletters = strtol(argv[k + 7], NULL, 10);
+		flag = strtol(argv[k + 8], NULL, 10);
+		/* XXX do not create an entry if irrelevant */
+		if(flag & 0x2 && strcmp(argv[k], argv[k + 3]) == 0)
+			continue;
 		widget = gtk_entry_new_with_buffer(buffer);
 		if(conf->button.always_active == true)
 			gtk_entry_set_activates_default(GTK_ENTRY(widget),
 					TRUE);
 		if(conf->form.securech != '\0')
 			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
-		fieldlen = strtol(argv[k + 6], NULL, 10);
-		maxletters = strtol(argv[k + 7], NULL, 10);
-		flag = strtol(argv[k + 8], NULL, 10);
 		if(fieldlen != 0)
 			gtk_entry_set_width_chars(GTK_ENTRY(widget),
 					abs(fieldlen));
@@ -1360,7 +1366,6 @@ int builder_mixedform(struct bsddialog_conf const * conf,
 			gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
 		gtk_box_pack_start(GTK_BOX(box), widget,
 				(maxletters != 0) ? FALSE : TRUE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(container), box);
 	}
 	gtk_widget_show_all(container);
 	_builder_dialog_buttons(dialog, conf, opt);
