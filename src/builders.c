@@ -177,6 +177,13 @@ enum RADIOLIST_TREE_STORE
 static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		struct options const * opt, char const * text,
 		int rows, int cols);
+#if 0
+static GtkWidget * _builder_dialog_assistant(struct bsddialog_conf const * conf,
+		struct options const * opt, char const * text,
+		int rows, int cols, unsigned int id);
+#endif
+static void _builder_dialog_add_button(GtkWidget * dialog, char const * text,
+		gint id);
 static void _builder_dialog_buttons(GtkWidget * dialog,
 		struct bsddialog_conf const * conf,
 		struct options const * opt);
@@ -191,6 +198,10 @@ static int _builder_dialog_menu_output(struct options const * opt,
 		unsigned int id, char const * prefix);
 static int _builder_dialog_run(struct bsddialog_conf const * conf,
 		GtkWidget * dialog);
+#if 0
+static int _builder_dialog_run_assistant(struct bsddialog_conf const * conf,
+		GtkWidget * plug);
+#endif
 
 
 /* functions */
@@ -1608,11 +1619,10 @@ static void _msgbox_dialog_buttons(GtkWidget * dialog,
 	{
 		label = (conf->button.cancel_label != NULL)
 			? conf->button.cancel_label : "Cancel";
-		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
-				GTK_RESPONSE_CANCEL);
+		_builder_dialog_add_button(dialog, label, GTK_RESPONSE_CANCEL);
 	}
 	if(conf->button.with_extra == true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
+		_builder_dialog_add_button(dialog,
 				(conf->button.extra_label != NULL)
 				? conf->button.extra_label : "Extra",
 				BSDDIALOG_EXTRA);
@@ -1624,17 +1634,16 @@ static void _msgbox_dialog_buttons(GtkWidget * dialog,
 		if(opt != NULL && opt->wizard)
 			label = "Next";
 #endif
-		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
-				GTK_RESPONSE_OK);
+		_builder_dialog_add_button(dialog, label, GTK_RESPONSE_OK);
 	}
 	if(conf->button.with_help == true)
-		gtk_dialog_add_button(GTK_DIALOG(dialog),
+		_builder_dialog_add_button(dialog,
 				(conf->button.help_label != NULL)
 				? conf->button.help_label : "Help",
 				GTK_RESPONSE_HELP);
 #ifdef WITH_XDIALOG
 	if(opt != NULL && opt->wizard)
-		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
+		_builder_dialog_add_button(dialog, "Previous", 3);
 #endif
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
 			(conf->button.without_cancel != true
@@ -2855,7 +2864,15 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	GtkWidget * widget;
 	gdouble ex;
 	struct confopt_data confopt = { conf, opt };
+#if 0
+	char const * p;
+	unsigned int id;
 
+	if((p = getenv("GBSDDIALOG_SOCKET_ID")) != NULL
+			&& sscanf(p, "%u", &id) == 1)
+		return _builder_dialog_assistant(conf, opt, text, rows, cols,
+				id);
+#endif
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL,
 			NULL);
 	if(conf->key.enable_esc == false)
@@ -2955,6 +2972,133 @@ static gboolean _dialog_on_key_press(GtkWidget * widget, GdkEventKey * event,
 	if(event->keyval == GDK_KEY_F1)
 		_builder_dialog_help(widget, confopt->conf, confopt->opt);
 	return FALSE;
+}
+
+
+#if 0
+/* builder_dialog_assistant */
+static GtkWidget * _builder_dialog_assistant(struct bsddialog_conf const * conf,
+		struct options const * opt, char const * text,
+		int rows, int cols, unsigned int id)
+{
+	GtkWidget * container;
+	GtkWidget * box;
+	GtkWidget * widget;
+	gdouble ex;
+	gint page;
+
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	container = gtk_plug_new(id);
+	if(conf->key.enable_esc == false)
+	{
+#if 0
+		gtk_window_set_deletable(GTK_WINDOW(dialog), FALSE);
+#if GTK_CHECK_VERSION(3, 12, 0)
+		if((widget = gtk_dialog_get_header_bar(GTK_DIALOG(dialog)))
+				!= NULL)
+			gtk_header_bar_set_show_close_button(
+					GTK_HEADER_BAR(widget), FALSE);
+#endif
+#endif
+	}
+#if 0
+	if(conf->key.f1_file != NULL || conf->key.f1_message != NULL)
+		g_signal_connect(dialog, "key-press-event",
+				G_CALLBACK(_dialog_on_key_press), &confopt);
+#if GTK_CHECK_VERSION(3, 12, 0)
+	if(conf->bottomtitle != NULL
+			&& (widget = gtk_dialog_get_header_bar(
+					GTK_DIALOG(dialog))) != NULL)
+		gtk_header_bar_set_subtitle(GTK_HEADER_BAR(widget),
+				conf->bottomtitle);
+#endif
+#endif
+	if(rows != BSDDIALOG_AUTOSIZE && cols != BSDDIALOG_AUTOSIZE)
+	{
+		/* XXX gdk_screen_get_default() may fail */
+		ex = get_font_size(gdk_screen_get_default());
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
+				ex, cols, rows);
+#endif
+		gtk_widget_set_size_request(container, cols * ex,
+				rows * ex * 2);
+	}
+	if(text != NULL)
+	{
+#if GTK_CHECK_VERSION(3, 0, 0)
+		box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+		box = gtk_hbox_new(FALSE, 0);
+#endif
+#ifdef WITH_XDIALOG
+		if(opt->icon != NULL)
+		{
+			widget = gtk_image_new_from_file(opt->icon);
+			gtk_box_pack_start(GTK_BOX(box), widget, FALSE, TRUE,
+					0);
+			gtk_widget_show(widget);
+		}
+#endif
+		widget = gtk_label_new(text);
+		gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
+		gtk_label_set_line_wrap_mode(GTK_LABEL(widget),
+				PANGO_WRAP_WORD_CHAR);
+		gtk_label_set_single_line_mode(GTK_LABEL(widget), FALSE);
+#if GTK_CHECK_VERSION(3, 10, 0)
+		if(rows > 0)
+			gtk_label_set_lines(GTK_LABEL(widget), rows);
+#endif
+#if GTK_CHECK_VERSION(3, 14, 0)
+		gtk_widget_set_halign(widget, opt->halign);
+#else
+		gtk_misc_set_alignment(GTK_MISC(widget), opt->halign, 0.5);
+#endif
+#ifdef WITH_XDIALOG
+		gtk_label_set_justify(GTK_LABEL(widget), opt->justify);
+#endif
+		gtk_widget_show(widget);
+		gtk_widget_show(box);
+		gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE,
+				BORDER_WIDTH);
+		gtk_container_add(GTK_CONTAINER(container), box);
+	}
+#if 0
+	if(conf->x == BSDDIALOG_FULLSCREEN || conf->y == BSDDIALOG_FULLSCREEN)
+		gtk_window_fullscreen(GTK_WINDOW(dialog));
+	else if(conf->x != BSDDIALOG_AUTOSIZE && conf->y != BSDDIALOG_AUTOSIZE)
+		gtk_window_move(GTK_WINDOW(dialog), conf->x, conf->y);
+	else
+		gtk_window_set_position(GTK_WINDOW(dialog), opt->position);
+#endif
+	/* FIXME fails here */
+	fprintf(stderr, "DEBUG: %s() => %p\n", __func__, container);
+	gtk_widget_show(container);
+	return container;
+}
+#endif
+
+
+/* builder_add_button */
+static void _builder_dialog_add_button(GtkWidget * dialog, char const * text,
+		gint id)
+{
+#if 0
+	char const * p;
+	unsigned int u;
+	GList * l;
+
+	if((p = getenv("GBSDDIALOG_SOCKET_ID")) != NULL
+			&& sscanf(p, "%u", &u) == 1)
+	{
+		if((l = gtk_container_get_children(GTK_CONTAINER(dialog)))
+				!= NULL && l->data != NULL)
+			gtk_assistant_add_action_widget(GTK_ASSISTANT(l->data),
+					gtk_button_new_with_label(text));
+	}
+	else
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), text, id);
 }
 
 
@@ -3179,3 +3323,39 @@ static void _dialog_run_forall(GtkWidget * widget, gpointer data)
 
 	gtk_widget_reparent(widget, parent);
 }
+
+
+#if 0
+/* builder_dialog_run_assistant */
+static int _builder_dialog_run_assistant(struct bsddialog_conf const * conf,
+		GtkWidget * plug)
+{
+	int res;
+
+	gtk_widget_show(plug);
+	gtk_main();
+	/* FIXME get the actual response */
+	res = GTK_RESPONSE_OK;
+	if(conf->get_height != NULL || conf->get_width != NULL)
+		gtk_window_get_size(GTK_WINDOW(plug),
+				conf->get_width, conf->get_height);
+	gtk_widget_hide(plug);
+	switch(res)
+	{
+		case GTK_RESPONSE_CANCEL:
+		case GTK_RESPONSE_NO:
+			return BSDDIALOG_CANCEL;
+		case GTK_RESPONSE_CLOSE:
+		case GTK_RESPONSE_DELETE_EVENT:
+			return BSDDIALOG_ESC;
+		case GTK_RESPONSE_HELP:
+			return BSDDIALOG_HELP;
+		case GTK_RESPONSE_OK:
+		case GTK_RESPONSE_YES:
+			return BSDDIALOG_OK;
+		case BSDDIALOG_EXTRA:
+			return res;
+	}
+	return BSDDIALOG_ERROR;
+}
+#endif
