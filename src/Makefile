@@ -1,4 +1,4 @@
-TARGETS	= gbsddialog
+TARGETS	= $(OBJDIR)gbsddialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
@@ -9,7 +9,7 @@ LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p -m 0755
 RM	= rm -f
-OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
+OBJS	= $(OBJDIR)builders.o $(OBJDIR)callbacks.o $(OBJDIR)common.o $(OBJDIR)gbsddialog.o $(OBJDIR)main.o
 
 #uncomment the following two lines to build with Gtk+ 2:
 #CFLAGSF= `pkg-config --cflags gtk+-2.0`
@@ -17,23 +17,23 @@ OBJS	= builders.o callbacks.o common.o gbsddialog.o main.o
 
 all: $(TARGETS)
 
-gbsddialog: $(OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gbsddialog $(OBJS)
+$(OBJDIR)gbsddialog: $(OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o $(OBJDIR)gbsddialog $(OBJS)
 
-builders.o: builders.c builders.h callbacks.h common.h bsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o builders.o -c builders.c
+$(OBJDIR)builders.o: builders.c builders.h callbacks.h common.h bsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)builders.o -c builders.c
 
-callbacks.o: callbacks.c callbacks.h common.h bsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o callbacks.o -c callbacks.c
+$(OBJDIR)callbacks.o: callbacks.c callbacks.h common.h bsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)callbacks.o -c callbacks.c
 
-common.o: common.c common.h bsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o common.o -c common.c
+$(OBJDIR)common.o: common.c common.h bsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)common.o -c common.c
 
-gbsddialog.o: gbsddialog.c builders.h common.h bsddialog.h gbsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o gbsddialog.o -c gbsddialog.c
+$(OBJDIR)gbsddialog.o: gbsddialog.c builders.h common.h bsddialog.h gbsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)gbsddialog.o -c gbsddialog.c
 
-main.o: main.c common.h bsddialog.h gbsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o main.o -c main.c
+$(OBJDIR)main.o: main.c common.h bsddialog.h gbsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)main.o -c main.c
 
 clean:
 	$(RM) $(OBJS)
@@ -43,7 +43,7 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 gbsddialog $(DESTDIR)$(BINDIR)/gbsddialog
+	$(INSTALL) -m 0755 $(OBJDIR)gbsddialog $(DESTDIR)$(BINDIR)/gbsddialog
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/gbsddialog

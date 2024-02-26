@@ -11,21 +11,39 @@ TAR	= tar
 
 all:
 	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE)) || exit $$?; \
+		(cd "$$subdir" && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MKDIR) -- "$(OBJDIR)$$subdir" && \
+			$(MAKE) OBJDIR="$(OBJDIR)$$subdir/"; \
+		else \
+			$(MAKE); \
+		fi) || exit $$?; \
 	done
 
 tests: all
-	cd tests && $(MAKE) tests
+	@cd tests && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MKDIR) -- "$(OBJDIR)tests" && \
+			$(MAKE) OBJDIR="$(OBJDIR)tests/" tests; \
+		else \
+			$(MAKE) tests; \
+		fi
 
 clean:
 	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) clean) || exit $$?; \
+		(cd "$$subdir" && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MAKE) OBJDIR="$(OBJDIR)$$subdir/" clean; \
+		else \
+			$(MAKE) clean; \
+		fi) || exit $$?; \
 	done
 
 dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- "$$PWD" $(PACKAGE)-$(VERSION)
-	$(TAR) -czf $(PACKAGE)-$(VERSION).tar.gz \
+	[ -z "$(OBJDIR)" -o -d "$(OBJDIR)" ] || $(MKDIR) -- "$(OBJDIR)$$subdir"
+	$(TAR) -czf $(OBJDIR)$(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README.md \
@@ -91,17 +109,27 @@ dist:
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
 distcheck: dist
-	$(TAR) -xzf $(PACKAGE)-$(VERSION).tar.gz
+	$(TAR) -xzf $(OBJDIR)$(PACKAGE)-$(VERSION).tar.gz
 	cd $(PACKAGE)-$(VERSION) && $(MAKE) dist all
 
 distclean:
 	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) distclean) || exit $$?; \
+		(cd "$$subdir" && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MAKE) OBJDIR="$(OBJDIR)$$subdir/" distclean; \
+		else \
+			$(MAKE) distclean; \
+		fi) || exit $$?; \
 	done
 
 install:
 	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) install) || exit $$?; \
+		(cd "$$subdir" && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MAKE) OBJDIR="$(OBJDIR)$$subdir/" install; \
+		else \
+			$(MAKE) install; \
+		fi) || exit $$?; \
 	done
 	$(MKDIR) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)
 	$(INSTALL) -m 0644 COPYING $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
@@ -110,7 +138,12 @@ install:
 
 uninstall:
 	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) uninstall) || exit $$?; \
+		(cd "$$subdir" && \
+		if [ -n "$(OBJDIR)" ]; then \
+			$(MAKE) OBJDIR="$(OBJDIR)$$subdir/" uninstall; \
+		else \
+			$(MAKE) uninstall; \
+		fi) || exit $$?; \
 	done
 	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/COPYING
 	$(RM) $(DESTDIR)$(DATADIR)/doc/$(PACKAGE)/README.md
