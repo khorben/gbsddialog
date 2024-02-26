@@ -41,6 +41,9 @@
 #include "builders.h"
 #include "common.h"
 #include "gbsddialog.h"
+#if defined(GDK_WINDOWING_X11) && GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 
 /* FIXME conflicts with <sys/syslimits.h> */
 #ifdef MAX_INPUT
@@ -68,6 +71,13 @@ typedef struct _GBSDDialog
 	size_t windows_cnt;
 	GtkWidget * label;
 } GBSDDialog;
+
+struct clearscreen_data
+{
+	GtkWidget * window;
+	GtkWidget * spinner;
+	GtkWidget * socket;
+};
 
 /* for getopt_long() */
 enum OPTS {
@@ -944,8 +954,13 @@ static void _backtitle_on_size_changed(gpointer data)
 
 
 /* gbsddialog_clear_screen */
+static void _clear_screen_added(gpointer data);
+static gboolean _clear_screen_deleted(gpointer data);
+static gboolean _clear_screen_removed(gpointer data);
+
 static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 {
+#if 0
 	GdkWindow * root;
 	GtkWidget * widget;
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -971,8 +986,67 @@ static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 	gtk_style_set_background(style, root, GTK_STATE_NORMAL);
 #endif
 	gtk_widget_destroy(widget);
+#else
+	struct clearscreen_data cd;
+	GtkWidget * box;
+
+	if(gbd->opt.backtitle != NULL && gbd->windows == NULL)
+		_gbsddialog_backtitle(gbd);
+	cd.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect_swapped(cd.window, "delete-event",
+			G_CALLBACK(_clear_screen_deleted), &cd);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
+#else
+	box = gtk_vbox_new(FALSE, BORDER_WIDTH);
+#endif
+	cd.spinner = gtk_spinner_new();
+	gtk_spinner_start(GTK_SPINNER(cd.spinner));
+	gtk_box_pack_start(GTK_BOX(box), cd.spinner, TRUE, FALSE, 0);
+	gtk_widget_show(cd.spinner);
+	cd.socket = gtk_socket_new();
+	g_signal_connect_swapped(cd.socket, "plug-added",
+			G_CALLBACK(_clear_screen_added), &cd);
+	g_signal_connect_swapped(cd.socket, "plug-removed",
+			G_CALLBACK(_clear_screen_removed), &cd);
+	gtk_box_pack_start(GTK_BOX(box), cd.socket, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(cd.window), box);
+	gtk_widget_show(box);
+	gtk_widget_show(cd.window);
+	gtk_widget_realize(cd.socket);
+	printf("%u\n", gtk_socket_get_id(GTK_SOCKET(cd.socket)));
+	gtk_main();
+#endif
 }
 
+static void _clear_screen_added(gpointer data)
+{
+	struct clearscreen_data * cd = data;
+
+	gtk_spinner_stop(GTK_SPINNER(cd->spinner));
+	gtk_widget_hide(cd->spinner);
+	gtk_widget_show(cd->socket);
+	gtk_widget_show(cd->window);
+}
+
+static gboolean _clear_screen_deleted(gpointer data)
+{
+	struct clearscreen_data * cd = data;
+
+	gtk_widget_hide(cd->window);
+	gtk_main_quit();
+	return TRUE;
+}
+
+static gboolean _clear_screen_removed(gpointer data)
+{
+	struct clearscreen_data * cd = data;
+
+	gtk_spinner_start(GTK_SPINNER(cd->spinner));
+	gtk_widget_show(cd->spinner);
+	gtk_widget_hide(cd->socket);
+	return TRUE;
+}
 
 /* gbsddialog_parseargs */
 static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,

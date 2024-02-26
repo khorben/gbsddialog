@@ -3119,12 +3119,37 @@ static int _builder_dialog_menu_output(struct options const * opt,
 
 
 /* builder_dialog_run */
+static void _dialog_run_forall(GtkWidget * widget, gpointer data);
+
 static int _builder_dialog_run(struct bsddialog_conf const * conf,
 		GtkWidget * dialog)
 {
 	int res;
+	char const * p;
+	unsigned int id;
+	GtkWidget * plug;
+	GtkWidget * box;
 
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if((p = getenv("GBSDDIALOG_SOCKET_ID")) != NULL
+			&& sscanf(p, "%u", &id) == 1)
+	{
+		plug = gtk_plug_new(id);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+		box = gtk_vbox_new(FALSE, 0);
+#endif
+		gtk_container_forall(GTK_CONTAINER(dialog), _dialog_run_forall,
+				box);
+		gtk_container_add(GTK_CONTAINER(plug), box);
+		gtk_widget_show(box);
+		gtk_widget_show(plug);
+		/* FIXME obtain the response */
+		gtk_main();
+		res = GTK_RESPONSE_OK;
+	}
+	else
+		res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if(conf->get_height != NULL || conf->get_width != NULL)
 		gtk_window_get_size(GTK_WINDOW(dialog),
 				conf->get_width, conf->get_height);
@@ -3146,4 +3171,11 @@ static int _builder_dialog_run(struct bsddialog_conf const * conf,
 			return res;
 	}
 	return BSDDIALOG_ERROR;
+}
+
+static void _dialog_run_forall(GtkWidget * widget, gpointer data)
+{
+	GtkWidget * parent = data;
+
+	gtk_widget_reparent(widget, parent);
 }
