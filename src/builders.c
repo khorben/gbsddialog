@@ -73,7 +73,7 @@ struct gauge_data
 	GtkWidget * label;
 	GtkWidget * widget;	/* progress bar */
 	guint id;
-	int sep;		/* -1 no, 0 yes, 1 percentage */
+	int sep;		/* -1 no, 0 yes, 1 percentage, 2 text */
 };
 
 struct infobox_data
@@ -832,7 +832,8 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 	char buf[BUFSIZ + 1];
 	gsize r;
 	GError * error = NULL;
-	char * p, * q;
+	char * p, * q, * s;
+	char const * l;
 	unsigned int perc;
 
 #ifdef DEBUG
@@ -881,7 +882,22 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 			/* set the current text */
 			*q = '\0';
 			gtk_label_set_text(GTK_LABEL(gd->label), p);
-			gd->sep = -1;
+			gd->sep = 2;
+			p = q;
+			continue;
+		}
+		else if(gd->sep == 2 && (q = strchr(p, '\n')) != NULL)
+		{
+			/* append to the current text */
+			*q = '\0';
+			l = gtk_label_get_text(GTK_LABEL(gd->label));
+			r = strlen(l) + strlen(p) + 2;
+			if((s = malloc(r)) != NULL)
+			{
+				snprintf(s, r, "%s\n%s", l, p);
+				gtk_label_set_text(GTK_LABEL(gd->label), s);
+				free(s);
+			}
 			p = q;
 			continue;
 		}
