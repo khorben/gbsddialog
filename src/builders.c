@@ -1571,6 +1571,10 @@ static void _mixedgauge_set_percentage(GtkWidget * widget, int perc)
 
 
 /* builder_msgbox */
+static void _msgbox_dialog_buttons(GtkWidget * dialog,
+		struct bsddialog_conf const * conf,
+		struct options const * opt);
+
 int builder_msgbox(struct bsddialog_conf const * conf,
 		char const * text, int rows, int cols,
 		int argc, char const ** argv, struct options const * opt)
@@ -1584,10 +1588,59 @@ int builder_msgbox(struct bsddialog_conf const * conf,
 		return BSDDIALOG_ERROR;
 	}
 	dialog = _builder_dialog(conf, opt, text, rows, cols);
-	_builder_dialog_buttons(dialog, conf, NULL);
+	_msgbox_dialog_buttons(dialog, conf, NULL);
 	ret = _builder_dialog_run(conf, dialog);
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static void _msgbox_dialog_buttons(GtkWidget * dialog,
+		struct bsddialog_conf const * conf,
+		struct options const * opt)
+{
+	char const * label;
+#ifndef WITH_XDIALOG
+	(void) opt;
+#endif
+
+	if(conf->button.without_cancel != true
+			&& conf->button.cancel_label != NULL)
+	{
+		label = (conf->button.cancel_label != NULL)
+			? conf->button.cancel_label : "Cancel";
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
+				GTK_RESPONSE_CANCEL);
+	}
+	if(conf->button.with_extra == true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf->button.extra_label != NULL)
+				? conf->button.extra_label : "Extra",
+				BSDDIALOG_EXTRA);
+	if(conf->button.without_ok != true)
+	{
+		label = (conf->button.ok_label != NULL)
+			? conf->button.ok_label : "OK";
+#ifdef WITH_XDIALOG
+		if(opt != NULL && opt->wizard)
+			label = "Next";
+#endif
+		gtk_dialog_add_button(GTK_DIALOG(dialog), label,
+				GTK_RESPONSE_OK);
+	}
+	if(conf->button.with_help == true)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				(conf->button.help_label != NULL)
+				? conf->button.help_label : "Help",
+				GTK_RESPONSE_HELP);
+#ifdef WITH_XDIALOG
+	if(opt != NULL && opt->wizard)
+		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
+#endif
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
+			(conf->button.without_cancel != true
+			 && conf->button.cancel_label != NULL
+			 && conf->button.default_cancel)
+			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
 }
 
 
@@ -2948,7 +3001,8 @@ static void _builder_dialog_buttons(GtkWidget * dialog,
 		gtk_dialog_add_button(GTK_DIALOG(dialog), "Previous", 3);
 #endif
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog),
-			conf->button.default_cancel
+			(conf->button.without_cancel != true
+			 && conf->button.default_cancel)
 			? GTK_RESPONSE_CANCEL : GTK_RESPONSE_OK);
 }
 
