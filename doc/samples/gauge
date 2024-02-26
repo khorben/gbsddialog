@@ -1,13 +1,18 @@
 #!/bin/sh
-DIALOG=Xdialog
+DIALOG=gbsddialog
 
 (
-echo "10" ; sleep 1
-echo "XXX" ; echo "The new" ; echo "\\n" ; echo "message"; echo "XXX"
-echo "20" ; sleep 1
-echo "50" ; sleep 1
-echo "75" ; sleep 1
-echo "100" ; sleep 1
+echo "XXX" ; echo "10" ; sleep 1
+echo "XXX" ; echo "20"; echo "The new" ; echo ; echo "message" ; sleep 1
+echo "XXX" ; echo "30" ; sleep 1
+echo "XXX" ; echo "40" ; sleep 1
+echo "XXX" ; echo "50" ; sleep 1
+echo "XXX" ; echo "60" ; sleep 1
+echo "XXX" ; echo "70" ; sleep 1
+echo "XXX" ; echo "80" ; sleep 1
+echo "XXX" ; echo "90" ; sleep 1
+echo "XXX" ; echo "100" ; sleep 1
+echo "EOF"
 ) |
 $DIALOG --title "GAUGE" --gauge "Hi, this is a gauge widget" 8 30
 
