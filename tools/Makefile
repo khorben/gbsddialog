@@ -1,4 +1,4 @@
-TARGETS	= Xdialog
+TARGETS	= $(OBJDIR)Xdialog
 PREFIX	= /usr/local
 BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
@@ -9,7 +9,7 @@ LDFLAGS	=
 INSTALL	= install
 MKDIR	= mkdir -p -m 0755
 RM	= rm -f
-OBJS	= builders.o Xdialog.o
+OBJS	= $(OBJDIR)builders.o $(OBJDIR)Xdialog.o
 
 #uncomment the following two lines to build with Gtk+ 2:
 #CFLAGSF= `pkg-config --cflags gtk+-2.0`
@@ -17,14 +17,14 @@ OBJS	= builders.o Xdialog.o
 
 all: $(TARGETS)
 
-Xdialog: $(OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Xdialog $(OBJS)
+$(OBJDIR)Xdialog: $(OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o $(OBJDIR)Xdialog $(OBJS)
 
-builders.o: builders.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/common.h ../src/bsddialog.h
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o builders.o -c builders.c
+$(OBJDIR)builders.o: builders.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/common.h ../src/bsddialog.h
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)builders.o -c builders.c
 
-Xdialog.o: Xdialog.c ../src/builders.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o Xdialog.o -c Xdialog.c
+$(OBJDIR)Xdialog.o: Xdialog.c ../src/builders.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+	$(CC) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o $(OBJDIR)Xdialog.o -c Xdialog.c
 
 clean:
 	$(RM) $(OBJS)
@@ -34,7 +34,7 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Xdialog $(DESTDIR)$(BINDIR)/Xdialog
+	$(INSTALL) -m 0755 $(OBJDIR)Xdialog $(DESTDIR)$(BINDIR)/Xdialog
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/Xdialog

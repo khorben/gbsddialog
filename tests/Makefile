@@ -1,9 +1,9 @@
-TARGETS	= gbsddialog2 gbsddialog3 Xdialog2 Xdialog3
+TARGETS	= $(OBJDIR)gbsddialog2 $(OBJDIR)gbsddialog3 $(OBJDIR)Xdialog2 $(OBJDIR)Xdialog3
 CPPFLAGS= -D_FORTIFY_SOURCE=2
 CFLAGS	= -W -Wall -g -O2 -fstack-protector
 LDFLAGS	=
 RM	= rm -f
-OBJS	= gbsddialog2.o gbsddialog3.o Xdialog2.o Xdialog3.o
+OBJS	= $(OBJDIR)gbsddialog2.o $(OBJDIR)gbsddialog3.o $(OBJDIR)Xdialog2.o $(OBJDIR)Xdialog3.o
 
 #for Gtk+ 2
 CFLAGSF_GTK2= `pkg-config --cflags gtk+-2.0`
@@ -17,29 +17,29 @@ all:
 
 tests: $(TARGETS)
 
-gbsddialog2: gbsddialog2.o
-	$(CC) $(LDFLAGSF_GTK2) $(LDFLAGS) -o gbsddialog2 gbsddialog2.o
+$(OBJDIR)gbsddialog2: $(OBJDIR)gbsddialog2.o
+	$(CC) $(LDFLAGSF_GTK2) $(LDFLAGS) -o $(OBJDIR)gbsddialog2 $(OBJDIR)gbsddialog2.o
 
-gbsddialog2.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o gbsddialog2.o -c gbsddialog.c
+$(OBJDIR)gbsddialog2.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o $(OBJDIR)gbsddialog2.o -c gbsddialog.c
 
-gbsddialog3: gbsddialog3.o
-	$(CC) $(LDFLAGSF_GTK3) $(LDFLAGS) -o gbsddialog3 gbsddialog3.o
+$(OBJDIR)gbsddialog3: $(OBJDIR)gbsddialog3.o
+	$(CC) $(LDFLAGSF_GTK3) $(LDFLAGS) -o $(OBJDIR)gbsddialog3 $(OBJDIR)gbsddialog3.o
 
-gbsddialog3.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK3) $(CFLAGS) -o gbsddialog3.o -c gbsddialog.c
+$(OBJDIR)gbsddialog3.o: gbsddialog.c ../src/builders.c ../src/builders.h ../src/callbacks.c ../src/callbacks.h ../src/common.c ../src/common.h ../src/bsddialog.h ../src/gbsddialog.c ../src/gbsddialog.h ../src/main.c
+	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK3) $(CFLAGS) -o $(OBJDIR)gbsddialog3.o -c gbsddialog.c
 
-Xdialog2: Xdialog2.o
-	$(CC) $(LDFLAGSF_GTK2) -lm $(LDFLAGS) -o Xdialog2 Xdialog2.o
+$(OBJDIR)Xdialog2: $(OBJDIR)Xdialog2.o
+	$(CC) $(LDFLAGSF_GTK2) -lm $(LDFLAGS) -o $(OBJDIR)Xdialog2 $(OBJDIR)Xdialog2.o
 
-Xdialog2.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
-	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o Xdialog2.o -c Xdialog.c
+$(OBJDIR)Xdialog2.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
+	$(CC) $(CPPFLAGS) $(CFLAGSF_GTK2) $(CFLAGS) -o $(OBJDIR)Xdialog2.o -c Xdialog.c
 
-Xdialog3: Xdialog3.o
-	$(CC) $(LDFLAGSF_GTK3) -lm $(LDFLAGS) -o Xdialog3 Xdialog3.o
+$(OBJDIR)Xdialog3: $(OBJDIR)Xdialog3.o
+	$(CC) $(LDFLAGSF_GTK3) -lm $(LDFLAGS) -o $(OBJDIR)Xdialog3 $(OBJDIR)Xdialog3.o
 
-Xdialog3.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
-	$(CC) $(CPPFLAGS) `pkg-config --cflags gtk+-3.0` $(CFLAGS) -o Xdialog3.o -c Xdialog.c
+$(OBJDIR)Xdialog3.o: Xdialog.c ../tools/builders.c ../tools/Xdialog.c
+	$(CC) $(CPPFLAGS) `pkg-config --cflags gtk+-3.0` $(CFLAGS) -o $(OBJDIR)Xdialog3.o -c Xdialog.c
 
 clean:
 	$(RM) $(OBJS)

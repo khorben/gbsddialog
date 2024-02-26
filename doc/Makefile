@@ -1,6 +1,7 @@
 PACKAGE	= gbsddialog
 VERSION	= 0.8.1
-TARGETS	= Xdialog.1
+TARGETS	= $(OBJDIR)Xdialog.1
+OBJS	=
 SAMPLES	= Xdialog.wrapper.c Xmessage Xmore allrpms bluebox.rc buildlist \
 	  calendar chain checklist dselect editbox fixed-font.rc format1440 \
 	  fselect gauge infobox infobox2 inputbox install-wrapper kernel \
@@ -18,14 +19,14 @@ SED	= sed
 
 all: $(TARGETS)
 
-Xdialog.1: Xdialog.1.in Makefile
+$(OBJDIR)Xdialog.1: Xdialog.1.in Makefile
 	$(SED) -e s,%%project%%,$(PACKAGE), \
 		-e s,%%version%%,$(VERSION), \
 		-e s,%%prefix%%,$(PREFIX), \
 		-e s,%%bindir%%,$(BINDIR), \
 		-e s,%%datadir%%,$(DATADIR), \
 		-e s,%%mandir%%,$(MANDIR), \
-		Xdialog.1.in > Xdialog.1 || $(RM) Xdialog.1
+		Xdialog.1.in > $(OBJDIR)Xdialog.1 || $(RM) $(OBJDIR)Xdialog.1
 
 clean:
 	$(RM) $(OBJS)
@@ -43,7 +44,7 @@ install: all
 	done
 	$(MKDIR) $(DESTDIR)$(MANDIR)/man1
 	$(INSTALL) -m 0644 gbsddialog.1 $(DESTDIR)$(MANDIR)/man1/gbsddialog.1
-	$(INSTALL) -m 0644 Xdialog.1 $(DESTDIR)$(MANDIR)/man1/Xdialog.1
+	$(INSTALL) -m 0644 $(OBJDIR)Xdialog.1 $(DESTDIR)$(MANDIR)/man1/Xdialog.1
 
 uninstall:
 	for sample in $(SAMPLES); do \
