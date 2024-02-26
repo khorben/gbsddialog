@@ -1495,44 +1495,47 @@ static void _mixedgauge_set_percentage(GtkWidget * widget, int perc)
 	if(perc < 0)
 		switch(-perc)
 		{
-			case 0:
+			case 1:
 				strcpy(buf, "Success");
 				fraction = 1.0;
 				break;
-			case 1:
+			case 2:
 				strcpy(buf, "Failed");
 				break;
-			case 2:
+			case 3:
 				strcpy(buf, "Passed");
 				fraction = 1.0;
 				break;
-			case 3:
+			case 4:
 				strcpy(buf, "Completed");
 				fraction = 1.0;
 				break;
-			case 4:
+			case 5:
 				strcpy(buf, "Checked");
 				fraction = 1.0;
 				break;
-			case 5:
+			case 6:
 				strcpy(buf, "Done");
 				fraction = 1.0;
 				break;
-			case 6:
+			case 7:
 				strcpy(buf, "Skipped");
 				break;
-			case 7:
+			case 8:
 				strcpy(buf, "In Progress");
 				fraction = -1.0;
 				break;
-			case 8: /* (blank) */
+			case 9: /* (blank) */
 				buf[0] = '\0';
 				break;
-			case 9:
+			case 10:
 				strcpy(buf, "N/A");
 				break;
+			case 11:
+				strcpy(buf, "Pending");
+				break;
 			default:
-				buf[0] = '\0';
+				strcpy(buf, "Unknown");
 				break;
 		}
 	else
