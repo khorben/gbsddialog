@@ -45,19 +45,20 @@ This involves:
 Different phases are planned, as follows:
 
 1. Basic implementation, possibly ignoring some options.
-1. Implementation with a desktop window. (for e.g., `--backtitle`)
-1. Support for a daemon mode, where the desktop window remains active, in order
+2. Implementation with a desktop window. (for e.g., `--backtitle`)
+3. Support for a daemon mode, where the desktop window remains active, in order
    to avoid flickering between invocations.
-1. Additional improvement where the main dialog window is re-filled, instead of
+4. Additional improvement where the main dialog window is re-filled, instead of
    new dialogs popping up for each step.
-1. Implementation using the GtkAssistant widget.
+5. Implementation using the GtkAssistant widget.
 
 Known Issues
 ------------
 
-The current status according to the development plan above is at step 2.
+The current status according to the development plan above is at step 3.
 "Implementation with a desktop window", whereas support for a desktop window is
-implemented. However:
+implemented, and a daemon mode is hidden within the `--clear-screen` option.
+However:
 
 - A few features of `bsddialog(1)` are still missing, such as highlights for
   text or generic buttons.
