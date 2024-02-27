@@ -30,6 +30,8 @@
 
 
 
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -67,6 +69,9 @@ typedef struct _GBSDDialog
 	GtkWidget ** windows;
 	size_t windows_cnt;
 	GtkWidget * label;
+
+	int socket;
+	guint id;
 } GBSDDialog;
 
 /* for getopt_long() */
@@ -550,6 +555,7 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 		free(gbd);
 		return -1;
 	}
+	gbd->socket = -1;
 	g_idle_add(_gbsddialog_on_idle, gbd);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => 0\n", __func__);
@@ -952,33 +958,77 @@ static gboolean _backtitle_on_delete_event(void)
 
 
 /* gbsddialog_clear_screen */
+static gboolean _clear_screen_on_accept(GIOChannel * channel,
+		GIOCondition condition, gpointer data);
+
 static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 {
-	GdkWindow * root;
-	GtkWidget * widget;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	GtkStyleContext * style;
-	GdkRGBA color = { 0.0, 0.0, 0.0, 1.0 };
-#else
-	GtkStyle * style;
-#endif
+	struct sockaddr_un addr;
+	GIOChannel * channel;
 
-#ifdef DEBUG
+	if(gbd->opt.backtitle != NULL && gbd->windows == NULL)
+	{
+		_gbsddialog_backtitle(gbd);
+		if((gbd->socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s", "socket",
+					strerror(errno));
+			return;
+		}
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/%s-%s",
+				g_get_tmp_dir(), gdk_get_display(), PACKAGE);
+		addr.sun_len = sizeof(addr) - sizeof(addr.sun_path)
+			+ strlen(addr.sun_path) + 1;
+		if(bind(gbd->socket, (struct sockaddr *)&addr,
+					sizeof(addr)) != 0
+				|| listen(gbd->socket, 5) != 0)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s", addr.sun_path,
+					strerror(errno));
+			close(gbd->socket);
+			unlink(addr.sun_path);
+			return;
+		}
+		channel = g_io_channel_unix_new(gbd->socket);
+		g_io_channel_set_encoding(channel, NULL, NULL);
+		gbd->id = g_io_add_watch(channel, G_IO_IN,
+				_clear_screen_on_accept, gbd);
+	}
+	gtk_main();
+	close(gbd->socket);
+	unlink(addr.sun_path);
+}
+
+static gboolean _clear_screen_on_accept(GIOChannel * channel,
+		GIOCondition condition, gpointer data)
+{
+	GBSDDialog * gbd = data;
+	int fd;
+	char buf[257];
+	ssize_t len;
+	(void) channel;
+
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	root = gdk_screen_get_root_window(gbd->screen);
-	widget = gtk_tree_view_new();
-#if GTK_CHECK_VERSION(3, 0, 0)
-	style = gtk_widget_get_style_context(widget);
-	gtk_style_context_get_background_color(style,
-			GTK_STATE_FLAG_SELECTED, &color);
-	gdk_window_set_background_rgba(root, &color);
-#else
-	style = gtk_widget_get_style(widget);
-	/* FIXME this does not seem to work */
-	gtk_style_set_background(style, root, GTK_STATE_NORMAL);
-#endif
-	gtk_widget_destroy(widget);
+# endif
+	if(condition != G_IO_IN)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", PACKAGE,
+				"Unexpected condition");
+		return FALSE;
+	}
+	fd = accept(gbd->socket, NULL, NULL);
+	len = recv(fd, buf, sizeof(buf) - 1, 0);
+	close(fd);
+	if(len > 0 && (size_t)len < sizeof(buf) && gbd->label != NULL)
+	{
+		/* update the backtitle */
+		buf[len] = '\0';
+		gtk_label_set_text(GTK_LABEL(gbd->label), buf);
+	}
+	return TRUE;
 }
 
 
