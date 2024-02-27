@@ -528,6 +528,7 @@ static gboolean _gbsddialog_on_idle(gpointer data);
 static gboolean _gbsddialog_on_idle_quit(gpointer data);
 #if GTK_CHECK_VERSION(2, 2, 0)
 static void _backtitle_on_size_changed(gpointer data);
+static gboolean _backtitle_on_delete_event(void);
 #endif
 
 int gbsddialog(int * ret, int argc, char const ** argv)
@@ -884,6 +885,8 @@ static void _backtitle_on_size_changed(gpointer data)
 		gtk_window_resize(GTK_WINDOW(window),
 				geometry.width * scale,
 				geometry.height * scale);
+		g_signal_connect(window, "delete-event",
+				G_CALLBACK(_backtitle_on_delete_event), NULL);
 #if GTK_CHECK_VERSION(3, 22, 0)
 		if(gdk_monitor_is_primary(monitor))
 		{
@@ -939,6 +942,11 @@ static void _backtitle_on_size_changed(gpointer data)
 		gtk_container_set_border_width(GTK_CONTAINER(window), 16);
 		gtk_widget_show_all(window);
 	}
+}
+
+static gboolean _backtitle_on_delete_event(void)
+{
+	return TRUE;
 }
 #endif
 
