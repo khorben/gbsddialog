@@ -539,16 +539,16 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	fprintf(stderr, "DEBUG: %s(%d, \"%s\")\n", __func__, argc, argv[0]);
 #endif
 	if((gbd = malloc(sizeof(*gbd))) == NULL)
-		return -error(errno, "%s", strerror(errno));
+		return error(BSDDIALOG_ERROR, "%s", strerror(errno));
 	memset(gbd, 0, sizeof(*gbd));
 	gbd->ret = ret;
 	gbd->argc = argc;
 	gbd->argv = argv;
 	if((gbd->screen = gdk_screen_get_default()) == NULL)
 	{
-		error(BSDDIALOG_ERROR, "Could not get the default screen");
 		free(gbd);
-		return -1;
+		return error(BSDDIALOG_ERROR,
+				"Could not get the default screen");
 	}
 	g_idle_add(_gbsddialog_on_idle, gbd);
 #ifdef DEBUG
@@ -821,7 +821,7 @@ static void _backtitle_on_size_changed(gpointer data)
 #endif
 	if((p = realloc(gbd->windows, (sizeof(*gbd->windows) * i))) == NULL)
 	{
-		/* FIXME report the error */
+		error(BSDDIALOG_ERROR, "%s", strerror(errno));
 		free(gbd->windows);
 		gbd->windows_cnt = 0;
 		return;
