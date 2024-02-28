@@ -544,16 +544,16 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 	fprintf(stderr, "DEBUG: %s(%d, \"%s\")\n", __func__, argc, argv[0]);
 #endif
 	if((gbd = malloc(sizeof(*gbd))) == NULL)
-		return -error(errno, "%s", strerror(errno));
+		return error(BSDDIALOG_ERROR, "%s", strerror(errno));
 	memset(gbd, 0, sizeof(*gbd));
 	gbd->ret = ret;
 	gbd->argc = argc;
 	gbd->argv = argv;
 	if((gbd->screen = gdk_screen_get_default()) == NULL)
 	{
-		error(BSDDIALOG_ERROR, "Could not get the default screen");
 		free(gbd);
-		return -1;
+		return error(BSDDIALOG_ERROR,
+				"Could not get the default screen");
 	}
 	gbd->socket = -1;
 	g_idle_add(_gbsddialog_on_idle, gbd);
@@ -736,14 +736,18 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd)
 	addr.sun_len = sizeof(addr) - sizeof(addr.sun_path)
 		+ strlen(addr.sun_path) + 1;
 	if(access(addr.sun_path, W_OK) == 0)
-	{
 		/* connect to the running instance */
-		if((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+		if((fd = socket(addr.sun_family, SOCK_STREAM, 0)) < 0)
 			error(BSDDIALOG_ERROR, "%s: %s", "socket",
 					strerror(errno));
-		else if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+		else if(connect(fd, (struct sockaddr *)&addr, sizeof(addr))
+				!= 0)
+		{
 			error(BSDDIALOG_ERROR, "%s: %s", "connect",
 					strerror(errno));
+			close(fd);
+			fd = -1;
+		}
 		else if(send(fd, gbd->opt.backtitle, strlen(gbd->opt.backtitle),
 					0) != strlen(gbd->opt.backtitle))
 		{
@@ -752,13 +756,12 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd)
 			close(fd);
 			fd = -1;
 		}
-		if(fd >= 0)
+		else
 		{
 			/* we were successful */
 			close(fd);
 			return;
 		}
-	}
 #if GTK_CHECK_VERSION(2, 2, 0)
 	g_signal_connect_swapped(gbd->screen, "size-changed",
 			G_CALLBACK(_backtitle_on_size_changed), gbd);
@@ -861,7 +864,7 @@ static void _backtitle_on_size_changed(gpointer data)
 #endif
 	if((p = realloc(gbd->windows, (sizeof(*gbd->windows) * i))) == NULL)
 	{
-		/* FIXME report the error */
+		error(BSDDIALOG_ERROR, "%s", strerror(errno));
 		free(gbd->windows);
 		gbd->windows_cnt = 0;
 		return;
@@ -1003,24 +1006,31 @@ static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 	if(gbd->opt.backtitle != NULL && gbd->windows == NULL)
 	{
 		_gbsddialog_backtitle(gbd);
-		if((gbd->socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
-		{
-			error(BSDDIALOG_ERROR, "%s: %s", "socket",
-					strerror(errno));
-			return;
-		}
 		memset(&addr, 0, sizeof(addr));
 		addr.sun_family = AF_UNIX;
 		snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/%s-%s",
 				g_get_tmp_dir(), gdk_get_display(), PACKAGE);
 		addr.sun_len = sizeof(addr) - sizeof(addr.sun_path)
 			+ strlen(addr.sun_path) + 1;
-		if(bind(gbd->socket, (struct sockaddr *)&addr,
-					sizeof(addr)) != 0
-				|| listen(gbd->socket, 5) != 0)
+		if((gbd->socket = socket(addr.sun_family, SOCK_STREAM, 0)) < 0)
 		{
-			error(BSDDIALOG_ERROR, "%s: %s", addr.sun_path,
+			error(BSDDIALOG_ERROR, "%s: %s", "socket",
 					strerror(errno));
+			return;
+		}
+		if(bind(gbd->socket, (struct sockaddr *)&addr,
+					sizeof(addr)) != 0)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s: %s", "bind",
+					addr.sun_path, strerror(errno));
+			close(gbd->socket);
+			unlink(addr.sun_path);
+			return;
+		}
+		if(listen(gbd->socket, 5) != 0)
+		{
+			error(BSDDIALOG_ERROR, "%s: %s: %s", "listen",
+					addr.sun_path, strerror(errno));
 			close(gbd->socket);
 			unlink(addr.sun_path);
 			return;
@@ -1049,11 +1059,14 @@ static gboolean _clear_screen_on_accept(GIOChannel * channel,
 # endif
 	if(condition != G_IO_IN)
 	{
-		error(BSDDIALOG_ERROR, "%s: %s", PACKAGE,
-				"Unexpected condition");
+		error(BSDDIALOG_ERROR, "%s", "Unexpected condition");
 		return FALSE;
 	}
-	fd = accept(gbd->socket, NULL, NULL);
+	if((fd = accept(gbd->socket, NULL, NULL)) < 0)
+	{
+		error(BSDDIALOG_ERROR, "%s: %s", "accept", strerror(errno));
+		return FALSE;
+	}
 	len = recv(fd, buf, sizeof(buf) - 1, 0);
 	close(fd);
 	if(len > 0 && (size_t)len < sizeof(buf) && gbd->label != NULL)
