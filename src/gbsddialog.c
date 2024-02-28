@@ -556,6 +556,7 @@ int gbsddialog(int * ret, int argc, char const ** argv)
 				"Could not get the default screen");
 	}
 	gbd->socket = -1;
+	gbd->id = 0;
 	g_idle_add(_gbsddialog_on_idle, gbd);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => 0\n", __func__);
@@ -1041,8 +1042,13 @@ static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 				_clear_screen_on_accept, gbd);
 	}
 	gtk_main();
-	close(gbd->socket);
-	unlink(addr.sun_path);
+	if(gbd->id > 0)
+		g_source_remove(gbd->id);
+	if(gbd->socket >= 0)
+	{
+		close(gbd->socket);
+		unlink(addr.sun_path);
+	}
 }
 
 static gboolean _clear_screen_on_accept(GIOChannel * channel,
@@ -1065,7 +1071,7 @@ static gboolean _clear_screen_on_accept(GIOChannel * channel,
 	if((fd = accept(gbd->socket, NULL, NULL)) < 0)
 	{
 		error(BSDDIALOG_ERROR, "%s: %s", "accept", strerror(errno));
-		return FALSE;
+		return TRUE;
 	}
 	len = recv(fd, buf, sizeof(buf) - 1, 0);
 	close(fd);
