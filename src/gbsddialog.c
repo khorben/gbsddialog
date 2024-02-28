@@ -726,17 +726,21 @@ static void _backtitle_bikeshed_color(GdkColor * color);
 
 static void _gbsddialog_backtitle(GBSDDialog * gbd)
 {
+	GdkDisplay * display;
 	int fd = -1;
 	struct sockaddr_un addr;
 
+	display = gdk_display_get_default();
 	/* look for a running instance */
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/%s-%s",
-			g_get_tmp_dir(), gdk_get_display(), PACKAGE);
+			g_get_tmp_dir(), gdk_display_get_name(display),
+			PACKAGE);
 	addr.sun_len = sizeof(addr) - sizeof(addr.sun_path)
 		+ strlen(addr.sun_path) + 1;
 	if(access(addr.sun_path, W_OK) == 0)
+	{
 		/* connect to the running instance */
 		if((fd = socket(addr.sun_family, SOCK_STREAM, 0)) < 0)
 			error(BSDDIALOG_ERROR, "%s: %s", "socket",
@@ -749,8 +753,9 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd)
 			close(fd);
 			fd = -1;
 		}
-		else if(send(fd, gbd->opt.backtitle, strlen(gbd->opt.backtitle),
-					0) != strlen(gbd->opt.backtitle))
+		else if(send(fd, gbd->opt.backtitle,
+					strlen(gbd->opt.backtitle), 0)
+				!= (ssize_t)strlen(gbd->opt.backtitle))
 		{
 			error(BSDDIALOG_ERROR, "%s: %s", "send",
 					strerror(errno));
@@ -763,6 +768,7 @@ static void _gbsddialog_backtitle(GBSDDialog * gbd)
 			close(fd);
 			return;
 		}
+	}
 #if GTK_CHECK_VERSION(2, 2, 0)
 	g_signal_connect_swapped(gbd->screen, "size-changed",
 			G_CALLBACK(_backtitle_on_size_changed), gbd);
@@ -1001,16 +1007,19 @@ static gboolean _clear_screen_on_accept(GIOChannel * channel,
 
 static void _gbsddialog_clear_screen(GBSDDialog * gbd)
 {
+	GdkDisplay * display;
 	struct sockaddr_un addr;
 	GIOChannel * channel;
 
 	if(gbd->opt.backtitle != NULL && gbd->windows == NULL)
 	{
+		display = gdk_display_get_default();
 		_gbsddialog_backtitle(gbd);
 		memset(&addr, 0, sizeof(addr));
 		addr.sun_family = AF_UNIX;
 		snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/%s-%s",
-				g_get_tmp_dir(), gdk_get_display(), PACKAGE);
+				g_get_tmp_dir(), gdk_display_get_name(display),
+				PACKAGE);
 		addr.sun_len = sizeof(addr) - sizeof(addr.sun_path)
 			+ strlen(addr.sun_path) + 1;
 		if((gbd->socket = socket(addr.sun_family, SOCK_STREAM, 0)) < 0)
