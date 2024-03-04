@@ -1465,7 +1465,7 @@ static int _parseargs_arg(GBSDDialog * gbd, struct bsddialog_conf * conf,
 			ex = get_font_size(gbd->screen);
 			dprintf(opt->output_fd, "MaxSize: %d, %d\n",
 					(int)(workarea.height / ex / 2) - 9,
-					(int)(workarea.width / ex) - 2);
+					(int)(workarea.width / ex) - 4);
 			break;
 		case PRINT_SIZE:
 			conf->get_height = &opt->getH;
