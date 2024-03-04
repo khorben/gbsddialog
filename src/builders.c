@@ -2859,6 +2859,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	GtkWidget * box;
 	GtkWidget * widget;
 	gdouble ex;
+	GdkRectangle workarea;
 	struct confopt_data confopt = { conf, opt };
 
 	dialog = gtk_dialog_new_with_buttons(conf->title, NULL, flags, NULL,
@@ -2888,22 +2889,24 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 #else
 	container = dialog->vbox;
 #endif
-	if(rows != BSDDIALOG_AUTOSIZE && cols != BSDDIALOG_AUTOSIZE)
-	{
-		/* XXX gdk_screen_get_default() may fail */
-		ex = get_font_size(gdk_screen_get_default());
+	/* XXX gdk_screen_get_default() may fail */
+	ex = get_font_size(gdk_screen_get_default());
+	get_workarea(gdk_screen_get_default(), &workarea);
+	if(rows == BSDDIALOG_AUTOSIZE)
+		rows = (int)(workarea.height / ex / 2) - 9;
+	if(cols == BSDDIALOG_AUTOSIZE)
+		cols = (int)(workarea.width / ex) - 2;
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
-				ex, cols, rows);
+	fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
+			ex, cols, rows);
 #endif
 #ifdef WITH_XDIALOG
-		if(opt->pixelsize)
-			gtk_widget_set_size_request(container, cols, rows);
-		else
+	if(opt->pixelsize)
+		gtk_widget_set_size_request(container, cols, rows);
+	else
 #endif
-			gtk_widget_set_size_request(container, cols * ex,
-					rows * ex * 2);
-	}
+		gtk_widget_set_size_request(container, cols * ex,
+				rows * ex * 2);
 	if(text != NULL)
 	{
 #if GTK_CHECK_VERSION(3, 0, 0)
