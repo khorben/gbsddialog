@@ -2895,7 +2895,7 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 	if(rows == BSDDIALOG_AUTOSIZE)
 		rows = (int)(workarea.height / ex / 2) - 9;
 	if(cols == BSDDIALOG_AUTOSIZE)
-		cols = (int)(workarea.width / ex) - 2;
+		cols = (int)(workarea.width / ex) - 4;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
 			ex, cols, rows);
