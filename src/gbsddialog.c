@@ -618,13 +618,16 @@ static gboolean _gbsddialog_on_idle(gpointer data)
 	if(opt->dialogbuilder != NULL)
 	{
 #ifdef WITH_XDIALOG
-		if(argc >= 2 && (sscanf(argv[1], "%dx%d", &rows, &cols) == 2
+		if(argc >= 2 && (sscanf(argv[1], "%dx%d", &cols, &rows) == 2
 					|| sscanf(argv[1], "%dX%d",
-						&rows, &cols) == 2))
+						&cols, &rows) == 2))
 		{
 			if(rows >= BSDDIALOG_AUTOSIZE
 					&& cols >= BSDDIALOG_AUTOSIZE)
+			{
 				j--;
+				opt->pixelsize = true;
+			}
 		}
 		else
 #endif

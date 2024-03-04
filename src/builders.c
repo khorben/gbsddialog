@@ -1016,8 +1016,13 @@ int builder_infobox(struct bsddialog_conf const * conf,
 		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
 				ex, cols, rows);
 #endif
-		gtk_widget_set_size_request(container, (int)(cols * ex),
-				(int)(rows * ex * 2.0));
+#ifdef WITH_XDIALOG
+		if(opt->pixelsize)
+			gtk_widget_set_size_request(container, cols, rows);
+		else
+#endif
+			gtk_widget_set_size_request(container, (int)(cols * ex),
+					(int)(rows * ex * 2.0));
 	}
 #ifdef WITH_XDIALOG
 	if(opt->without_buttons)
@@ -2891,8 +2896,13 @@ static GtkWidget * _builder_dialog(struct bsddialog_conf const * conf,
 		fprintf(stderr, "DEBUG: %s() ex=%f cols=%d rows=%d\n", __func__,
 				ex, cols, rows);
 #endif
-		gtk_widget_set_size_request(container, cols * ex,
-				rows * ex * 2);
+#ifdef WITH_XDIALOG
+		if(opt->pixelsize)
+			gtk_widget_set_size_request(container, cols, rows);
+		else
+#endif
+			gtk_widget_set_size_request(container, cols * ex,
+					rows * ex * 2);
 	}
 	if(text != NULL)
 	{

@@ -111,6 +111,7 @@ struct options
 	bool ignore_eof;
 	int output_fd;
 #ifdef WITH_XDIALOG
+	bool pixelsize;
 	bool wrap;
 	bool wizard;
 #endif
