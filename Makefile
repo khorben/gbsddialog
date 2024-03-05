@@ -1,5 +1,5 @@
 PACKAGE	= gbsddialog
-VERSION	= 0.8.1
+VERSION	= 0.8.2
 SUBDIRS	= data doc src tests tools
 PREFIX	= /usr/local
 DATADIR	= $(PREFIX)/share
