@@ -2586,7 +2586,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 		gtk_entry_set_activates_default(GTK_ENTRY(td.hour), TRUE);
 	g_signal_connect(td.hour, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
-	gtk_box_pack_start(GTK_BOX(box), td.hour, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box), td.hour, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE,
 			BORDER_WIDTH);
 	td.minute = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
@@ -2597,7 +2597,7 @@ int builder_timebox(struct bsddialog_conf const * conf,
 		gtk_entry_set_activates_default(GTK_ENTRY(td.minute), TRUE);
 	g_signal_connect(td.minute, "output", G_CALLBACK(_timebox_on_output),
 			NULL);
-	gtk_box_pack_start(GTK_BOX(box), td.minute, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(box), td.minute, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(box), gtk_label_new(":"), FALSE, TRUE,
 			BORDER_WIDTH);
 	td.second = gtk_spin_button_new_with_range(0.0, 60.0, 1.0);
