@@ -875,6 +875,7 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 		{
 			/* set the current percentage */
 			_gauge_set_percentage(gd, perc);
+			gtk_label_set_text(GTK_LABEL(gd->label), NULL);
 			gd->sep = 1;
 		}
 		else if(gd->sep == 1 && (q = strchr(p, '\n')) != NULL)
