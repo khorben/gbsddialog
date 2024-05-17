@@ -762,6 +762,7 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	struct gauge_data gd = { NULL, NULL, NULL, NULL, 0, -1 };
 	unsigned int perc = 0;
 	GtkWidget * container;
+	GtkWidget * box;
 	GIOChannel * channel;
 
 #ifdef DEBUG
@@ -809,8 +810,14 @@ int builder_gauge(struct bsddialog_conf const * conf,
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(gd.widget), TRUE);
 #endif
 	_gauge_set_percentage(&gd, perc);
-	gtk_widget_show(gd.widget);
-	gtk_container_add(GTK_CONTAINER(container), gd.widget);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
+#else
+	box = gtk_vbox_new(FALSE, BORDER_WIDTH);
+#endif
+	gtk_box_pack_start(GTK_BOX(box), gd.widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(box);
+	gtk_container_add(GTK_CONTAINER(container), box);
 	channel = g_io_channel_unix_new(STDIN_FILENO);
 	g_io_channel_set_encoding(channel, NULL, NULL);
 	/* XXX ignore errors */
