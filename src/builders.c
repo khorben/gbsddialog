@@ -73,7 +73,9 @@ struct gauge_data
 	GtkWidget * label;
 	GtkWidget * widget;	/* progress bar */
 	guint id;
-	int state;		/* -1 no, 0 yes, 1 percentage, 2 text */
+	int state;		/* -1 uninitialized, 0 initialized,
+				    1 percentage read, 2 text,
+				    3 text (continued) */
 };
 
 struct infobox_data
@@ -857,7 +859,6 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 	else if(status == G_IO_STATUS_EOF)
 		return _gauge_on_can_read_eof(gd);
 	buf[r] = '\0';
-	/* XXX the following parser assumes full lines are always obtained */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() buf=\"%s\"\n", __func__, buf);
 #endif
@@ -867,9 +868,9 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 		fprintf(stderr, "DEBUG: %s() %d \"%s\"\n",
 				__func__, gd->state, p);
 #endif
-		if(strncmp(p, end, sizeof(end) - 1) == 0)
+		if(gd->state != 3 && strncmp(p, end, sizeof(end) - 1) == 0)
 			return _gauge_on_can_read_eof(gd);
-		if(strncmp(p, sep, sizeof(sep) - 1) == 0)
+		if(gd->state != 3 && strncmp(p, sep, sizeof(sep) - 1) == 0)
 			/* found a separator */
 			gd->state = 0;
 		else if(gd->state == 0 && sscanf(p, "%u", &perc) == 1)
@@ -879,27 +880,42 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 			gtk_label_set_text(GTK_LABEL(gd->label), NULL);
 			gd->state = 1;
 		}
-		else if(gd->state == 1 && (q = strchr(p, '\n')) != NULL)
+		else if(gd->state == 0 || gd->state == 1)
 		{
 			/* set the current text */
-			*q = '\0';
+			if((q = strchr(p, '\n')) != NULL)
+				*q = '\0';
 			gtk_label_set_text(GTK_LABEL(gd->label), p);
+			if(q == NULL)
+			{
+				gd->state = 3;
+				break;
+			}
 			gd->state = 2;
 			p = q;
 			continue;
 		}
-		else if(gd->state == 2 && (q = strchr(p, '\n')) != NULL)
+		else if(gd->state == 2 || gd->state == 3)
 		{
 			/* append to the current text */
-			*q = '\0';
+			if((q = strchr(p, '\n')) != NULL)
+				*q = '\0';
 			l = gtk_label_get_text(GTK_LABEL(gd->label));
 			r = strlen(l) + strlen(p) + 2;
 			if((s = malloc(r)) != NULL)
 			{
-				snprintf(s, r, "%s\n%s", l, p);
+				snprintf(s, r, "%s%s%s", l,
+						(gd->state == 2) ? "\n" : "",
+						p);
 				gtk_label_set_text(GTK_LABEL(gd->label), s);
 				free(s);
 			}
+			if(q == NULL)
+			{
+				gd->state = 3;
+				break;
+			}
+			gd->state = 2;
 			p = q;
 			continue;
 		}
