@@ -4,8 +4,8 @@ BINDIR	= $(PREFIX)/bin
 CPPFLAGS= -D_FORTIFY_SOURCE=2
 CFLAGSF	= `pkg-config --cflags gtk+-3.0`
 CFLAGS	= -W -Wall -g -O2 -fstack-protector
-LDFLAGSF= `pkg-config --libs gtk+-3.0` -lm
-LDFLAGS	=
+LDFLAGSF= `pkg-config --libs gtk+-3.0`
+LDFLAGS	= -lm
 INSTALL	= install
 MKDIR	= mkdir -p -m 0755
 RM	= rm -f
