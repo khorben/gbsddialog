@@ -73,7 +73,7 @@ struct gauge_data
 	GtkWidget * label;
 	GtkWidget * widget;	/* progress bar */
 	guint id;
-	int sep;		/* -1 no, 0 yes, 1 percentage, 2 text */
+	int state;		/* -1 no, 0 yes, 1 percentage, 2 text */
 };
 
 struct infobox_data
@@ -864,30 +864,31 @@ static gboolean _gauge_on_can_read(GIOChannel * channel,
 	for(p = buf; p[0] != '\0'; p++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() %d \"%s\"\n", __func__, gd->sep, p);
+		fprintf(stderr, "DEBUG: %s() %d \"%s\"\n",
+				__func__, gd->state, p);
 #endif
 		if(strncmp(p, end, sizeof(end) - 1) == 0)
 			return _gauge_on_can_read_eof(gd);
 		if(strncmp(p, sep, sizeof(sep) - 1) == 0)
 			/* found a separator */
-			gd->sep = 0;
-		else if(gd->sep == 0 && sscanf(p, "%u", &perc) == 1)
+			gd->state = 0;
+		else if(gd->state == 0 && sscanf(p, "%u", &perc) == 1)
 		{
 			/* set the current percentage */
 			_gauge_set_percentage(gd, perc);
 			gtk_label_set_text(GTK_LABEL(gd->label), NULL);
-			gd->sep = 1;
+			gd->state = 1;
 		}
-		else if(gd->sep == 1 && (q = strchr(p, '\n')) != NULL)
+		else if(gd->state == 1 && (q = strchr(p, '\n')) != NULL)
 		{
 			/* set the current text */
 			*q = '\0';
 			gtk_label_set_text(GTK_LABEL(gd->label), p);
-			gd->sep = 2;
+			gd->state = 2;
 			p = q;
 			continue;
 		}
-		else if(gd->sep == 2 && (q = strchr(p, '\n')) != NULL)
+		else if(gd->state == 2 && (q = strchr(p, '\n')) != NULL)
 		{
 			/* append to the current text */
 			*q = '\0';
