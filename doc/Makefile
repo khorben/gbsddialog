@@ -1,5 +1,5 @@
 PACKAGE	= gbsddialog
-VERSION	= 0.9.0
+VERSION	= 0.9.1
 TARGETS	= $(OBJDIR)Xdialog.1
 OBJS	=
 SAMPLES	= Xdialog.wrapper.c Xmessage Xmore allrpms bluebox.rc buildlist \

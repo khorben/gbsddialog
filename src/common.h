@@ -43,7 +43,7 @@
 #  define PACKAGE	"gbsddialog"
 # endif
 # ifndef VERSION
-#  define VERSION	"0.9.0"
+#  define VERSION	"0.9.1"
 # endif
 
 # ifndef PROGNAME
